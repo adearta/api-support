@@ -71,10 +71,6 @@ class WebinarController extends Controller
                 return $this->makeJSONResponse($message_not_saved, 400);
             }
         }
-
-
-        //panggil sendtoschool
-
     }
     public function updateWebinar(Request $request, $id)
     {
@@ -95,7 +91,6 @@ class WebinarController extends Controller
     public function sendMail(Request $request)
     {
         // School::create($request->all());
-
         Mail::send('email', array(
             'zoom_link' => $request->get('zoom_link'),
             'name' => $request->get('name'),
