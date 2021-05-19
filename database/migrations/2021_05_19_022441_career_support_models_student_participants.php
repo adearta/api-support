@@ -14,24 +14,19 @@ class CareerSupportModelsStudentParticipants extends Migration
     public function up()
     {
         //
-        Schema::create('career_support_models_student_participants', function (Blueprint $table) {
+        Schema::create('career_support_models_studentparticipants', function (Blueprint $table) {
             $table->id();
             $table->bigInteger('student_id')->unsigned();
             $table->bigInteger('webinar_id')->unsigned();
-            //
             $table->bigInteger("creator_id")->nullable(); //
             $table->bigInteger("modifier_id")->nullable(); //
-            //
-            $table->boolean('is_deleted');
+            $table->boolean('is_deleted')->default(false);
             $table->timestamp('created');
             $table->timestamp('modified');
-            //i want to add webinar attributes
-
-            // i want to add student attributes
 
             //this to relational in database
             $table->foreign('student_id')->references('id')->on('career_support_models_student');
-            $table->foreign('webinar_id')->references('id')->on('career_support_models_webinar_akbar');
+            $table->foreign('webinar_id')->references('id')->on('career_support_models_webinarakbar');
         });
     }
 

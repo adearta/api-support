@@ -22,7 +22,7 @@ class CareerSupportModelsStudent extends Migration
             $table->string('batch');
             $table->string('class');
             $table->string('nim');
-            $table->boolean('is_deleted');
+            $table->boolean('is_deleted')->default(false);
             $table->timestamp('created');
             $table->timestamp('modified');
         });

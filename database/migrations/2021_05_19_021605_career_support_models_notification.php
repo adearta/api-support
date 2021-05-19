@@ -18,19 +18,14 @@ class CareerSupportModelsNotification extends Migration
             $table->id();
             $table->bigInteger('school_id')->nullable();
             $table->bigInteger('student_id')->nullable();
-            //
             $table->bigInteger("creator_id")->nullable(); //
             $table->bigInteger("modifier_id")->nullable(); //
             //translation
             $table->string('message_id');
             $table->string('message_en');
-
-            $table->timestamp('date');
-            $table->timestamp('time');
-            $table->boolean('is_deleted');
+            $table->boolean('is_deleted')->default(false);
             $table->timestamp('created');
             $table->timestamp('modified');
-
 
             $table->foreign('school_id')->references('id')->on('career_support_models_school');
             $table->foreign('student_id')->references('id')->on('career_support_models_student');

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
@@ -15,7 +16,6 @@ class AuthController extends Controller
             'name' => 'required',
             'email' => 'required|email',
             'password' => 'required',
-            // 're_password' => 'required|same:password',
             'tipe' => 'required',
         ]);
         if ($validation->fails()) {
@@ -35,13 +35,12 @@ class AuthController extends Controller
     }
     public function login(Request $request)
     {
-
         $data = [
             'email' => $request->email,
             'password' => $request->password,
         ];
-        if (auth()->attempt($data)) {
-            $token = auth()->user()->createToken('LaravelAuthApp')->accessToken;
+        if (Auth::attempt($data)) {
+            $token = Auth::user()->createToken('LaravelAuthApp')->accessToken;
             return response()->json(['token' => $token], 200);
         } else {
             return response()->json(['error' => 'Unauthorised'], 401);
