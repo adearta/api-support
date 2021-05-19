@@ -48,7 +48,7 @@ class User extends Authenticatable
     {
         $this->hasMany(StudentCandidateModel::class);
     }
-    public function Admins()
+    public function admins()
     {
         $this->hasMany(SchoolCandidateModel::class);
     }
