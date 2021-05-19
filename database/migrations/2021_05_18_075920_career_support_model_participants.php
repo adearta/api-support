@@ -15,15 +15,18 @@ class CareerSupportModelParticipants extends Migration
     {
         //references webinar
         Schema::create('career_support_models_school_participants', function (Blueprint $table) {
-            $table->bigIncrements('id');
+            $table->id();
+            //
             $table->bigInteger('webinar_id')->unsigned();
             $table->bigInteger('school_id')->unsigned();
-            $table->string('name')->unsigned()->nullable();
-            $table->timestamp('date')->unsigned()->nullable();
-            $table->timestamp('time')->unsigned()->nullable();
-            $table->string('picture')->unsigned()->nullable();
-            $table->string('link')->unsigned()->nullable();
-            $table->string('school')->unsigned()->nullable();
+            //
+            $table->bigInteger("creator_id")->nullable(); //
+            $table->bigInteger("modifier_id")->nullable(); //
+            $table->boolean('is_deleted');
+            $table->timestamp('created');
+            $table->timestamp('modified');
+
+            // $table->string('school')->unsigned()->nullable();
             // $table->boolean('is_join');
 
             $table->foreign('webinar_id')->references('id')->on('career_support_models_webinar_akbar');

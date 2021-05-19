@@ -15,11 +15,16 @@ class CareerSupportModelsStudent extends Migration
     {
         //
         Schema::create('career_support_models_student', function (Blueprint $table) {
-            $table->bigIncrements('id');
+            $table->id();
+            $table->bigInteger("creator_id")->nullable(); //
+            $table->bigInteger("modifier_id")->nullable(); //
             $table->string('name');
             $table->string('batch');
             $table->string('class');
             $table->string('nim');
+            $table->boolean('is_deleted');
+            $table->timestamp('created');
+            $table->timestamp('modified');
         });
     }
 

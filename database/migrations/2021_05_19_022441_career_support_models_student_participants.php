@@ -15,20 +15,20 @@ class CareerSupportModelsStudentParticipants extends Migration
     {
         //
         Schema::create('career_support_models_student_participants', function (Blueprint $table) {
-            $table->bigIncrements('id');
+            $table->id();
             $table->bigInteger('student_id')->unsigned();
             $table->bigInteger('webinar_id')->unsigned();
+            //
+            $table->bigInteger("creator_id")->nullable(); //
+            $table->bigInteger("modifier_id")->nullable(); //
+            //
+            $table->boolean('is_deleted');
+            $table->timestamp('created');
+            $table->timestamp('modified');
             //i want to add webinar attributes
-            $table->string('name')->unsigned()->nullable();
-            $table->timestamp('date')->unsigned()->nullable();
-            $table->timestamp('time')->unsigned()->nullable();
-            $table->string('picture')->unsigned()->nullable();
-            $table->string('link')->unsigned()->nullable();
+
             // i want to add student attributes
-            $table->string('student_name')->unsigned()->nullable();
-            $table->string('student_nim')->unsigned()->nullable();
-            $table->string('student_batch')->unsigned()->nullable();
-            $table->string('student_class')->unsigned()->nullable();
+
             //this to relational in database
             $table->foreign('student_id')->references('id')->on('career_support_models_student');
             $table->foreign('webinar_id')->references('id')->on('career_support_models_webinar_akbar');

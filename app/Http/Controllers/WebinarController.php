@@ -23,9 +23,10 @@ class WebinarController extends Controller
     }
     public function addWebinar(Request $request)
     {
-        //masukin data
+        //create data
+        //create notif
         //panggil sendtoschool
-        
+
     }
     public function updateWebinar(Request $request, $id)
     {
@@ -41,7 +42,8 @@ class WebinarController extends Controller
             return $this->makeJSONResponse(400);
         }
     }
-    public function sendToSchool(){
+    public function sendToSchool()
+    {
         //pilih sekolah
         //kirim ke sekolah pilihan
     }

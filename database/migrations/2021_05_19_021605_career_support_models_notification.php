@@ -15,13 +15,21 @@ class CareerSupportModelsNotification extends Migration
     {
         //
         Schema::create('career_support_models_notification', function (Blueprint $table) {
-            $table->bigIncrements('id');
-            $table->bigInteger('school_id')->unsigned();
-            $table->bigInteger('student_id')->unsigned();
+            $table->id();
+            $table->bigInteger('school_id')->nullable();
+            $table->bigInteger('student_id')->nullable();
+            //
+            $table->bigInteger("creator_id")->nullable(); //
+            $table->bigInteger("modifier_id")->nullable(); //
+            //translation
+            $table->string('message_id');
+            $table->string('message_en');
 
-            $table->string('message');
             $table->timestamp('date');
             $table->timestamp('time');
+            $table->boolean('is_deleted');
+            $table->timestamp('created');
+            $table->timestamp('modified');
 
 
             $table->foreign('school_id')->references('id')->on('career_support_models_school');

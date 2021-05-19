@@ -17,27 +17,15 @@ class CareerSupportModelsSchool extends Migration
         //
         Schema::create('career_support_models_school', function (Blueprint $table) {
 
-            $table->bigIncrements('id');
+            $table->id();
+            $table->bigInteger("creator_id")->nullable(); //
+            $table->bigInteger("modifier_id")->nullable(); //
             $table->string('school_name');
-            // $table->bigInteger('webinar_id')->unsigned();
-            // $table->string('name')->unsigned()->nullable();
-            // $table->timestamp('date')->unsigned()->nullable();
-            // $table->timestamp('time')->unsigned()->nullable();
-            // $table->string('picture')->unsigned()->nullable();
-            // $table->string('link')->unsigned()->nullable();
-            // $table->bigInteger('creator_id')->unsigned();//ini nantinya admin sekolah
-            // $table->bigInteger('modifier_id')->unsigned();
-            // $table->boolean('is_deleted');
-            // $table->boolean('is_created');
-            // $table->timestamp('modified');
-            //modified, creator_id sama modifier_id
+            $table->boolean('is_deleted');
+            $table->timestamp('created');
+            $table->timestamp('modified');
 
-            // $table->foreign('webinar_id')->references('id')->on('career_support_models_webinar');
-            // $table->foreign('name')->references('event_name')->on('career_support_models_webinar');
-            // $table->foreign('date')->references('event_date')->on('career_support_models_webinar');
-            // $table->foreign('time')->references('event_time')->on('career_support_models_webinar');
-            // $table->foreign('picture')->references('event_picture')->on('career_support_models_webinar');
-            // $table->foreign('link')->references('link_zoom')->on('career_support_models_webinar');
+            // is_deleted, created, modified, creator_id sama modifier_id
         });
     }
 
