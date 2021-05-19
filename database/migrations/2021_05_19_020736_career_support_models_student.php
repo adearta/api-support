@@ -13,17 +13,13 @@ class CareerSupportModelsStudent extends Migration
      */
     public function up()
     {
-        //references participans
-        Schema::create('caree_support_models_student', function (Blueprint $table) {
+        //
+        Schema::create('career_support_models_student', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->bigInteger('participants_id');
             $table->string('name');
-            $table->timestamp('date');
-            $table->timestamp('time');
-            $table->string('picture');
-            $table->string('link');
-
-            $table->foreign('participants_id')->references('id')->on('career_school_models_participants');
+            $table->string('batch');
+            $table->string('class');
+            $table->string('nim');
         });
     }
 
@@ -35,5 +31,6 @@ class CareerSupportModelsStudent extends Migration
     public function down()
     {
         //
+        Schema::dropIfExists('career_support_models_student');
     }
 }

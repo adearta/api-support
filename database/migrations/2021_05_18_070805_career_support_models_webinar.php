@@ -14,7 +14,7 @@ class CareerSupportModelsWebinar extends Migration
     public function up()
     {
         //
-        Schema::create('career_support_models_webinar', function (Blueprint $table) {
+        Schema::create('career_support_models_webinar_akbar', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('zoom_link');
             $table->string('event_name');
@@ -34,6 +34,6 @@ class CareerSupportModelsWebinar extends Migration
     public function down()
     {
         //
-        Schema::dropIfExists('career_support_models_webinar');
+        Schema::dropIfExists('career_support_models_webinar_akbar');
     }
 }
