@@ -50,6 +50,6 @@ class User extends Authenticatable
     }
     public function admins()
     {
-        $this->hasMany(SchoolCandidateModel::class);
+        $this->hasMany(WebinarCandidateModel::class);
     }
 }

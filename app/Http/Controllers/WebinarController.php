@@ -19,7 +19,7 @@ class WebinarController extends Controller
 
     public function getWebinar()
     {
-        $webinar =  DB::select('select * from career_support_models_webinar');
+        $webinar =  DB::select('select * from career_support_models_webinar_akbar');
         $auth = auth()->user();
         if ($auth) {
             return $this->makeJSONResponse($webinar, 200);

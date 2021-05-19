@@ -9,7 +9,7 @@ class SchoolParticipantsCandidateModel extends Model
 {
     use HasFactory;
     protected $table = "career_support_models_school_participants";
-    // protected $fillable = [
-    //     ''
-    // ];
+    protected $fillable = [
+        'status'
+    ];
 }

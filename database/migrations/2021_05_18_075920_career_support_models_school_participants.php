@@ -25,6 +25,7 @@ class CareerSupportModelsSchoolParticipants extends Migration
             $table->boolean('is_deleted');
             $table->timestamp('created');
             $table->timestamp('modified');
+            $table->integer('status')->default(1);
 
             // $table->string('school')->unsigned()->nullable();
             // $table->boolean('is_join');
