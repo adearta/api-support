@@ -3,19 +3,31 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\WebinarCandidateModel;
+use App\Models\WebinarAkbarModel;
 use App\Models\NotificationCandidateModel;
 use App\Models\SchoolParticipantsCandidateModel;
 use Illuminate\Support\Facades\DB;
 use App\Traits\ResponseHelper;
+use Exception;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Validator;
 
 class WebinarController extends Controller
 {
     //
     use ResponseHelper;
+    private $tbWebinar;
+    private $tbNotification;
+    private $tbSchoolParticipants;
+
+    public function __construct()
+    {
+        $this->tbWebinar = WebinarAkbarModel::tableName();
+        $this->tbSchoolParticipants = SchoolParticipantsCandidateModel::tableName();
+        $this->tbNotification = NotificationCandidateModel::tableName();
+    }
 
     public function getWebinar()
     {
@@ -28,47 +40,53 @@ class WebinarController extends Controller
             return $this->makeJSONResponse($message, 400);
         }
     }
+
     public function addWebinar(Request $request)
     {
         //validate data
-        $this->validate($request, [
+        $validation = Validator::make($request->all(), [
             'zoom_link' => 'required|url',
             'event_name' => 'required',
             'event_date' => 'required',
             'event_time' => 'required',
             'event_picture' => 'required|mimes:jpg,jpeg,png|max:2000',
         ]);
-        //create data
-        if ($file = $request->file('event_picture')) {
-            $path = $file->store('public/files');
 
-            $create = new WebinarCandidateModel();
-            $create->zoom_link = $request->zoom_link;
-            $create->event_name = $request->zoom_link;
-            $create->event_date = $request->zoom_link;
-            $create->event_time = $request->zoom_link;
-            $create->event_picture = $path;
-            //autentikasi token untuk menyimpan
-            $auth = auth()->user()->admins()->save($create);
+        if ($validation->fails()) {
+            return response()->json($validation->errors(), 202);
+        } else {
+            //create data
+            if ($file = $request->file('event_picture')) {
+                try {
+                    $path = $file->store('webinar', 'uploads');
+                    $webinarId = DB::table($this->tbWebinar)->insertGetId(array(
+                        'zoom_link' => $request->zoom_link,
+                        'event_name' => $request->event_name,
+                        'event_date' => $request->event_date,
+                        'event_time' => $request->event_time,
+                        'event_picture' => $path
+                    ));
 
-            if ($auth) {
-                //create notif
-                $notif = new NotificationCandidateModel();
-                $notif->event_date = $request->zoom_link;
-                $notif->event_time = $request->zoom_link;
-                $notif->save();
-                //create participants
-                $participans = new SchoolParticipantsCandidateModel();
-                $fillParticipants = $participans->create($request->all());
-                $fillParticipants->save();
-                //send mail
-                $this->sendMail($request);
+                    foreach ($request->school_id as $s) {
+                        DB::table($this->tbSchoolParticipants)->insert(array(
+                            'webinar_id'    => $webinarId,
+                            'school_id'     => $s,
+                        ));
 
-                $message_saved = "data saved!";
-                return $this->makeJSONResponse($message_saved, 200);
-            } else {
-                $message_not_saved = "fail to create data!";
-                return $this->makeJSONResponse($message_not_saved, 400);
+                        DB::table($this->tbNotification)->insert(array(
+                            'school_id'     => $s,
+                            'message_id'    => "Anda mendapatkan undangan untuk mengikuti Webinar dengan judul " . $request->name,
+                            'message_en'    => "You get an invitation to join in a webinar with a title" . $request->name
+                        ));
+                    }
+
+                    //$this->sendMail($request); -> ada error kk, monggo di cek sendiri ya
+                } catch (Exception $e) {
+                    echo $e;
+                    //return $this->makeJSONResponse(["message" => "failed insert the data to database"], 200);
+                }
+
+                return $this->makeJSONResponse(["message" => "Success to save data to database"], 200);
             }
         }
     }
@@ -88,6 +106,8 @@ class WebinarController extends Controller
             return $this->makeJSONResponse($message_err, 400);
         }
     }
+
+
     public function sendMail(Request $request)
     {
         // School::create($request->all());
@@ -99,7 +119,8 @@ class WebinarController extends Controller
             // 'email' => $request->get('email'),
         ), function ($message) use ($request) {
             //selecting all email from career_support_models_student_participants and save to array
-            $broadcast = DB::select('select email from career_support_models_student_participants');
+            // $broadcast = DB::select('select email from career_support_models_student_participants');
+            $broadcast = "suastikaadinata97@gmail.com";
             $message->from('adeartakusumaps@gmail.com');
             //diganti broadcast ke semua email student participants.
             $message->to($broadcast, 'Hello Student')->subject($request->get('subject'));

@@ -6,10 +6,10 @@ use App\Traits\ModelHelper;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class SchoolParticipantsCandidateModel extends Model
+class WebinarAkbarModel extends Model
 {
     use HasFactory, ModelHelper;
-    protected $table = "career_support_models_schoolparticipants";
+    protected $table = "career_support_models_webinarakbar";
 
     protected $hidden = [
         "is_deleted",
@@ -20,8 +20,10 @@ class SchoolParticipantsCandidateModel extends Model
     ];
 
     protected $fillable = [
-        'webinar_id',
-        'school_id',
-        'status'
+        'zoom_link',
+        'event_name',
+        'event_date',
+        'event_time',
+        'event_picture',
     ];
 }

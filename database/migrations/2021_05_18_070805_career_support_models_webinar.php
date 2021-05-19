@@ -24,8 +24,8 @@ class CareerSupportModelsWebinar extends Migration
             $table->time('event_time');
             $table->string('event_picture');
             $table->boolean('is_deleted')->default(false);
-            $table->timestamp('created');
-            $table->timestamp('modified');
+            $table->timestamp('created')->useCurrent();
+            $table->timestamp('modified')->nullable()->useCurrentOnUpdate();
         });
     }
 

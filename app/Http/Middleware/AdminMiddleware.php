@@ -17,7 +17,7 @@ class AdminMiddleware
      */
     public function handle(Request $request, Closure $next)
     {
-        if (Auth::check() && Auth::user()->tipe == "admin") {
+        if (Auth::user()->tipe == "admin") {
             return $next($request);
         }
         return response()->json(['message' => 'not Authorized!'], 201);

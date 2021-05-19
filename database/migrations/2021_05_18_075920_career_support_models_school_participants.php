@@ -21,8 +21,8 @@ class CareerSupportModelsSchoolParticipants extends Migration
             $table->bigInteger("creator_id")->nullable(); //
             $table->bigInteger("modifier_id")->nullable(); //
             $table->boolean('is_deleted')->default(false);
-            $table->timestamp('created');
-            $table->timestamp('modified');
+            $table->timestamp('created')->useCurrent();
+            $table->timestamp('modified')->nullable()->useCurrentOnUpdate();
             $table->integer('status')->default(1);
 
             $table->foreign('webinar_id')->references('id')->on('career_support_models_webinarakbar');

@@ -24,8 +24,8 @@ class CareerSupportModelsNotification extends Migration
             $table->string('message_id');
             $table->string('message_en');
             $table->boolean('is_deleted')->default(false);
-            $table->timestamp('created');
-            $table->timestamp('modified');
+            $table->timestamp('created')->useCurrent();
+            $table->timestamp('modified')->nullable()->useCurrentOnUpdate();
 
             $table->foreign('school_id')->references('id')->on('career_support_models_school');
             $table->foreign('student_id')->references('id')->on('career_support_models_student');

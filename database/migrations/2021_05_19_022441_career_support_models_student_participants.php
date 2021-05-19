@@ -21,8 +21,8 @@ class CareerSupportModelsStudentParticipants extends Migration
             $table->bigInteger("creator_id")->nullable(); //
             $table->bigInteger("modifier_id")->nullable(); //
             $table->boolean('is_deleted')->default(false);
-            $table->timestamp('created');
-            $table->timestamp('modified');
+            $table->timestamp('created')->useCurrent();
+            $table->timestamp('modified')->nullable()->useCurrentOnUpdate();
 
             //this to relational in database
             $table->foreign('student_id')->references('id')->on('career_support_models_student');

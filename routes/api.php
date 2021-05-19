@@ -14,8 +14,8 @@ use App\Http\Controllers\AuthController;
 |
 */
 
-// Route::middleware('auth:api')->get('/user', function (Request $request) {
-//     return $request->user();
-// });
+//the routes of webinar
+Route::middleware('auth:api')->prefix('webinar')->group(base_path('routes/api/webinar.php'));
+
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);

@@ -22,8 +22,8 @@ class CareerSupportModelsSchool extends Migration
             $table->bigInteger("modifier_id")->nullable(); //
             $table->string('school_name');
             $table->boolean('is_deleted')->dafault(false);
-            $table->timestamp('created');
-            $table->timestamp('modified');
+            $table->timestamp('created')->useCurrent();
+            $table->timestamp('modified')->nullable()->useCurrentOnUpdate();
 
             // is_deleted, created, modified, creator_id sama modifier_id
         });
