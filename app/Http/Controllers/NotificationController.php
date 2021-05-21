@@ -13,10 +13,28 @@ class NotificationController extends Controller
     //
     use ResponseHelper;
 
-    public function getNotification($id)
+    public function getSchoolNotification($id)
     {
         try {
+            //get notification for school
             $getnotif = DB::select('select * from career_support_models_notifications where school_id = ?', [$id]);
+            $auth = auth()->user();
+            if ($auth) {
+                return $this->makeJSONResponse($getnotif, 200);
+            } else {
+                $message_err = "no data!";
+                return $this->makeJSONResponse($message_err, 400);
+            }
+        } catch (Exception $e) {
+            $message_err = "no data!";
+            return $e;
+        }
+    }
+    public function getStudentNotification($id)
+    {
+        try {
+            //get notification for school
+            $getnotif = DB::select('select * from career_support_models_notifications where student_id = ?', [$id]);
             $auth = auth()->user();
             if ($auth) {
                 return $this->makeJSONResponse($getnotif, 200);

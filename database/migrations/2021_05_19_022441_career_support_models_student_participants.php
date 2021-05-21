@@ -16,6 +16,7 @@ class CareerSupportModelsStudentParticipants extends Migration
         //
         Schema::create('career_support_models_studentparticipants', function (Blueprint $table) {
             $table->id();
+            $table->bigInteger('school_id')->unsigned();
             $table->bigInteger('student_id')->unsigned();
             $table->bigInteger('webinar_id')->unsigned();
             $table->bigInteger("creator_id")->nullable(); //
@@ -26,6 +27,7 @@ class CareerSupportModelsStudentParticipants extends Migration
 
             //this to relational in database
             $table->foreign('student_id')->references('id')->on('career_support_models_student');
+            $table->foreign('school_id')->references('id')->on('career_support_models_school');
             $table->foreign('webinar_id')->references('id')->on('career_support_models_webinarakbar');
         });
     }

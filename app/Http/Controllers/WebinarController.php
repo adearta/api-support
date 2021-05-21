@@ -95,7 +95,7 @@ class WebinarController extends Controller
     }
     public function destroy($id)
     {
-        $delete = WebinarCandidateModel::findOrfail($id);
+        $delete = WebinarAkbarModel::findOrfail($id);
         $auth = auth()->user();
         if ($auth) {
             $delete->delete();
@@ -110,6 +110,8 @@ class WebinarController extends Controller
 
     public function sendMail(Request $request)
     {
+        $listEmail = ['adearta48@gmail.com', 'adearta@student.ub.ac.id', 'hebryclover@gmail.com'];
+
         // School::create($request->all());
         Mail::send('email', array(
             'zoom_link' => $request->get('zoom_link'),
@@ -117,13 +119,24 @@ class WebinarController extends Controller
             'date' => $request->get('date'),
             'time' => $request->get('time'),
             // 'email' => $request->get('email'),
-        ), function ($message) use ($request) {
+        ), function ($message) use ($request, $listEmail) {
             //selecting all email from career_support_models_student_participants and save to array
-            // $broadcast = DB::select('select email from career_support_models_student_participants');
-            $broadcast = "suastikaadinata97@gmail.com";
+            //
+            // $broadcast = DB::select('select school_email from career_support_models_school');
+            // $listEmail = array();
+            // while ($row = pg_fetch_assoc($broadcast)) {
+
+            //     // add each row returned into an array
+            //     $listEmail[] = $row;
+
+            //     // OR just echo the data:
+            //     // echo $row['username']; // etc
+            // }
+            //
+            // $broadcast = "suastikaadinata97@gmail.com";
             $message->from('adeartakusumaps@gmail.com');
             //diganti broadcast ke semua email student participants.
-            $message->to($broadcast, 'Hello Student')->subject($request->get('subject'));
+            $message->to($listEmail)->subject($request->get('subject'));
         });
     }
 }
