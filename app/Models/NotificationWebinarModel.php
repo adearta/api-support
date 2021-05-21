@@ -6,10 +6,10 @@ use App\Traits\ModelHelper;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class NotificationCandidateModel extends Model
+class NotificationWebinarModel extends Model
 {
     use HasFactory, ModelHelper;
-    protected $table = "career_support_models_notification";
+    protected $table = "career_support_models_notificationwebinar";
     protected $fillable = [
         'school_id',
         'student_id',

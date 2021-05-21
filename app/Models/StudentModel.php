@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\ModelHelper;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class StudentCandidateModel extends Model
+class StudentModel extends Model
 {
-    use HasFactory;
+    use HasFactory, ModelHelper;
     protected $table = "career_support_models_student";
     protected $fillable = [
         'school_id',
@@ -15,5 +16,7 @@ class StudentCandidateModel extends Model
         'nim',
         'class',
         'batch',
+        'year',
+        'is_verified'
     ];
 }
