@@ -42,6 +42,11 @@ class StudentParticipantsController extends Controller
             return $this->makeJSONResponse(["can't get data!" => $list], 202);
         }
     }
+    // public function getTotalParticipants($id)
+    // {
+    //     $count = DB::select('select count (webinar_id) from career_support_models_studentparticipants where webinar_id = ?', [$id]);
+    //     return $this->makeJSONResponse(['data' => $count], 200);
+    // }
     public function addStudentManual(Request $request)
     {
         $validation = Validator::make($request->all(), [
@@ -54,8 +59,7 @@ class StudentParticipantsController extends Controller
             return $this->makeJSONResponse($validation->errors(), 202);
         } else {
             try {
-                // $webinarId = DB::table($this->tbWebinar)->insertGetId([
-                // ]);
+                //insert to student
                 $student = DB::table($this->tbStudent)->insertGetId([
                     'name' => $request->name,
                     'nim' => $request->nim,
@@ -64,11 +68,18 @@ class StudentParticipantsController extends Controller
                 ]);
                 foreach ($request->school_id as $s) {
                     foreach ($request->webinar_id as $w) {
-                        DB::table($this->tbStudentParticipants)->insert(array(
-                            'school_id' => $s,
-                            'webinar_id' => $w,
-                            'student_id' => $student,
-                        ));
+                        $count = DB::select('select count (webinar_id) from career_support_models_studentparticipants where webinar_id = ?', [$id]);
+                        if ($count < 501) {
+                            DB::table($this->tbStudentParticipants)->insert(array(
+                                'school_id' => $s,
+                                'webinar_id' => $w,
+                                'student_id' => $student,
+                                //kurang masukin ke notif student 
+                                //kurang kirim ke email siswa
+                            ));
+                        } else {
+                            return $this->makeJSONResponse(["message" => "sorry, has reach maximum quota!, 500/500"], 200);
+                        }
                     }
                 }
             } catch (Exception $e) {

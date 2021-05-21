@@ -23,6 +23,7 @@ Route::get('/student-batch/{batch}', [StudentParticipantsController::class, 'get
 Route::post('/add-student-manual', [StudentParticipantsController::class, 'addStudentManual']); //ok
 //student
 Route::get('/student', [StudentParticipantsController::class, 'getStudent']); //ok
+Route::get('/count/{id}', [StudentParticipantsController::class, 'getTotalParticipants']);
 //notification
 Route::get('/school-notif/{id}', [NotificationController::class, 'getSchoolNotification']); //ok
 Route::post('/student-notif/{id}', [NotificationController::class, 'getStudentNotification']);
