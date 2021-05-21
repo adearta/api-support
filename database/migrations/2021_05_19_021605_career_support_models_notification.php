@@ -16,8 +16,8 @@ class CareerSupportModelsNotification extends Migration
         //
         Schema::create('career_support_models_notification', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('school_id')->nullable();
-            $table->bigInteger('student_id')->nullable();
+            $table->bigInteger('school_id')->unsigned();
+            $table->bigInteger('student_id')->unsigned();
             $table->bigInteger("creator_id")->nullable(); //
             $table->bigInteger("modifier_id")->nullable(); //
             //translation

@@ -16,4 +16,11 @@ class NotificationCandidateModel extends Model
         'message_id',
         'message_en',
     ];
+    protected $hidden = [
+        'is_deleted',
+        'created',
+        'modified',
+        'modifier_id',
+        'creator_id',
+    ];
 }

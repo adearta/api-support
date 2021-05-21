@@ -45,4 +45,14 @@ class SchoolParticipantsController extends Controller
             return $this->makeJSONResponse($message_err, 400);
         }
     }
+    public function getSchoolData()
+    {
+        $data = DB::select('select * from career_support_models_school');
+        return $this->makeJSONResponse(['data' => $data], 200);
+    }
+    public function getSchoolParticipants()
+    {
+        $data = DB::select('select * from career_support_models_schoolparticipants');
+        return $this->makeJSONResponse(['data' => $data], 200);
+    }
 }

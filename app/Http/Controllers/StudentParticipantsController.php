@@ -25,6 +25,11 @@ class StudentParticipantsController extends Controller
         $this->tbStudent = StudentCandidateModel::tableName();
         //  $this->tbWebinar = WebinarAkbarModel::tableName();   
     }
+    public function getStudent()
+    {
+        $data = DB::select('select * from career_support_models_student');
+        return $this->makeJSONResponse(['data' => $data], 200);
+    }
     public function getStudentYearList($batch)
     {
         $list = DB::select('select * from career_support_models_student where batch = ?', [$batch]);
@@ -41,7 +46,7 @@ class StudentParticipantsController extends Controller
             'name' => 'required',
             'nim' => 'required',
             'class' => 'required',
-            'batch' => 'required',
+            'batch' => 'required|numeric',
         ]);
         if ($validation->fails()) {
             return $this->makeJSONResponse($validation->errors(), 202);

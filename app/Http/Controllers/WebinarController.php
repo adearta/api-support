@@ -31,14 +31,14 @@ class WebinarController extends Controller
 
     public function getWebinar()
     {
-        $webinar =  DB::select('select * from career_support_models_webinar_akbar');
-        $auth = auth()->user();
-        if ($auth) {
-            return $this->makeJSONResponse($webinar, 200);
-        } else {
-            $message = "no data!";
-            return $this->makeJSONResponse($message, 400);
-        }
+        $webinar =  DB::select('select * from career_support_models_webinarakbar');
+        // $auth = auth()->user();
+        // if ($auth) {
+        return $this->makeJSONResponse($webinar, 200);
+        // } else {
+        // $message = "no data!";
+        // return $this->makeJSONResponse($message, 400);
+        // }
     }
 
     public function addWebinar(Request $request)
@@ -110,33 +110,48 @@ class WebinarController extends Controller
 
     public function sendMail(Request $request)
     {
-        $listEmail = ['adearta48@gmail.com', 'adearta@student.ub.ac.id', 'hebryclover@gmail.com'];
 
-        // School::create($request->all());
-        Mail::send('email', array(
-            'zoom_link' => $request->get('zoom_link'),
-            'name' => $request->get('name'),
-            'date' => $request->get('date'),
-            'time' => $request->get('time'),
-            // 'email' => $request->get('email'),
-        ), function ($message) use ($request, $listEmail) {
-            //selecting all email from career_support_models_student_participants and save to array
-            //
-            // $broadcast = DB::select('select school_email from career_support_models_school');
-            // $listEmail = array();
-            // while ($row = pg_fetch_assoc($broadcast)) {
+        // $listEmail = ['adearta48@gmail.com', 'adearta@student.ub.ac.id', 'hebryclover@gmail.com'];
 
-            //     // add each row returned into an array
-            //     $listEmail[] = $row;
+        // // School::create($request->all());
+        // Mail::send('email', array(
+        //     'zoom_link' => $request->get('zoom_link'),
+        //     'name' => $request->get('name'),
+        //     'date' => $request->get('date'),
+        //     'time' => $request->get('time'),
+        //     // 'email' => $request->get('email'),
+        // ), function ($message) use ($request, $listEmail) {
+        //     //selecting all email from career_support_models_student_participants and save to array
+        //     //
+        //     // $broadcast = DB::select('select school_email from career_support_models_school');
+        //     // $listEmail = array();
+        //     // while ($row = pg_fetch_assoc($broadcast)) {
 
-            //     // OR just echo the data:
-            //     // echo $row['username']; // etc
-            // }
-            //
-            // $broadcast = "suastikaadinata97@gmail.com";
-            $message->from('adeartakusumaps@gmail.com');
-            //diganti broadcast ke semua email student participants.
-            $message->to($listEmail)->subject($request->get('subject'));
-        });
+        //     //     // add each row returned into an array
+        //     //     $listEmail[] = $row;
+
+        //     //     // OR just echo the data:
+        //     //     // echo $row['username']; // etc
+        //     // }
+        //     //
+        //     // $broadcast = "suastikaadinata97@gmail.com";
+        //     $message->from('adeartakusumaps@gmail.com');
+        //     //diganti broadcast ke semua email student participants.
+        //     $message->to($listEmail)->subject($request->get('subject'));
+        // });
+        $details = [
+            'subject' => 'Weekly Notification'
+        ];
+
+        // send all mail in the queue.
+        $job = (new \App\Jobs\SendBulkQueueEmail($details))
+            ->delay(
+                now()
+                    ->addSeconds(2)
+            );
+
+        $this->dispatch($job);
+
+        return $this->makeJSONResponse(['message' => 'email sent!'], 200);
     }
 }
