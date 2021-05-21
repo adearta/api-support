@@ -3,10 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\DB;
-use App\Models\SchoolParticipantsCandidateModel;
 use App\Models\StudentCandidateModel;
 use App\Models\StudentParticipantsModel;
-// use App\Models\WebinarAkbarModel;
 use App\Traits\ResponseHelper;
 use Exception;
 use Illuminate\Http\Request;
@@ -17,15 +15,13 @@ class StudentParticipantsController extends Controller
     //
     private $tbStudentParticipants;
     private $tbStudent;
-    // private $tbSchool;
-    // private $tbWebinar;
+
     use ResponseHelper;
 
     public function __construct()
     {
         $this->tbStudentParticipants = StudentParticipantsModel::tableName();
         $this->tbStudent = StudentCandidateModel::tableName();
-        //  $this->tbWebinar = WebinarAkbarModel::tableName();   
     }
     public function getStudent()
     {
@@ -47,7 +43,7 @@ class StudentParticipantsController extends Controller
     //     $count = DB::select('select count (webinar_id) from career_support_models_studentparticipants where webinar_id = ?', [$id]);
     //     return $this->makeJSONResponse(['data' => $count], 200);
     // }
-    public function addStudentManual(Request $request)
+    public function addStudentManual(Request $request, $id)
     {
         $validation = Validator::make($request->all(), [
             'name' => 'required',
