@@ -20,9 +20,9 @@ Route::get('/dataSchoolParticipants', [SchoolParticipantsController::class, 'get
 
 //student participants
 Route::get('/student-batch/{batch}', [StudentParticipantsController::class, 'getStudentYearList']); //ok
-Route::post('/add-student-manual', [StudentParticipantsController::class, 'addStudentManual']);
+Route::post('/add-student-manual', [StudentParticipantsController::class, 'addStudentManual']); //ok
 //student
-Route::get('/student', [StudentParticipantsController::class, 'getStudent']);
+Route::get('/student', [StudentParticipantsController::class, 'getStudent']); //ok
 //notification
-Route::get('/school-notif/{id}', [NotificationController::class, 'getSchoolNotification']);
-Route::post('/student-notif{id}', [NotificationController::class, 'getStudentNotification']);
+Route::get('/school-notif/{id}', [NotificationController::class, 'getSchoolNotification']); //ok
+Route::post('/student-notif/{id}', [NotificationController::class, 'getStudentNotification']);

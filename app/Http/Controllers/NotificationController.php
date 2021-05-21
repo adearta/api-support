@@ -17,7 +17,7 @@ class NotificationController extends Controller
     {
         try {
             //get notification for school
-            $getnotif = DB::select('select * from career_support_models_notifications where school_id = ?', [$id]);
+            $getnotif = DB::select('select * from career_support_models_notification where school_id = ?', [$id]);
             // $auth = auth()->user();
             // if ($auth) {
             return $this->makeJSONResponse($getnotif, 200);
@@ -34,7 +34,7 @@ class NotificationController extends Controller
     {
         try {
             //get notification for student
-            $getnotif = DB::select('select * from career_support_models_notifications where student_id = ?', [$id]);
+            $getnotif = DB::select('select * from career_support_models_notification where student_id = ?', [$id]);
             $auth = auth()->user();
             if ($auth) {
                 return $this->makeJSONResponse($getnotif, 200);

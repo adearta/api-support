@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\DB;
 use App\Models\SchoolParticipantsCandidateModel;
 use App\Models\StudentCandidateModel;
+use App\Models\StudentParticipantsModel;
 // use App\Models\WebinarAkbarModel;
 use App\Traits\ResponseHelper;
 use Exception;
@@ -16,12 +17,13 @@ class StudentParticipantsController extends Controller
     //
     private $tbStudentParticipants;
     private $tbStudent;
+    // private $tbSchool;
     // private $tbWebinar;
     use ResponseHelper;
 
     public function __construct()
     {
-        $this->tbStudentParticipants = SchoolParticipantsCandidateModel::tableName();
+        $this->tbStudentParticipants = StudentParticipantsModel::tableName();
         $this->tbStudent = StudentCandidateModel::tableName();
         //  $this->tbWebinar = WebinarAkbarModel::tableName();   
     }
