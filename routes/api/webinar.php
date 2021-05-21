@@ -34,9 +34,7 @@ Route::get('/dataSchoolParticipants', [SchoolParticipantAkbarController::class, 
 
 //student participants
 Route::get('/student-batch/{batch}', [StudentParticipantAkbarController::class, 'getStudentYearList']); //ok
-Route::post('/add-student-manual', [StudentParticipantAkbarController::class, 'addStudentManual']);
+Route::post('/add-student-manual', [StudentParticipantAkbarController::class, 'addStudentManual']); //ok
 //student
-Route::get('/student', [StudentParticipantAkbarController::class, 'getStudent']);
-//notification
-Route::get('/school-notif/{id}', [NotificationWebinarController::class, 'getSchoolNotification']);
-Route::post('/student-notif{id}', [NotificationWebinarController::class, 'getStudentNotification']);
+Route::get('/student', [StudentParticipantAkbarController::class, 'getStudent']); //ok
+Route::get('/count/{id}', [StudentParticipantAkbarController::class, 'getTotalParticipants']);

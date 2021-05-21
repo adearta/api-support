@@ -23,5 +23,6 @@ class StudentParticipantAkbarModel extends Model
         'school_id',
         'webinar_id',
         'student_id'
+
     ];
 }
