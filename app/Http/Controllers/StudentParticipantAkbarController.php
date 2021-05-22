@@ -4,15 +4,16 @@ namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\DB;
 use App\Models\StudentCandidateModel;
-use App\Models\StudentParticipantsModel;
+use App\Models\StudentModel;
+use App\Models\StudentParticipantAkbarModel;
+// use App\Models\WebinarAkbarModel;
 use App\Traits\ResponseHelper;
 use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Validator;;
 
-class StudentParticipantsController extends Controller
+class StudentParticipantAkbarController extends Controller
 {
-    //
     private $tbStudentParticipants;
     private $tbStudent;
 
@@ -20,8 +21,9 @@ class StudentParticipantsController extends Controller
 
     public function __construct()
     {
-        $this->tbStudentParticipants = StudentParticipantsModel::tableName();
-        $this->tbStudent = StudentCandidateModel::tableName();
+        $this->tbStudentParticipants = StudentParticipantAkbarModel::tableName();
+        $this->tbStudent = StudentModel::tableName();
+        //$this->tbWebinar = WebinarAkbarModel::tableName();   
     }
     public function getStudent()
     {

@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CareerSupportModelsStudent extends Migration
+class CareerSupportModelsNotificationwebinar extends Migration
 {
     /**
      * Run the migrations.
@@ -14,22 +14,24 @@ class CareerSupportModelsStudent extends Migration
     public function up()
     {
         //
-        Schema::create('career_support_models_student', function (Blueprint $table) {
+        Schema::create('career_support_models_notificationwebinar', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('school_id')->nullable();
+            $table->bigInteger('school_id')->unsigned()->nullable();
+            $table->bigInteger('student_id')->unsigned()->nullable();
+            $table->bigInteger('webinar_akbar_id')->unsigned()->nullable();
             $table->bigInteger("creator_id")->nullable(); //
             $table->bigInteger("modifier_id")->nullable(); //
-            $table->string('name');
-            $table->string('batch')->nullable();
-            $table->string('class')->nullable();
-            $table->string('nim')->nullable();
-            $table->string('year');
-            $table->boolean('is_verified')->default(false);
+            //translation
+            $table->string('message_id');
+            $table->string('message_en');
+            $table->boolean('is_readed')->default(false);
             $table->boolean('is_deleted')->default(false);
             $table->timestamp('created')->useCurrent();
             $table->timestamp('modified')->nullable()->useCurrentOnUpdate();
 
             $table->foreign('school_id')->references('id')->on('career_support_models_school');
+            $table->foreign('student_id')->references('id')->on('career_support_models_student');
+            $table->foreign('webinar_akbar_id')->references('id')->on('career_support_models_webinarakbar');
         });
     }
 
@@ -41,6 +43,6 @@ class CareerSupportModelsStudent extends Migration
     public function down()
     {
         //
-        Schema::dropIfExists('career_support_models_student');
+        Schema::dropIfExists('career_support_models_notificationwebinar');
     }
 }

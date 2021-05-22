@@ -2,11 +2,12 @@
 
 namespace App\Models;
 
+use App\Traits\ModelHelper;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Traits\ModelHelper;
 
-class StudentCandidateModel extends Model
+class StudentModel extends Model
 {
     use HasFactory, ModelHelper;
     protected $table = "career_support_models_student";
@@ -16,5 +17,7 @@ class StudentCandidateModel extends Model
         'nim',
         'class',
         'batch',
+        'year',
+        'is_verified'
     ];
 }
