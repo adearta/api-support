@@ -13,6 +13,10 @@ use App\Models\StudentParticipantAkbarModel;
 use App\Models\StudentModel;
 use App\Models\WebinarAkbarModel;
 use App\Traits\ResponseHelper;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\SendMailInvitation;
+use App\Jobs\EmailInvitationJob;
+use App\Jobs\SendMailReminderJob;
 use Exception;
 
 class SchoolParticipantAkbarController extends Controller
@@ -161,5 +165,19 @@ class SchoolParticipantAkbarController extends Controller
     {
         $data = DB::select('select * from career_support_models_schoolparticipants');
         return $this->makeJSONResponse(['data' => $data], 200);
+    }
+
+    public function sendMailInvitation(Request $request)
+    {
+        try {
+            $webinar = DB::select("select * from " . $this->tbWebinar . " where id = " . $request->webinar_id);
+            $student = DB::select("select * from " . $this->tbStudent . " where id = " . $request->student_id);
+            //Mail::to("gunk.adi15@gmail.com")->send(new SendMailInvitation($webinar));
+            EmailInvitationJob::dispatchSync($webinar, $student);
+
+            return $this->makeJSONResponse(['message' => "email terkirim"], 200);
+        } catch (Exception $e) {
+            echo $e;
+        }
     }
 }

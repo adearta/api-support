@@ -20,6 +20,7 @@ class CareerSupportModelsStudentparticipantakbar extends Migration
             $table->bigInteger('webinar_id')->unsigned();
             $table->bigInteger("creator_id")->nullable(); //
             $table->bigInteger("modifier_id")->nullable(); //
+            $table->integer("status")->default(1); //1 -> created, 2 -> finised
             $table->boolean('is_deleted')->default(false);
             $table->timestamp('created')->useCurrent();
             $table->timestamp('modified')->nullable()->useCurrentOnUpdate();

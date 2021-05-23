@@ -4,7 +4,6 @@ use App\Http\Controllers\WebinarAkbarController;
 use App\Http\Controllers\SchoolParticipantAkbarController;
 use App\Http\Controllers\StudentParticipantAkbarController;
 use App\Http\Controllers\NotificationWebinarController;
-
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('admin')->group(function () {
@@ -21,6 +20,9 @@ Route::group(['prefix' => 'notification'], function () {
     Route::get('/', [NotificationWebinarController::class, 'getNotification']); //2
     Route::post('/read', [NotificationWebinarController::class, 'setNotificationReaded']); //extra
 });
+
+Route::get('/email', [SchoolParticipantAkbarController::class, 'sendMailInvitation']);
+Route::get('/reminder-student', [SchoolParticipantAkbarController::class, 'reminderStudent']);
 
 ////////////////////////////////////////////////////////////////////////
 
