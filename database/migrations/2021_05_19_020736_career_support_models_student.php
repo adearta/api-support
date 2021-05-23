@@ -23,7 +23,7 @@ class CareerSupportModelsStudent extends Migration
             $table->string('batch')->nullable();
             $table->string('class')->nullable();
             $table->string('nim')->nullable();
-            $table->string('year');
+            // $table->string('year')->nullable();
             $table->boolean('is_verified')->default(false);
             $table->boolean('is_deleted')->default(false);
             $table->timestamp('created')->useCurrent();

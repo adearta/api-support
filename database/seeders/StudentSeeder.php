@@ -67,6 +67,7 @@ class StudentSeeder extends Seeder
             'batch' => rand(2017, 2020),
             'class' => Str::random(1),
             'nim' => rand(123456, 1234567),
+            // 'year' => rand(1999, 2002),
             'is_deleted' => false,
 
         ]);
@@ -76,6 +77,7 @@ class StudentSeeder extends Seeder
             'batch' => rand(2017, 2020),
             'class' => Str::random(1),
             'nim' => rand(123456, 1234567),
+            // 'year' => rand(1999, 2002),
             'is_deleted' => false,
 
         ]);

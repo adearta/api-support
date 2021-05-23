@@ -36,9 +36,18 @@ class WebinarAkbarController extends Controller
         //id -> school_id
         try {
             $selectCount = "select count('id') from " . $this->tbStudentParticipants . " as student where student.webinar_id = web.id";
-            $webinar = DB::select("select sch.status, web.zoom_link, web.event_name, web.event_date, web.event_time, web.event_picture, (500) as quota, (" . $selectCount . ") as registered from " . $this->tbSchoolParticipants . " as sch right join " . $this->tbWebinar . " as web on sch.webinar_id = web.id where sch.school_id = " . $id . " order by web.id desc");
+            $webinar = DB::select("select sch.status, web.zoom_link, web.event_name, web.event_date, web.event_time, web.event_picture, (500) as quota, (" . $selectCount . ") as registered from " . $this->tbSchoolParticipants . " as sch right join " . $this->tbWebinar . " as web on sch.webinar_id = web.id where sch.school_id = " . $id . " and web.event_date >" . date("y-m-d") . " order by web.id desc");
 
             return $this->makeJSONResponse($webinar, 200);
+        } catch (Exception $e) {
+            echo $e;
+        }
+    }
+    public function detailWebinar($id)
+    {
+        try {
+            $detail = DB::select("select * from " . $this->tbWebinar . " where id = ?", [$id]);
+            return $this->makeJSONResponse(["Webinar Detail" => $detail], 200);
         } catch (Exception $e) {
             echo $e;
         }

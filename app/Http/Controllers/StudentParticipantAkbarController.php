@@ -19,32 +19,48 @@ class StudentParticipantAkbarController extends Controller
 
     use ResponseHelper;
 
+    //all of this student function are used by role = school not by student
     public function __construct()
     {
         $this->tbStudentParticipants = StudentParticipantAkbarModel::tableName();
         $this->tbStudent = StudentModel::tableName();
-        //$this->tbWebinar = WebinarAkbarModel::tableName();   
     }
     public function getStudent()
     {
         $data = DB::select('select * from career_support_models_student');
         return $this->makeJSONResponse(['data' => $data], 200);
     }
+    //getting student based on their batch
     public function getStudentYearList($batch)
     {
         $list = DB::select('select * from career_support_models_student where batch = ?', [$batch]);
         $auth = auth()->user();
         if ($auth) {
-            return $this->makeJSONResponse(["list of student based on years" => $list], 200);
+            return $this->makeJSONResponse(["list of student based on batch" => $list], 200);
         } else {
             return $this->makeJSONResponse(["can't get data!" => $list], 202);
         }
     }
-    // public function getTotalParticipants($id)
-    // {
-    //     $count = DB::select('select count (webinar_id) from career_support_models_studentparticipants where webinar_id = ?', [$id]);
-    //     return $this->makeJSONResponse(['data' => $count], 200);
-    // }
+    //school add the student manually if they not yet registered, also register it to webinar by webinar id
+    //if the webinar is full it will return response sorry, has reach maximum quota!, 500/500,
+    public function addStudentParticipants(Request $request, $id, $batch, $webinar)
+    {
+        // //masukkan ke student participnats
+        // $data = array();
+        // $data = ' insert into career_support_models_studentparticipantakbar (student_id, webinar_id, school_id, creator_id, modifier_id, is_deleted, created, modified) select id, school_id, creator_id, modifier_id, is_deleted, created, modified from public.career_support_models_student where batch = ? and school_id = ?';
+        //selecting student id by batch and school
+        $idstudent = DB::select('select id from career_support_models_student where school_id = ? and batch = ?', [$id, $batch]);
+        // $student = DB::raw($data,[$id,$batch]);
+        //inserting student to student participants table
+        $participants = DB::table($this->tbStudentParticipants)->insert(array(
+            'school_id' => $id,
+            'webinar_id' => $webinar,
+            'student_id' => array($idstudent),
+        ));
+        //kirim email ke masig masing student
+        //kirim notif ke masing2 student
+        return $this->makeJSONResponse(['data' => $participants], 200);
+    }
     public function addStudentManual(Request $request, $id)
     {
         $validation = Validator::make($request->all(), [
@@ -52,6 +68,7 @@ class StudentParticipantAkbarController extends Controller
             'nim' => 'required',
             'class' => 'required',
             'batch' => 'required|numeric',
+            'year' => 'require|numeric',
         ]);
         if ($validation->fails()) {
             return $this->makeJSONResponse($validation->errors(), 202);
@@ -63,7 +80,12 @@ class StudentParticipantAkbarController extends Controller
                     'nim' => $request->nim,
                     'class' => $request->class,
                     'batch' => $request->batch,
+                    'year' => $request->year,
                 ]);
+                // if ($request->school_id != null) {
+                // $queryWhere = "";
+                // $queryLanguage = "";
+                // $querySelectId = "";
                 foreach ($request->school_id as $s) {
                     foreach ($request->webinar_id as $w) {
                         $count = DB::select('select count (webinar_id) from career_support_models_studentparticipants where webinar_id = ?', [$id]);
@@ -72,18 +94,20 @@ class StudentParticipantAkbarController extends Controller
                                 'school_id' => $s,
                                 'webinar_id' => $w,
                                 'student_id' => $student,
-                                //kurang masukin ke notif student 
-                                //kurang kirim ke email siswa
                             ));
+                            //push notification to db notification based on id
+
+                            //kurang kirim ke email siswa
                         } else {
                             return $this->makeJSONResponse(["message" => "sorry, has reach maximum quota!, 500/500"], 200);
                         }
+                        // }
                     }
                 }
             } catch (Exception $e) {
                 echo $e;
             }
-            return $this->makeJSONResponse(["message" => "Success to save data to database"], 200);
+            // return $this->makeJSONResponse(["message" => "Success to save data to database and send notif"], 200);
         }
     }
 }

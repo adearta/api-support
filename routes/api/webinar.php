@@ -12,6 +12,7 @@ Route::middleware('admin')->group(function () {
 });
 
 Route::get('/list/{id}', [WebinarAkbarController::class, 'getWebinarBySchoolId']); // 3
+Route::get('/detail/{id}', [WebinarAkbarController::class, 'detailWebinar']); //7,5
 Route::group(['prefix' => 'school'], function () {
     Route::post('/add', [WebinarAkbarController::class, 'addSchoolParticipants'])->middleware('admin'); // 5
     Route::post('/update-status', [SchoolParticipantAkbarController::class, 'updateSchoolWebinar']); // 6
@@ -38,3 +39,5 @@ Route::post('/add-student-manual', [StudentParticipantAkbarController::class, 'a
 //student
 Route::get('/student', [StudentParticipantAkbarController::class, 'getStudent']); //ok
 Route::get('/count/{id}', [StudentParticipantAkbarController::class, 'getTotalParticipants']);
+
+Route::get('/studentparticipants', [StudentParticipantAkbarController::class, 'addStudentParticipants']);
