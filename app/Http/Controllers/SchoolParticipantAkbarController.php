@@ -11,13 +11,16 @@ use App\Models\SchoolModel;
 use App\Models\SchoolParticipantAkbarModel;
 use App\Models\StudentParticipantAkbarModel;
 use App\Models\StudentModel;
+use App\Models\UserEducationModel;
 use App\Models\WebinarAkbarModel;
 use App\Traits\ResponseHelper;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\SendMailInvitation;
 use App\Jobs\EmailInvitationJob;
 use App\Jobs\SendMailReminderJob;
+use DateTime;
 use Exception;
+use Illuminate\Support\Facades\Date;
 
 class SchoolParticipantAkbarController extends Controller
 {
@@ -25,18 +28,18 @@ class SchoolParticipantAkbarController extends Controller
 
     private $tbSchoolParticipant;
     private $tbNotification;
-    private $tbSchool;
+    // private $tbSchool;
     private $tbStudentParticipant;
-    private $tbStudent;
+    private $tbUserEdu;
     private $tbWebinar;
 
     public function __construct()
     {
         $this->tbSchoolParticipant = SchoolParticipantAkbarModel::tableName();
         $this->tbNotification = NotificationWebinarModel::tableName();
-        $this->tbSchool = SchoolModel::tableName();
+        // $this->tbSchool = SchoolModel::tableName();
         $this->tbStudentParticipant = StudentParticipantAkbarModel::tableName();
-        $this->tbStudent = StudentModel::tableName();
+        $this->tbUserEdu = UserEducationModel::tableName();
         $this->tbWebinar = WebinarAkbarModel::tableName();
     }
 
@@ -45,8 +48,8 @@ class SchoolParticipantAkbarController extends Controller
         /* post param
             webinar_id
             school_id
-            year
-            schedule
+            batch
+            // schedule
             status
         */
 
@@ -55,6 +58,7 @@ class SchoolParticipantAkbarController extends Controller
             2 -> rejected
             3 -> accepted
             4 -> submit the data of student
+            5.-> finished webinar
         */
         try {
             $message = "";
@@ -62,37 +66,75 @@ class SchoolParticipantAkbarController extends Controller
             $webinar = DB::table($this->tbWebinar)
                 ->where('id', '=', $request->webinar_id)
                 ->get();
-
             switch ($request->status) {
                 case 2:
                     DB::table($this->tbSchoolParticipant)
                         ->where('webinar_id', '=', $request->webinar_id)
                         ->where('school_id', '=', $request->school_id)
                         ->update(['status' => $request->status]);
-
                     $message = "Invitation successfully rejected";
                     $code = 200;
                     break;
+                    //jawaban no 1 dan 3
                 case 3:
-                    if ($request->schedule < date("Y-m-d")) {
-                        $message = "The date must not be before today";
-                        $code = 202;
-                    } else if ($request->schedule > $webinar[0]->event_date) {
-                        $message = "the date must not be past the date of the event ";
-                        $code = 202;
-                    } else {
-                        DB::table($this->tbSchoolParticipant)
-                            ->where('webinar_id', '=', $request->webinar_id)
-                            ->where('school_id', '=', $request->school_id)
-                            ->update([
-                                'status' => $request->status,
-                                'schedule' => $request->schedule
-                            ]);
+                    $status = DB::select('select status from ' . $this->tbSchoolParticipant . " where school_id = " . $request->school_id . "and status != 1 and status !=5");
+                    if (empty($status)) {
+                        $date_to = $webinar[0]->event_date;
+                        $to = strtotime($date_to);
+                        $date_maximum = date('Y-m-d', strtotime('+3 days'));
+                        $event = strtotime($date_maximum);
+                        // $date_event = date($event);
+                        $now = date("Y-m-d");
+                        $interval = $to - $event;
+                        // if the interval is less than 4 days
+                        if ($interval < 4) {
+                            //if the interval just 1 day
+                            if ($interval == 1) {
+                                //use today
+                                $now = date("Y-m-d");
+                                //cek status in the database if it's not 1 and and 5
+                                DB::table($this->tbSchoolParticipant)
+                                    ->where('webinar_id', '=', $request->webinar_id)
+                                    ->where('school_id', '=', $request->school_id)
+                                    ->update([
+                                        'status' => $request->status,
+                                        'schedule' => $now,
+                                    ]);
+                                $message = "invitation successfully accepted, please input student maximum today!";
+                                $code = 200;
+                            } else {
+                                //pake yg kode dibawah
+                                $cs = 3;
+                                $cs = $cs - 1;
+                                $decrease = strtotime('+' . $cs . ' days');
+                                $date = date("Y-m-d", $decrease);
+                                // $interval_now = date_diff($date_to,date_create($date));
+                                DB::table($this->tbSchoolParticipant)
+                                    ->where('webinar_id', '=', $request->webinar_id)
+                                    ->where('school_id', '=', $request->school_id)
+                                    ->update([
+                                        'status' => $request->status,
+                                        'schedule' => $date,
+                                    ]);
 
-                        $message = "Invitation successfully accepted";
-                        $code = 200;
+                                $message = "Invitation successfully accepted, please input students maximum" . $date . "days from now!";
+                                $code = 200;
+                            }
+                        } else {
+                            DB::table($this->tbSchoolParticipant)
+                                ->where('webinar_id', '=', $request->webinar_id)
+                                ->where('school_id', '=', $request->school_id)
+                                ->update([
+                                    'status' => $request->status,
+                                    'schedule' => $date_maximum,
+                                ]);
+
+                            $message = "Invitation successfully accepted, input students maximum days from now!";
+                            $code = 200;
+                        }
                     }
                     break;
+                    //jawaban 2
                 case 4:
                     $schoolSchedule = DB::select('select schedule from ' . $this->tbSchoolParticipant . " where school_id = " . $request->school_id . " and webinar_id = " . $request->webinar_id);
 
@@ -105,50 +147,78 @@ class SchoolParticipantAkbarController extends Controller
                         $participant = DB::table($this->tbStudentParticipant)
                             ->where('webinar_id', '=', $request->webinar_id)
                             ->get();
-
-                        $student = DB::table($this->tbStudent)
+                        //tabel usereducation 
+                        $student = DB::connection('pgsql2')->table($this->tbUserEdu)
                             ->where('school_id', '=', $request->school_id)
-                            ->where('year', '=', $request->year)
-                            ->where('is_verified', '=', true)
+                            //batch diganti start_year
+                            ->where('start_year', '=', $request->start_year)
+                            //is_verified diganti verified
+                            ->where('verified', '=', true)
                             ->get();
 
                         $registered = 0;
                         $total = 0;
-                        for ($i = 0; $i < count($student); $i++) {
-                            $total = count($participant) + $i + 1;
-                            if ($total < 500) {
-                                $registered++;
-                                DB::table($this->tbStudentParticipant)->insert(array(
-                                    'school_id'     => $request->school_id,
-                                    'webinar_id'    => $request->webinar_id,
-                                    'student_id'    => $student[$i]->id
-                                ));
-
-                                DB::table($this->tbNotification)->insert(array(
-                                    'student_id'       => $student[$i]->id,
-                                    'webinar_akbar_id' => $request->webinar_id,
-                                    'message_id'    => "Anda mendapatkan undangan untuk mengikuti Webinar dengan judul " . $webinar[0]->event_name . " pada tanggal " . $webinar[0]->event_date . " dan pada jam " . $webinar[0]->event_time,
-                                    'message_en'    => "You get an invitation to join in a webinar with a title" . $webinar[0]->event_name . " on " . $webinar[0]->event_date . " and at " . $webinar[0]->event_time
-                                ));
-                            } else {
-                                break;
+                        $newparticipants = 0;
+                        // $countparticipants =0
+                        //new
+                        // $count = DB::select('select count()')
+                        //count
+                        //hitung jumlah peserta sekarang
+                        $total = count($participant);
+                        //kuota sekarang + jumlah peserta yang akan di daftarkan
+                        $newparticipants = count($student);
+                        $countparticipants = $total + $newparticipants;
+                        //cek apakah melebihi 500 /tidak
+                        if ($countparticipants <= 500) {
+                            for ($i = 0; $i < $newparticipants; $i++) {
+                                $data = DB::select('select student_id from ' . $this->tbStudentParticipant . " where student_id = " . $student[$i]->id . " and webinar_id = " . $request->webinar_id);
+                                if (empty($data)) {
+                                    $registered++;
+                                    DB::table($this->tbStudentParticipant)->insert(array(
+                                        'school_id'     => $request->school_id,
+                                        'webinar_id'    => $request->webinar_id,
+                                        'student_id'    => $student[$i]->id
+                                    ));
+                                    DB::table($this->tbNotification)->insert(array(
+                                        'student_id'       => $student[$i]->id,
+                                        'webinar_akbar_id' => $request->webinar_id,
+                                        'message_id'    => "Anda mendapatkan undangan untuk mengikuti Webinar dengan judul " . $webinar[0]->event_name . " pada tanggal " . $webinar[0]->event_date . " dan pada jam " . $webinar[0]->event_time,
+                                        'message_en'    => "You get an invitation to join in a webinar with a title" . $webinar[0]->event_name . " on " . $webinar[0]->event_date . " and at " . $webinar[0]->event_time
+                                    ));
+                                }
                             }
-                        }
-
-                        if ($registered > 0) {
-                            $message = "Successfully registered " . $registered . " out of " . count($student) . " students data";
+                            //success add data
+                            $message = "Succes add data student";
                             $code = 200;
+                            //if more than 500 automaticcly rejected
                         } else {
-                            $message = "Cannot registered your data of students because the quota is full";
-                            $code = 202;
+                            $message = "gagal";
+                            $code = 200;
                         }
+                        break;
+                        // if ($registered > 0) {
+                        //     $message = "Successfully registered " . $registered . " out of " . count($student) . " students data";
+                        //     $code = 200;
+                        // } else {
+                        //     $message = "Cannot registered your data of students because the quota is full";
+                        //     $code = 202;
+                        // }
                     } else {
                         $message = "Cannot registered data of students because you has passed the deadline for registration";
                         $code = 202;
                     }
 
                     break;
+                case 5:
+                    DB::table($this->tbSchoolParticipant)
+                        ->where('webinar_id', '=', $request->webinar_id)
+                        ->where('school_id', '=', $request->school_id)
+                        ->update(['status' => $request->status]);
+                    $message = "webinar has done";
+                    $code = 200;
+                    break;
             }
+
 
             return $this->makeJSONResponse(['message' => $message], $code);
         } catch (Exception $e) {
