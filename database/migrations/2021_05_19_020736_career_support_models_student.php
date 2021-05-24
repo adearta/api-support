@@ -16,7 +16,7 @@ class CareerSupportModelsStudent extends Migration
         //
         Schema::create('career_support_models_student', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('school_id')->nullable();
+            $table->integer('school_id')->nullable();
             $table->bigInteger("creator_id")->nullable(); //
             $table->bigInteger("modifier_id")->nullable(); //
             $table->string('name');
@@ -29,7 +29,7 @@ class CareerSupportModelsStudent extends Migration
             $table->timestamp('created')->useCurrent();
             $table->timestamp('modified')->nullable()->useCurrentOnUpdate();
 
-            $table->foreign('school_id')->references('id')->on('career_support_models_school');
+            // $table->foreign('school_id')->references('id')->on('career_support_models_school');
         });
     }
 

@@ -16,69 +16,102 @@ class StudentSeeder extends Seeder
     public function run()
     {
         //
-        DB::table('career_support_models_student')->insert([
+        DB::connection('pgsql2')->table('career_support_models_student')->insert([
+            //     'nim',
+            // 'name',
+            // 'phone',
+            // 'email',
+            // 'school_id',
+            'nim' => rand(123456, 1234567),
+            'name' => Str::random(10),
+            'phone' => rand(123456, 1234567),
+            'email' => Str::random(10) . '@gmail.com',
+            'schoolfile_id' => rand(3, 8),
             'school_id' => 1,
-            'name' => Str::random(10),
-            'batch' => rand(2017, 2020),
-            'class' => Str::random(1),
-            'nim' => rand(123456, 1234567),
+            // 'batch' => rand(2017, 2020),
+            // 'class' => Str::random(1),
             'is_deleted' => false,
-
+            'created' => date('Y-m-d'),
+            'modified' => date("Y-m-d"),
         ]);
-        DB::table('career_support_models_student')->insert([
+        DB::connection('pgsql2')->table('career_support_models_student')->insert([
+            'nim' => rand(123456, 1234567),
+            'name' => Str::random(10),
+            'phone' => rand(123456, 1234567),
+            'email' => Str::random(10) . '@gmail.com',
+            'schoolfile_id' => rand(3, 8),
             'school_id' => 1,
-            'name' => Str::random(10),
-            'batch' => rand(2017, 2020),
-            'class' => Str::random(1),
-            'nim' => rand(123456, 1234567),
+            // 'batch' => rand(2017, 2020),
+            // 'class' => Str::random(1),
             'is_deleted' => false,
-
+            'created' => date('Y-m-d'),
+            'modified' => date("Y-m-d"),
         ]);
-        DB::table('career_support_models_student')->insert([
+        DB::connection('pgsql2')->table('career_support_models_student')->insert([
+            'nim' => rand(123456, 1234567),
+            'name' => Str::random(10),
+            'phone' => rand(123456, 1234567),
+            'email' => Str::random(10) . '@gmail.com',
+            'schoolfile_id' => rand(3, 8),
             'school_id' => 1,
-            'name' => Str::random(10),
-            'batch' => rand(2017, 2020),
-            'class' => Str::random(1),
-            'nim' => rand(123456, 1234567),
+            // 'batch' => rand(2017, 2020),
+            // 'class' => Str::random(1),
             'is_deleted' => false,
-
+            'created' => date('Y-m-d'),
+            'modified' => date("Y-m-d"),
         ]);
-        DB::table('career_support_models_student')->insert([
+        DB::connection('pgsql2')->table('career_support_models_student')->insert([
+            'nim' => rand(123456, 1234567),
+            'name' => Str::random(10),
+            'phone' => rand(123456, 1234567),
+            'email' => Str::random(10) . '@gmail.com',
+            'schoolfile_id' => rand(3, 8),
             'school_id' => 1,
-            'name' => Str::random(10),
-            'batch' => rand(2017, 2020),
-            'class' => Str::random(1),
-            'nim' => rand(123456, 1234567),
+            // 'batch' => rand(2017, 2020),
+            // 'class' => Str::random(1),
             'is_deleted' => false,
+            'created' => date('Y-m-d'),
+            'modified' => date("Y-m-d"),
 
         ]);
-        DB::table('career_support_models_student')->insert([
-            'school_id' => 2,
-            'name' => Str::random(10),
-            'batch' => rand(2017, 2020),
-            'class' => Str::random(1),
+        DB::connection('pgsql2')->table('career_support_models_student')->insert([
             'nim' => rand(123456, 1234567),
+            'name' => Str::random(10),
+            'phone' => rand(123456, 1234567),
+            'email' => Str::random(10) . '@gmail.com',
+            'schoolfile_id' => rand(3, 8),
+            'school_id' => 1,
+            // 'batch' => rand(2017, 2020),
+            // 'class' => Str::random(1),
             'is_deleted' => false,
-
+            'created' => date('Y-m-d'),
+            'modified' => date("Y-m-d"),
         ]);
-        DB::table('career_support_models_student')->insert([
-            'school_id' => 2,
-            'name' => Str::random(10),
-            'batch' => rand(2017, 2020),
-            'class' => Str::random(1),
+        DB::connection('pgsql2')->table('career_support_models_student')->insert([
             'nim' => rand(123456, 1234567),
-            // 'year' => rand(1999, 2002),
+            'name' => Str::random(10),
+            'phone' => rand(123456, 1234567),
+            'email' => Str::random(10) . '@gmail.com',
+            'schoolfile_id' => rand(3, 8),
+            'school_id' => 1,
+            // 'batch' => rand(2017, 2020),
+            // 'class' => Str::random(1),
             'is_deleted' => false,
-
+            'created' => date('Y-m-d'),
+            'modified' => date("Y-m-d"),
         ]);
-        DB::table('career_support_models_student')->insert([
-            'school_id' => 2,
-            'name' => Str::random(10),
-            'batch' => rand(2017, 2020),
-            'class' => Str::random(1),
+        DB::connection('pgsql2')->table('career_support_models_student')->insert([
             'nim' => rand(123456, 1234567),
-            // 'year' => rand(1999, 2002),
+            'name' => Str::random(10),
+            'phone' => rand(123456, 1234567),
+            'email' => Str::random(10) . '@gmail.com',
+            'schoolfile_id' => rand(3, 8),
+            'school_id' => 1,
+            // 'batch' => rand(2017, 2020),
+            // 'class' => Str::random(1),
             'is_deleted' => false,
+            'created' => date('Y-m-d'),
+            'modified' => date("Y-m-d"),
 
         ]);
     }

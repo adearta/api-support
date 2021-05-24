@@ -7,12 +7,13 @@ use App\Http\Controllers\NotificationWebinarController;
 
 use Illuminate\Support\Facades\Route;
 
+
 Route::middleware('admin')->group(function () {
-    Route::post('/create', [WebinarAkbarController::class, 'addWebinar']); // 1
+    Route::post('/create', [WebinarAkbarController::class, 'addWebinar']); // 1 ok
 });
 
-Route::get('/list/{id}', [WebinarAkbarController::class, 'getWebinarBySchoolId']); // 3
-Route::get('/detail/{id}', [WebinarAkbarController::class, 'detailWebinar']); //7,5
+Route::get('/list/{id}', [WebinarAkbarController::class, 'getWebinarBySchoolId']); // 3ok
+Route::get('/detail/{id}', [WebinarAkbarController::class, 'detailWebinar']); //7,5ok
 Route::group(['prefix' => 'school'], function () {
     Route::post('/add', [WebinarAkbarController::class, 'addSchoolParticipants'])->middleware('admin'); // 5
     Route::post('/update-status', [SchoolParticipantAkbarController::class, 'updateSchoolWebinar']); // 6

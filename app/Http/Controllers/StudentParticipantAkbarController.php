@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\StudentCandidateModel;
 use App\Models\StudentModel;
 use App\Models\StudentParticipantAkbarModel;
+use App\Models\UserEducationModel;
 // use App\Models\WebinarAkbarModel;
 use App\Traits\ResponseHelper;
 use Exception;
@@ -27,13 +28,16 @@ class StudentParticipantAkbarController extends Controller
     }
     public function getStudent()
     {
-        $data = DB::select('select * from career_support_models_student');
+        $data = DB::connection('pgsql2')->select('select * from' . $this->tbStudent);
         return $this->makeJSONResponse(['data' => $data], 200);
     }
     //getting student based on their batch
-    public function getStudentYearList($batch)
+    public function getStudentYearList($start_year)
     {
-        $list = DB::select('select * from career_support_models_student where batch = ?', [$batch]);
+        // $batch = new UserEducationModel();
+        // $batch->setConnection('pgsql2');
+        // $find = $batch->find(1);
+        $list = DB::connection('pgsql2')->select('select * from career_support_models_usereducation where batch = ?', [$start_year]);
         $auth = auth()->user();
         if ($auth) {
             return $this->makeJSONResponse(["list of student based on batch" => $list], 200);
@@ -61,53 +65,53 @@ class StudentParticipantAkbarController extends Controller
         //kirim notif ke masing2 student
         return $this->makeJSONResponse(['data' => $participants], 200);
     }
-    public function addStudentManual(Request $request, $id)
-    {
-        $validation = Validator::make($request->all(), [
-            'name' => 'required',
-            'nim' => 'required',
-            'class' => 'required',
-            'batch' => 'required|numeric',
-            'year' => 'require|numeric',
-        ]);
-        if ($validation->fails()) {
-            return $this->makeJSONResponse($validation->errors(), 202);
-        } else {
-            try {
-                //insert to student
-                $student = DB::table($this->tbStudent)->insertGetId([
-                    'name' => $request->name,
-                    'nim' => $request->nim,
-                    'class' => $request->class,
-                    'batch' => $request->batch,
-                    'year' => $request->year,
-                ]);
-                // if ($request->school_id != null) {
-                // $queryWhere = "";
-                // $queryLanguage = "";
-                // $querySelectId = "";
-                foreach ($request->school_id as $s) {
-                    foreach ($request->webinar_id as $w) {
-                        $count = DB::select('select count (webinar_id) from career_support_models_studentparticipants where webinar_id = ?', [$id]);
-                        if ($count < 501) {
-                            DB::table($this->tbStudentParticipants)->insert(array(
-                                'school_id' => $s,
-                                'webinar_id' => $w,
-                                'student_id' => $student,
-                            ));
-                            //push notification to db notification based on id
+    // public function addStudentManual(Request $request, $id)
+    // {
+    //     $validation = Validator::make($request->all(), [
+    //         'name' => 'required',
+    //         'nim' => 'required',
+    //         'class' => 'required',
+    //         'batch' => 'required|numeric',
+    //         'year' => 'require|numeric',
+    //     ]);
+    //     if ($validation->fails()) {
+    //         return $this->makeJSONResponse($validation->errors(), 202);
+    //     } else {
+    //         try {
+    //             //insert to student
+    //             $student = DB::table($this->tbStudent)->insertGetId([
+    //                 'name' => $request->name,
+    //                 'nim' => $request->nim,
+    //                 'class' => $request->class,
+    //                 'batch' => $request->batch,
+    //                 'year' => $request->year,
+    //             ]);
+    //             // if ($request->school_id != null) {
+    //             // $queryWhere = "";
+    //             // $queryLanguage = "";
+    //             // $querySelectId = "";
+    //             foreach ($request->school_id as $s) {
+    //                 foreach ($request->webinar_id as $w) {
+    //                     $count = DB::select('select count (webinar_id) from career_support_models_studentparticipants where webinar_id = ?', [$id]);
+    //                     if ($count < 501) {
+    //                         DB::table($this->tbStudentParticipants)->insert(array(
+    //                             'school_id' => $s,
+    //                             'webinar_id' => $w,
+    //                             'student_id' => $student,
+    //                         ));
+    //                         //push notification to db notification based on id
 
-                            //kurang kirim ke email siswa
-                        } else {
-                            return $this->makeJSONResponse(["message" => "sorry, has reach maximum quota!, 500/500"], 200);
-                        }
-                        // }
-                    }
-                }
-            } catch (Exception $e) {
-                echo $e;
-            }
-            // return $this->makeJSONResponse(["message" => "Success to save data to database and send notif"], 200);
-        }
-    }
+    //                         //kurang kirim ke email siswa
+    //                     } else {
+    //                         return $this->makeJSONResponse(["message" => "sorry, has reach maximum quota!, 500/500"], 200);
+    //                     }
+    //                     // }
+    //                 }
+    //             }
+    //         } catch (Exception $e) {
+    //             echo $e;
+    //         }
+    // return $this->makeJSONResponse(["message" => "Success to save data to database and send notif"], 200);
+    // }
+    // }
 }

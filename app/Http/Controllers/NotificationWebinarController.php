@@ -46,7 +46,7 @@ class NotificationWebinarController extends Controller
                 $queryLanguage = ", tbNotif.message_id as message";
             }
 
-            $getnotif = DB::select("select tbNotif.id" . $querySelectId . $queryLanguage . ", tbNotif.created from " . $this->tbNotification . " as tbNotif" . $queryWhere . " order by id desc");
+            $getnotif = DB::select("select tbNotif.id " . $querySelectId . $queryLanguage . ", tbNotif.created from " . $this->tbNotification . " as tbNotif " . $queryWhere . " order by id desc");
 
             return $this->makeJSONResponse($getnotif, 200);
         } catch (Exception $e) {

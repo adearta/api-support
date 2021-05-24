@@ -11,6 +11,7 @@ use App\Models\SchoolModel;
 use App\Models\SchoolParticipantAkbarModel;
 use App\Models\StudentParticipantAkbarModel;
 use App\Models\StudentModel;
+use App\Models\UserEducationModel;
 use App\Models\WebinarAkbarModel;
 use App\Traits\ResponseHelper;
 use DateTime;
@@ -23,18 +24,18 @@ class SchoolParticipantAkbarController extends Controller
 
     private $tbSchoolParticipant;
     private $tbNotification;
-    private $tbSchool;
+    // private $tbSchool;
     private $tbStudentParticipant;
-    private $tbStudent;
+    private $tbUserEdu;
     private $tbWebinar;
 
     public function __construct()
     {
         $this->tbSchoolParticipant = SchoolParticipantAkbarModel::tableName();
         $this->tbNotification = NotificationWebinarModel::tableName();
-        $this->tbSchool = SchoolModel::tableName();
+        // $this->tbSchool = SchoolModel::tableName();
         $this->tbStudentParticipant = StudentParticipantAkbarModel::tableName();
-        $this->tbStudent = StudentModel::tableName();
+        $this->tbUserEdu = UserEducationModel::tableName();
         $this->tbWebinar = WebinarAkbarModel::tableName();
     }
 
@@ -75,18 +76,16 @@ class SchoolParticipantAkbarController extends Controller
                     $status = DB::select('select status from ' . $this->tbSchoolParticipant . " where school_id = " . $request->school_id . "and status != 1 and status !=5");
                     if (empty($status)) {
                         $date_to = $webinar[0]->event_date;
-                        $event = new DateTime($date_to);
-                        // $days = strtotime('+3 days');
-                        // $maximum_more = date("Y-m-d", $days);
-                        // $date = new DateTime($maximum_more);
-                        $now = new DateTime('now');
-                        $now->modify('+3 days');
-                        // $date_time = $date->diff($now);
-                        $interval = date_diff($event, $now);
+                        $to = strtotime($date_to);
+                        $date_maximum = date('Y-m-d', strtotime('+3 days'));
+                        $event = strtotime($date_maximum);
+                        // $date_event = date($event);
+                        $now = date("Y-m-d");
+                        $interval = $to - $event;
                         // if the interval is less than 4 days
-                        if ($interval->format("%a") < 4) {
+                        if ($interval < 4) {
                             //if the interval just 1 day
-                            if ($interval->format("%a") == 1) {
+                            if ($interval == 1) {
                                 //use today
                                 $now = date("Y-m-d");
                                 //cek status in the database if it's not 1 and and 5
@@ -123,7 +122,7 @@ class SchoolParticipantAkbarController extends Controller
                                 ->where('school_id', '=', $request->school_id)
                                 ->update([
                                     'status' => $request->status,
-                                    'schedule' => $now,
+                                    'schedule' => $date_maximum,
                                 ]);
 
                             $message = "Invitation successfully accepted, input students maximum days from now!";
@@ -144,11 +143,13 @@ class SchoolParticipantAkbarController extends Controller
                         $participant = DB::table($this->tbStudentParticipant)
                             ->where('webinar_id', '=', $request->webinar_id)
                             ->get();
-
-                        $student = DB::table($this->tbStudent)
+                        //tabel usereducation 
+                        $student = DB::connection('pgsql2')->table($this->tbUserEdu)
                             ->where('school_id', '=', $request->school_id)
-                            ->where('batch', '=', $request->batch)
-                            ->where('is_verified', '=', true)
+                            //batch diganti start_year
+                            ->where('start_year', '=', $request->start_year)
+                            //is_verified diganti verified
+                            ->where('verified', '=', true)
                             ->get();
 
                         $registered = 0;

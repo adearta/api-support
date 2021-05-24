@@ -15,9 +15,11 @@ class CareerSupportModelsSchoolparticipantakbar extends Migration
     {
         //references webinar
         Schema::create('career_support_models_schoolparticipantakbar', function (Blueprint $table) {
+
+
             $table->id();
             $table->bigInteger('webinar_id')->unsigned();
-            $table->bigInteger('school_id')->unsigned();
+            $table->integer('school_id')->unsigned();
             $table->bigInteger("creator_id")->nullable(); //
             $table->bigInteger("modifier_id")->nullable(); //
             $table->boolean('is_deleted')->default(false);
@@ -31,7 +33,7 @@ class CareerSupportModelsSchoolparticipantakbar extends Migration
             // 4 -> submit the data of student
 
             $table->foreign('webinar_id')->references('id')->on('career_support_models_webinarakbar');
-            $table->foreign('school_id')->references('id')->on('career_support_models_school');
+            // $table->foreign('school_id')->references('id')->on('career_support_models_school');
         });
     }
 

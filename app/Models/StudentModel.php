@@ -9,14 +9,21 @@ use Illuminate\Database\Eloquent\Model;
 class StudentModel extends Model
 {
     use HasFactory, ModelHelper;
+    protected $connection = 'pgsql2';
     protected $table = "career_support_models_student";
     protected $fillable = [
-        'school_id',
-        'name',
         'nim',
-        'class',
-        'batch',
-        'year',
-        'is_verified'
+        'name',
+        'phone',
+        'email',
+        'schoolfile_id',
+        'school_id',
+    ];
+    protected $hidden = [
+        'is_deleted',
+        'created',
+        'modified',
+        'creator_id',
+        'modifier_id',
     ];
 }
