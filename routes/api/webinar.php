@@ -22,7 +22,7 @@ Route::group(['prefix' => 'notification'], function () {
 });
 
 Route::get('/email', [SchoolParticipantAkbarController::class, 'sendMailInvitation']);
-Route::get('/reminder-student', [SchoolParticipantAkbarController::class, 'reminderStudent']);
+Route::get('/school-deadline', [WebinarAkbarController::class, 'updateStatusDeadline']);
 
 ////////////////////////////////////////////////////////////////////////
 

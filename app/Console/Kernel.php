@@ -14,6 +14,7 @@ class Kernel extends ConsoleKernel
      */
     protected $commands = [
         Commands\ReminderCommand::class,
+        Commands\SchoolStatusCommand::class
     ];
 
     /**
@@ -24,8 +25,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('reminder:notif')->dailyAt('13:00');
-        $schedule->command('reminder:notif')->everyMinute();
+        $schedule->command('reminder:notif')->dailyAt('13:00');
+        $schedule->command('school:status')->dailyAt('01:00');
     }
 
     /**

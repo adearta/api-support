@@ -7,6 +7,8 @@ use App\Models\SchoolParticipantAkbarModel;
 use Illuminate\Http\Request;
 use App\Models\WebinarAkbarModel;
 use App\Models\StudentParticipantAkbarModel;
+use App\Models\StudentModel;
+use App\Models\SchoolModel;
 use Illuminate\Support\Facades\DB;
 use App\Traits\ResponseHelper;
 use Exception;
@@ -22,6 +24,8 @@ class WebinarAkbarController extends Controller
     private $tbNotification;
     private $tbSchoolParticipants;
     private $tbStudentParticipants;
+    private $tbStudent;
+    private $tbSchool;
 
     public function __construct()
     {
@@ -29,6 +33,8 @@ class WebinarAkbarController extends Controller
         $this->tbSchoolParticipants = SchoolParticipantAkbarModel::tableName();
         $this->tbNotification = NotificationWebinarModel::tableName();
         $this->tbStudentParticipants = StudentParticipantAkbarModel::tableName();
+        $this->tbStudent = StudentModel::tableName();
+        $this->tbSchool = SchoolModel::tableName();
     }
 
     public function getWebinarBySchoolId($id)
@@ -186,15 +192,26 @@ class WebinarAkbarController extends Controller
             'subject' => 'Weekly Notification'
         ];
 
-        // send all mail in the queue.
-        $job = (new \App\Jobs\SendBulkQueueEmail($details))
-            ->delay(
-                now()
-                    ->addSeconds(2)
-            );
+        // // send all mail in the queue.
+        // $job = (new \App\Jobs\SendBulkQueueEmail($details))
+        //     ->delay(
+        //         now()
+        //             ->addSeconds(2)
+        //     );
 
-        $this->dispatch($job);
+        // $this->dispatch($job);
 
         return $this->makeJSONResponse(['message' => 'email sent!'], 200);
+    }
+
+    public function participantList($webinar_id)
+    {
+        try {
+            $participant = DB::select("select student.name as student_name, school.school_name from " . $this->tbWebinar . " as web left join " . $this->tbStudentParticipants . " as participant on participant.webinar_id = web.id left join " . $this->tbStudent . " as student on student.id = participant.student_id left join " . $this->tbSchool . " as school on school.id = student.school_id where web.id = " . $webinar_id);
+
+            return $this->makeJSONResponse($participant, 200);
+        } catch (Exception $e) {
+            echo $e;
+        }
     }
 }
