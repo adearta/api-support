@@ -7,7 +7,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
-class SendMailReminder extends Mailable
+class SendSchoolMailInvitation extends Mailable
 {
     use Queueable, SerializesModels;
 
@@ -16,11 +16,10 @@ class SendMailReminder extends Mailable
      *
      * @return void
      */
-    public function __construct($event, $student, $reminder)
+    public function __construct($webinar, $school)
     {
-        $this->event = $event;
-        $this->student = $student;
-        $this->reminder = $reminder;
+        $this->webinar = $webinar;
+        $this->school = $school;
     }
 
     /**
@@ -30,13 +29,12 @@ class SendMailReminder extends Mailable
      */
     public function build()
     {
-        return $this->subject('Pengingat untuk Webinar ' . $this->event->event_name)
-            ->view('email_reminder')
+        return $this->subject('Undangan untuk mengikuti Webinar ' . $this->webinar['event_name'])
+            ->view('email_invitation_school')
             ->with(
                 [
-                    "event" => $this->event,
-                    "student" => $this->student,
-                    "reminder" => $this->reminder,
+                    "webinar" => $this->webinar,
+                    "school" => $this->school,
                     "message" => $this
                 ]
             );

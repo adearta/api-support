@@ -54,18 +54,22 @@ class ReminderCommand extends Command
         $tbWebinar = WebinarAkbarModel::tableName();
         $tbNotification = NotificationWebinarModel::tableName();
 
-        $student = DB::select("select * from " . $tbStudentParticipant . " as participant left join " . $tbWebinar . " as web on web.id = participant.webinar_id left join " . $tbStudent . " as student on student.id = participant.student_id where web.event_date = current_date + interval '" . $day . "' day");
+        $event = DB::select("select * from " . $tbStudentParticipant . " as participant left join " . $tbWebinar . " as web on web.id = participant.webinar_id where web.event_date = current_date + interval '" . $day . "' day");
 
-        if (!empty($student)) {
-            foreach ($student as $s) {
+        if (!empty($event)) {
+            foreach ($event as $e) {
+                $student = DB::connection('pgsql2')->table($tbStudent)
+                    ->where('id', '=', $e->student_id)
+                    ->select('name', 'email')
+                    ->get();
                 DB::table($tbNotification)->insert(array(
-                    'student_id'       => $s->student_id,
-                    'webinar_akbar_id' => $s->webinar_id,
-                    'message_id'    => "Diingatkan kembali bahwa Webinar dengan judul " . $s->event_name . " akan dilaksakan h-" . $day . " dari sekarang, yaitu pada tanggal " . $s->event_date . " dan pada jam " . $s->event_time,
-                    'message_en'    => "Webinar reminder with a title" . $s->event_name . " will be held on " . $s->event_date . " and at " . $s->event_time
+                    'student_id'       => $e->student_id,
+                    'webinar_akbar_id' => $e->webinar_id,
+                    'message_id'    => "Diingatkan kembali bahwa Webinar dengan judul " . $e->event_name . " akan dilaksakan h-" . $day . " dari sekarang, yaitu pada tanggal " . $e->event_date . " dan pada jam " . $e->event_time,
+                    'message_en'    => "Webinar reminder with a title" . $e->event_name . " will be held on " . $e->event_date . " and at " . $e->event_time
                 ));
 
-                SendMailReminderJob::dispatchSync($student, $day);
+                SendMailReminderJob::dispatch($e, $student, $day);
             }
         }
     }

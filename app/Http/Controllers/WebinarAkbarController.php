@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\EmailInvitationSchoolJob;
 use App\Models\NotificationWebinarModel;
 use App\Models\SchoolParticipantAkbarModel;
 use Illuminate\Http\Request;
@@ -16,6 +17,9 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
+use App\Jobs\SendMailReminderJob;
+use App\Mail\SendMailReminder;
+use App\Mail\SendSchoolMailInvitation;
 
 class WebinarAkbarController extends Controller
 {
@@ -51,11 +55,36 @@ class WebinarAkbarController extends Controller
             echo $e;
         }
     }
-    public function detailWebinar($id)
+    public function detailWebinar($webinar_id)
     {
         try {
-            $detail = DB::select("select * from " . $this->tbWebinar . " where id = ?", [$id]);
-            return $this->makeJSONResponse(["Webinar Detail" => $detail], 200);
+            $detail = DB::select("select * from " . $this->tbWebinar . " as web left join " . $this->tbSchoolParticipants . " as school on school.webinar_id = web.id where web.id = " . $webinar_id);
+
+            $school = array();
+
+            for ($i = 0; $i < count($detail); $i++) {
+                $temp = DB::connection('pgsql2')->table($this->tbSchool)
+                    ->where('id', '=', $detail[$i]->school_id)
+                    ->select('name')
+                    ->get();
+
+                $school[$i] = array(
+                    "id"  => $detail[$i]->school_id,
+                    "name" => $temp[0]->name,
+                    "status" => $detail[$i]->status
+                );
+            }
+
+            $response = array(
+                "event_id"   => $webinar_id,
+                "event_name" => $detail[0]->event_name,
+                "event_date" => $detail[0]->event_date,
+                "event_time" => $detail[0]->event_time,
+                "event_picture" => $detail[0]->event_picture,
+                "school"    => $school
+            );
+
+            return $this->makeJSONResponse($response, 200);
         } catch (Exception $e) {
             echo $e;
         }
@@ -79,13 +108,15 @@ class WebinarAkbarController extends Controller
                 if ($file = $request->file('event_picture')) {
                     try {
                         $path = $file->store('webinar', 'uploads');
-                        $webinarId = DB::table($this->tbWebinar)->insertGetId(array(
+                        $webinar = array(
                             'zoom_link' => $request->zoom_link,
                             'event_name' => $request->event_name,
                             'event_date' => $request->event_date,
                             'event_time' => $request->event_time,
                             'event_picture' => $path
-                        ));
+                        );
+
+                        $webinarId = DB::table($this->tbWebinar)->insertGetId($webinar);
 
                         foreach ($request->school_id as $s) {
                             DB::table($this->tbSchoolParticipants)->insert(array(
@@ -99,12 +130,17 @@ class WebinarAkbarController extends Controller
                                 'message_id'    => "Anda mendapatkan undangan untuk mengikuti Webinar dengan judul " . $request->event_name . " pada tanggal " . $request->event_date . " dan pada jam " . $request->event_time,
                                 'message_en'    => "You get an invitation to join in a webinar with a title" . $request->event_name . " on " . $request->event_date . " and at " . $request->event_time
                             ));
-                        }
 
-                        //$this->sendMail($request); -> ada error kk, monggo di cek sendiri ya
+                            $school = DB::connection("pgsql2")->table($this->tbSchool)
+                                ->where('id', '=', $s)
+                                ->select('name', 'email')
+                                ->get();
+
+                            EmailInvitationSchoolJob::dispatch($webinar, $school);
+                            // Mail::to($school[0]->email)->send(new SendSchoolMailInvitation($webinar, $school));
+                        }
                     } catch (Exception $e) {
                         echo $e;
-                        //return $this->makeJSONResponse(["message" => "failed insert the data to database"], 200);
                     }
 
                     return $this->makeJSONResponse(["message" => "Success to save data to database"], 200);
@@ -218,9 +254,24 @@ class WebinarAkbarController extends Controller
     public function participantList($webinar_id)
     {
         try {
-            $participant = DB::select("select student.name as student_name, school.school_name from " . $this->tbWebinar . " as web left join " . $this->tbStudentParticipants . " as participant on participant.webinar_id = web.id left join " . $this->tbStudent . " as student on student.id = participant.student_id left join " . $this->tbSchool . " as school on school.id = student.school_id where web.id = " . $webinar_id);
+            $participant = DB::select("select * from " . $this->tbWebinar . " as web left join " . $this->tbStudentParticipants . " as participant on participant.webinar_id = web.id where web.id = " . $webinar_id);
 
-            return $this->makeJSONResponse($participant, 200);
+            $response = array();
+
+            for ($i = 0; $i < count($participant); $i++) {
+                $data = DB::connection('pgsql2')
+                    ->table($this->tbStudent . " as student")
+                    ->leftJoin($this->tbSchool . " as school", 'school.id', '=', 'student.school_id')
+                    ->where('student.id', '=', $participant[$i]->student_id)
+                    ->select('student.name as student_name', 'school.name as school_name')
+                    ->get();
+                $response[$i] = array(
+                    "student_name"  => $data[0]->student_name,
+                    "school_name"   => $data[0]->school_name
+                );
+            }
+
+            return $this->makeJSONResponse($response, 200);
         } catch (Exception $e) {
             echo $e;
         }

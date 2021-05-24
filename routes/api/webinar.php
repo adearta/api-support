@@ -23,8 +23,9 @@ Route::group(['prefix' => 'notification'], function () {
     Route::post('/read', [NotificationWebinarController::class, 'setNotificationReaded']); //extra
 });
 
-Route::get('/email', [SchoolParticipantAkbarController::class, 'sendMailInvitation']);
-Route::get('/school-deadline', [WebinarAkbarController::class, 'updateStatusDeadline']);
+Route::get('/participant/{webinar_id}', [WebinarAkbarController::class, 'participantList']);
+
+Route::get('/detail/{webinar_id}', [WebinarAkbarController::class, 'detailWebinar']);
 
 ////////////////////////////////////////////////////////////////////////
 

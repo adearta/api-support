@@ -16,16 +16,18 @@ class SendMailReminderJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public $timeout = 120;
-    private $data;
+    private $event;
+    private $student;
     private $reminder;
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct($data, $reminder)
+    public function __construct($event, $student, $reminder)
     {
-        $this->data = $data;
+        $this->event = $event;
+        $this->student = $student;
         $this->reminder = $reminder;
     }
 
@@ -36,6 +38,6 @@ class SendMailReminderJob implements ShouldQueue
      */
     public function handle()
     {
-        Mail::to("gunk.adi15@gmail.com")->send(new SendMailReminder($this->data, $this->reminder));
+        Mail::to($this->student[0]->email)->send(new SendMailReminder($this->event, $this->student, $this->reminder));
     }
 }

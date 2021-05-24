@@ -4,6 +4,7 @@
 
     <h5>Tanggal: {{ $webinar[0]->event_date }} </h5>
     <h5>Jam: {{ $webinar[0]->event_time }} </h5>
+    <h5>Zoom Link: {{ $webinar[0]->zoom_link }} </h5>
 
     <img style="width: 200px; height: 200px;"
         src="{{ $message->embed("https://berenyisoft.eu/wp-content/uploads/2020/04/BSys-Smile.jpg") }}">
