@@ -23,7 +23,7 @@ class SchoolSeeder extends Seeder
             'name' => Str::random(),
             'phone' => rand(1234567, 12345678),
             //
-            'email' => 'adearta48@gmail.com',
+            'email' => 'adearta@tudent.ub.ac.id',
             'fax' => rand(1234567, 1234567),
             'address' => Str::random(),
             'website' => 'http://www.' . Str::random(10) . '.com',

@@ -19,7 +19,7 @@ class StudentSeeder extends Seeder
 
         DB::connection('pgsql2')->table('career_support_models_student')->insert([
             //
-            'nim' => 1,
+            'nim' => rand(1, 5),
             'name' => Str::random(10),
             'phone' => rand(123456, 1234567),
             //
