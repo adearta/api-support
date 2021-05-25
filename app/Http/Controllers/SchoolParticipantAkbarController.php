@@ -50,7 +50,7 @@ class SchoolParticipantAkbarController extends Controller
         /* post param
             webinar_id
             school_id
-            batch
+            start_year
             // schedule
             status
         */
@@ -176,7 +176,7 @@ class SchoolParticipantAkbarController extends Controller
                                 $studentId = DB::connection('pgsql2')->table($this->tbStudent)->where('nim', '=', $student[$i]->nim)->get();
 
                                 $data = DB::select('select student_id from ' . $this->tbStudentParticipant . " where student_id = " . $studentId[0]->id . " and webinar_id = " . $request->webinar_id);
-                                if (!empty($data)) {
+                                if (empty($data)) {
                                     $registered++;
                                     DB::table($this->tbStudentParticipant)->insert(array(
                                         'school_id'     => $request->school_id,

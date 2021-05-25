@@ -150,10 +150,12 @@ class WebinarAkbarController extends Controller
             }
         }
     }
-
     public function addSchoolParticipants(Request $request)
     {
         try {
+            $success = 0;
+            $message = "";
+            $code = 0;
             $webinar = DB::table($this->tbWebinar)->where('id', '=', $request->webinar_id)->get();
             foreach ($request->school_id as $s) {
                 $school = DB::table($this->tbSchoolParticipants)
@@ -162,6 +164,7 @@ class WebinarAkbarController extends Controller
                     ->get();
 
                 if (count($school) == 0) {
+                    $success++;
                     DB::table($this->tbSchoolParticipants)->insert(array(
                         'webinar_id'    => $request->webinar_id,
                         'school_id'     => $s,
@@ -174,16 +177,37 @@ class WebinarAkbarController extends Controller
                         'message_en'    => "You get an invitation to join in a webinar with a title" . $webinar[0]->event_name . " on " . $webinar[0]->event_date . " and at " . $webinar[0]->event_time
                     ));
 
-                    return $this->makeJSONResponse(['message' => "Success to add schools to this event"], 200);
-                } else {
-                    $response = array(
-                        "message" => "This school has been added to this event",
-                        "school_id" => $school[0]->school_id
+                    $school = DB::connection("pgsql2")
+                        ->table($this->tbSchool)
+                        ->select('name', 'email')
+                        ->where('id', '=', $s)
+                        ->get();
+
+                    $webinarEmail = array(
+                        'zoom_link' => $webinar[0]->zoom_link,
+                        'event_name' => $webinar[0]->event_name,
+                        'event_date' => $webinar[0]->event_date,
+                        'event_time' => $webinar[0]->event_time,
+                        'event_picture' => $webinar[0]->event_picture
                     );
 
-                    return $this->makeJSONResponse($response, 202);
+                    EmailInvitationSchoolJob::dispatch($webinarEmail, $school);
+                } else {
+                    if ($success > 0) {
+                        $success--;
+                    }
                 }
             }
+
+            if ($success > 0) {
+                $message = "Success to add " . $success . " from " . count($request->school_id) . " school to this event";
+                $code = 200;
+            } else {
+                $message = "All the school has been registered on this event";
+                $code = 202;
+            }
+
+            return $this->makeJSONResponse(['message' => $message], $code);
         } catch (Exception $e) {
             echo $e;
         }
@@ -201,54 +225,6 @@ class WebinarAkbarController extends Controller
             $message_err = "cant find data!";
             return $this->makeJSONResponse($message_err, 400);
         }
-    }
-
-
-    public function sendMail(Request $request)
-    {
-
-        // $listEmail = ['adearta48@gmail.com', 'adearta@student.ub.ac.id', 'hebryclover@gmail.com'];
-
-        // // School::create($request->all());
-        // Mail::send('email', array(
-        //     'zoom_link' => $request->get('zoom_link'),
-        //     'name' => $request->get('name'),
-        //     'date' => $request->get('date'),
-        //     'time' => $request->get('time'),
-        //     // 'email' => $request->get('email'),
-        // ), function ($message) use ($request, $listEmail) {
-        //     //selecting all email from career_support_models_student_participants and save to array
-        //     //
-        //     // $broadcast = DB::select('select school_email from career_support_models_school');
-        //     // $listEmail = array();
-        //     // while ($row = pg_fetch_assoc($broadcast)) {
-
-        //     //     // add each row returned into an array
-        //     //     $listEmail[] = $row;
-
-        //     //     // OR just echo the data:
-        //     //     // echo $row['username']; // etc
-        //     // }
-        //     //
-        //     // $broadcast = "suastikaadinata97@gmail.com";
-        //     $message->from('adeartakusumaps@gmail.com');
-        //     //diganti broadcast ke semua email student participants.
-        //     $message->to($listEmail)->subject($request->get('subject'));
-        // });
-        $details = [
-            'subject' => 'Weekly Notification'
-        ];
-
-        // // send all mail in the queue.
-        // $job = (new \App\Jobs\SendBulkQueueEmail($details))
-        //     ->delay(
-        //         now()
-        //             ->addSeconds(2)
-        //     );
-
-        // $this->dispatch($job);
-
-        return $this->makeJSONResponse(['message' => 'email sent!'], 200);
     }
 
     public function participantList($webinar_id)
