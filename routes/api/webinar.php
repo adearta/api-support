@@ -29,19 +29,19 @@ Route::get('/detail/{webinar_id}', [WebinarAkbarController::class, 'detailWebina
 
 ////////////////////////////////////////////////////////////////////////
 
-Route::post('/email', [WebinarAkbarController::class, 'sendMail'])->name('send-mail');
-Route::delete('/delete/{id}', [WebinarAkbarController::class, 'destroy']); //ok tapi gabisa di jalankan karena dia direferences oleh tabel lain jadi arus hapus tabel lain dulu
+// Route::post('/email', [WebinarAkbarController::class, 'sendMail'])->name('send-mail');
+// Route::delete('/delete/{id}', [WebinarAkbarController::class, 'destroy']); //ok tapi gabisa di jalankan karena dia direferences oleh tabel lain jadi arus hapus tabel lain dulu
 
-//school participants
-Route::put('/add-student-manual/{id}/{status}', [SchoolParticipantAkbarController::class, 'updateSchoolWebinar']);
-Route::get('/dataSchool', [SchoolParticipantAkbarController::class, 'getSchoolData']); //ok
-Route::get('/dataSchoolParticipants', [SchoolParticipantAkbarController::class, 'getSchoolParticipants']); //ok
+// //school participants
+// Route::put('/add-student-manual/{id}/{status}', [SchoolParticipantAkbarController::class, 'updateSchoolWebinar']);
+// Route::get('/dataSchool', [SchoolParticipantAkbarController::class, 'getSchoolData']); //ok
+// Route::get('/dataSchoolParticipants', [SchoolParticipantAkbarController::class, 'getSchoolParticipants']); //ok
 
-//student participants
-Route::get('/student-batch/{batch}', [StudentParticipantAkbarController::class, 'getStudentYearList']); //ok
-Route::post('/add-student-manual', [StudentParticipantAkbarController::class, 'addStudentManual']); //ok
-//student
-Route::get('/student', [StudentParticipantAkbarController::class, 'getStudent']); //ok
-Route::get('/count/{id}', [StudentParticipantAkbarController::class, 'getTotalParticipants']);
+// //student participants
+// Route::get('/student-batch/{batch}', [StudentParticipantAkbarController::class, 'getStudentYearList']); //ok
+// Route::post('/add-student-manual', [StudentParticipantAkbarController::class, 'addStudentManual']); //ok
+// //student
+// Route::get('/student', [StudentParticipantAkbarController::class, 'getStudent']); //ok
+// Route::get('/count/{id}', [StudentParticipantAkbarController::class, 'getTotalParticipants']);
 
-Route::get('/studentparticipants', [StudentParticipantAkbarController::class, 'addStudentParticipants']);
+// Route::get('/studentparticipants', [StudentParticipantAkbarController::class, 'addStudentParticipants']);
