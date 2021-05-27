@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\CareerSupportModelsStudentParticipant;
 use Illuminate\Http\Request;
 use App\Traits\ResponseHelper;
 use Exception;
@@ -10,6 +9,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Models\CareerSupportModelsWebinarBiasa;
 use App\Models\CareerSupportModelsNotificationWebinarnormalModel;
 use App\Models\StudentModel;
+use App\Models\CareerSupportModelsNormalStudentParticipants;
 use Illuminate\Support\Facades\DB;
 
 class WebinarNormalController extends Controller
@@ -22,7 +22,7 @@ class WebinarNormalController extends Controller
     public function __construct()
     {
         $this->tbWebinar = CareerSupportModelsWebinarBiasa::tableName();
-        $this->tbParticipant = CareerSupportModelsStudentParticipant::tableName();
+        $this->tbParticipant = CareerSupportModelsNormalStudentParticipants::tableName();
         $this->tbNotif = CareerSupportModelsNotificationWebinarnormalModel::tableName();
         $this->tbStudent = StudentModel::tableName();
     }

@@ -6,15 +6,16 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Traits\ModelHelper;
 
-
-class CareerSupportModelsStudentParticipant extends Model
+class CareerSupportModelsOrders extends Model
 {
     use HasFactory, ModelHelper;
-    protected $table = "career_support_models_studentparticipants";
+    protected $table = 'career_support_models_orders';
 
     protected $fillable = [
         'student_id',
         'webinar_id',
+        'transaction_id',
+        'order_id',
         'status',
     ];
     protected $hidden = [
