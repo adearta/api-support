@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CareerSupportModelsWebinarakbar extends Migration
+class CareerSupportModelsOrders extends Migration
 {
     /**
      * Run the migrations.
@@ -13,19 +13,20 @@ class CareerSupportModelsWebinarakbar extends Migration
      */
     public function up()
     {
-        //
-        Schema::create('career_support_models_webinarakbar', function (Blueprint $table) {
+        Schema::create('career_support_models_orders', function (Blueprint $table) {
             $table->id();
+            $table->integer('student_id');
+            $table->integer('webinar_id');
+            $table->string('transaction_id')->nullable();
+            $table->integer('status');
+            // $table->timestamps();
             $table->bigInteger("creator_id")->nullable(); //
             $table->bigInteger("modifier_id")->nullable(); //
             $table->boolean('is_deleted')->default(false);
             $table->timestamp('created')->useCurrent();
             $table->timestamp('modified')->nullable()->useCurrentOnUpdate();
-            $table->string('zoom_link');
-            $table->string('event_name');
-            $table->date('event_date');
-            $table->time('event_time');
-            $table->string('event_picture');
+
+            $table->foreign('webinar_id')->references('id')->on('career_support_models_webinarnormal');
         });
     }
 
@@ -36,7 +37,6 @@ class CareerSupportModelsWebinarakbar extends Migration
      */
     public function down()
     {
-        //
-        Schema::dropIfExists('career_support_models_webinarakbar');
+        Schema::dropIfExists('career_support_models_orders');
     }
 }
