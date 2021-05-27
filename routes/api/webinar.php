@@ -1,9 +1,11 @@
 <?php
 
+use App\Http\Controllers\NotificationNormalWebinarController;
 use App\Http\Controllers\WebinarAkbarController;
 use App\Http\Controllers\SchoolParticipantAkbarController;
 use App\Http\Controllers\StudentParticipantAkbarController;
 use App\Http\Controllers\NotificationWebinarController;
+use App\Http\Controllers\WebinarNormalController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -82,5 +84,13 @@ Route::group(['prefix' => 'notification'], function () {
 //super admin get the data from database (candidate name, and candidate school)
 Route::get('/participant/{webinar_id}', [WebinarAkbarController::class, 'participantList']);
 
+//normal webinar
+Route::group(['prefix' => 'normal'], function () {
+    Route::get('/listwebinar', [WebinarNormalController::class, 'listNormalWebinar']);
+    Route::get('/detail/{webinar_id}', [WebinarNormalController::class, 'detailNormalWebinar']);
+    Route::post('/create', [WebinarNormalController::class, 'addNormalWebinar']);
+    Route::get('/getnotif', [NotificationNormalWebinarController::class, 'getNotification']);
+    Route::post('/readnotif', [NotificationNormalWebinarController::class, 'setNotificationReaded']);
+});
 
 ////////////////////////////////////////////////////////////////////////

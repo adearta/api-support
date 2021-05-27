@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use App\Traits\ResponseHelper;
 use App\Models\NotificationWebinarModel;
 use Exception;
+use Illuminate\Support\Facades\Validator;
 use Throwable;
 
 class NotificationWebinarController extends Controller
@@ -56,16 +57,23 @@ class NotificationWebinarController extends Controller
 
     public function setNotificationReaded(Request $request)
     {
-        try {
-            foreach ($request->notification_id as $notif) {
-                DB::table($this->tbNotification)
-                    ->where('id', '=', $notif)
-                    ->update(['is_readed' => true]);
-            }
+        $validator = Validator::make($request->all(), [
+            'notification_id' => 'required'
+        ]);
+        if ($validator->fails()) {
+            return $this->makeJSONResponse($validator->errors(), 400);
+        } else {
+            try {
+                foreach ($request->notification_id as $notif) {
+                    DB::table($this->tbNotification)
+                        ->where('id', '=', $notif)
+                        ->update(['is_readed' => true]);
+                }
 
-            return $this->makeJSONResponse(['message' => 'Notification status has beed updated'], 200);
-        } catch (Exception $e) {
-            echo $e;
+                return $this->makeJSONResponse(['message' => 'Notification status has beed updated'], 200);
+            } catch (Exception $e) {
+                echo $e;
+            }
         }
     }
 }
