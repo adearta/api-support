@@ -72,13 +72,23 @@ class SchoolParticipantAkbarController extends Controller
                 ->get();
             switch ($request->status) {
                 case 2:
-                    DB::table($this->tbSchoolParticipant)
-                        ->where('webinar_id', '=', $request->webinar_id)
-                        ->where('school_id', '=', $request->school_id)
-                        ->update(['status' => $request->status]);
-                    $message = "Invitation successfully rejected";
-                    $code = 200;
+                    $validation = Validator::make($request->all(), [
+                        'webinar_id' => 'required|numeric',
+                        'school_id' => 'required|numeric',
+                        'status' => 'required|numeric'
+                    ]);
+                    if ($validation->fails()) {
+                        return $this->makeJSONResponse($validation->errors(), 400);
+                    } else {
+                        DB::table($this->tbSchoolParticipant)
+                            ->where('webinar_id', '=', $request->webinar_id)
+                            ->where('school_id', '=', $request->school_id)
+                            ->update(['status' => $request->status]);
+                        $message = "Invitation successfully rejected";
+                        $code = 200;
+                    }
                     break;
+
                     //jawaban no 1 dan 3
                 case 3:
                     $validation = Validator::make($request->all(), [
@@ -236,15 +246,23 @@ class SchoolParticipantAkbarController extends Controller
                     }
                     break;
                 case 5:
-                    DB::table($this->tbSchoolParticipant)
-                        ->where('webinar_id', '=', $request->webinar_id)
-                        ->where('school_id', '=', $request->school_id)
-                        ->update(['status' => $request->status]);
-                    $message = "webinar has done";
-                    $code = 200;
-                    break;
+                    $validation = Validator::make($request->all(), [
+                        'webinar_id' => 'required|numeric',
+                        'school_id' => 'required|numeric',
+                        'status' => 'required|numeric'
+                    ]);
+                    if ($validation->fails()) {
+                        return $this->makeJSONResponse($validation->errors(), 400);
+                    } else {
+                        DB::table($this->tbSchoolParticipant)
+                            ->where('webinar_id', '=', $request->webinar_id)
+                            ->where('school_id', '=', $request->school_id)
+                            ->update(['status' => $request->status]);
+                        $message = "webinar has done";
+                        $code = 200;
+                        break;
+                    }
             }
-
 
             return $this->makeJSONResponse(['message' => $message], $code);
         } catch (Exception $e) {
