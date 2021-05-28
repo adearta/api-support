@@ -7,9 +7,10 @@ use App\Traits\ResponseHelper;
 use Exception;
 use Illuminate\Support\Facades\Validator;
 use App\Models\CareerSupportModelsWebinarBiasa;
-use App\Models\CareerSupportModelsNotificationWebinarnormalModel;
+// use App\Models\CareerSupportModelsNotificationWebinarnormalModel;
 use App\Models\StudentModel;
 use App\Models\CareerSupportModelsNormalStudentParticipants;
+use App\Models\NotificationWebinarModel;
 use Illuminate\Support\Facades\DB;
 
 class WebinarNormalController extends Controller
@@ -23,7 +24,7 @@ class WebinarNormalController extends Controller
     {
         $this->tbWebinar = CareerSupportModelsWebinarBiasa::tableName();
         $this->tbParticipant = CareerSupportModelsNormalStudentParticipants::tableName();
-        $this->tbNotif = CareerSupportModelsNotificationWebinarnormalModel::tableName();
+        $this->tbNotif = NotificationWebinarModel::tableName();
         $this->tbStudent = StudentModel::tableName();
     }
 
