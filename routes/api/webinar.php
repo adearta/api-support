@@ -5,10 +5,10 @@ use App\Http\Controllers\WebinarAkbarController;
 use App\Http\Controllers\SchoolParticipantAkbarController;
 use App\Http\Controllers\StudentParticipantAkbarController;
 use App\Http\Controllers\NotificationWebinarController;
-use App\Http\Controllers\Payment\WebinarPaymentController;
+use App\Http\Controllers\StudentNormalWebinarParticipantController;
 use App\Http\Controllers\WebinarNormalController;
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\Payment\WebinarPaymentController;
 
 Route::middleware('admin')->group(function () {
     //super admin create new webinar
@@ -92,6 +92,7 @@ Route::group(['prefix' => 'normal'], function () {
     Route::post('/create', [WebinarNormalController::class, 'addNormalWebinar']);
     Route::get('/getnotif', [NotificationNormalWebinarController::class, 'getNotification']);
     Route::post('/readnotif', [NotificationNormalWebinarController::class, 'setNotificationReaded']);
+    Route::post('/register', [StudentNormalWebinarParticipantController::class, 'registerStudent']);
 });
 
 //payment

@@ -37,46 +37,47 @@ class StudentNormalWebinarParticipantController extends Controller
 
     public function registerStudent(Request $request)
     {
-        $profilePercentage = DB::connection('pgsql2')->select('select percentage from ' . $this->tbPercentage);
-        if ($profilePercentage < 60) {
-            return $this->makeJSONResponse(["message" => "please complete your profile, minimum 60% profile required"], 200);
+        $validation = Validator::make($request->all(), [
+            'webinar_id' => 'required|numeric',
+            'student_id' => 'required|numeric',
+        ]);
+        if ($validation->fails()) {
+            return $this->makeJSONResponse($validation->errors(), 400);
         } else {
-            //register
-            $validation = Validator::make($request->all(), [
-                'webinar_id' => 'required|numeric',
-                'student_id' => 'required|numeric',
-            ]);
-            if ($validation->fails()) {
-                return $this->makeJSONResponse($validation->errors(), 400);
+            $profilePercentage = DB::connection('pgsql2')->select('select percent.percent from ' . $this->tbPercentage . " as percent left join " . $this->tbStudent . " as std on percent.user_id = std.creator_id where percent.user_id = " . $request->student_id);
+            if ($profilePercentage[0]->percent < 60) {
+                return $this->makeJSONResponse(["message" => "please complete your profile, minimum 60% profile required"], 200);
+                // return response($profilePercentage, 200);
             } else {
-
-                foreach ($request->webinar_id as $w) {
-                    $webinar = DB::table($this->tbWebinar)
-                        ->where('id', '=', $request->webinar_id)
-                        ->get();
-                    //simpan ke participants
-                    DB::table($this->tbParticipant)->insert(array(
-                        'webinar_id' => $w,
-                        'student_id' => $request->student_id,
-                    ));
-                    //simpan ke order
-                    DB::table($this->tbOrder)->insert(array(
-                        'student_id' => $request->student_id,
-                        'webinar_id' => $w,
-                        // 'transaction_id'=>$request->transaction_id, oleh method updatee
-                        // 'token'=>$request->order_id, update oleh case 4
-                        // 'status'=>$request->status, update oleh method update
-                    ));
-                    //simpan ke notif
-                    DB::table($this->tbNotif)->insert(array(
-                        'student_id' => $request->student_id,
-                        'webinar_normal_id' => $w,
-                        'message_id'    => "Anda telah mendaftar untuk mengikuti Webinar dengan judul " . $webinar->event_name . " pada tanggal " . $webinar->event_date . " dan pada jam " . $webinar->event_time,
-                        'message_en'    => "You have been register to join a webinar with a title" . $webinar->event_name . " on " . $webinar->event_date . " and at " . $webinar->event_time
-                    ));
-                }
+                //register
+                // foreach ($request->webinar_id as $w) {
+                $webinar = DB::table($this->tbWebinar)
+                    ->where('id', '=', $request->webinar_id)
+                    ->get();
+                //simpan ke participants
+                DB::table($this->tbParticipant)->insert(array(
+                    'webinar_id' => $request->webinar_id,
+                    'student_id' => $request->student_id,
+                ));
+                //simpan ke order
+                DB::table($this->tbOrder)->insert(array(
+                    'student_id' => $request->student_id,
+                    'webinar_id' => $request->webinar_id,
+                    // 'transaction_id'=>$request->transaction_id, oleh method updatee
+                    // 'token'=>$request->order_id, update oleh case 4
+                    // 'status'=>$request->status, update oleh method update
+                ));
+                //simpan ke notif
+                DB::table($this->tbNotif)->insert(array(
+                    'student_id' => $request->student_id,
+                    'webinar_normal_id' => $request->webinar_id,
+                    'message_id'    => "Anda telah mendaftar untuk mengikuti Webinar dengan judul " . $webinar[0]->event_name . " pada tanggal " . $webinar[0]->event_date . " dan pada jam " . $webinar[0]->event_time,
+                    'message_en'    => "You have been register to join a webinar with a title" . $webinar[0]->event_name . " on " . $webinar[0]->event_date . " and at " . $webinar[0]->event_time
+                ));
+                // }
                 $message = "sucessfully register to webinar!";
                 $code = 200;
+                // echo $profilePercentage;
                 return $this->makeJSONResponse($message, $code);
             }
         }
