@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CareerSupportModelsNormalStudentParticipants extends Migration
+class CareerSupportModelsNormalStudentparticipants extends Migration
 {
     /**
      * Run the migrations.
@@ -13,7 +13,7 @@ class CareerSupportModelsNormalStudentParticipants extends Migration
      */
     public function up()
     {
-        Schema::create('career_support_models_normal_student_participants', function (Blueprint $table) {
+        Schema::create('career_support_models_normal_studentparticipants', function (Blueprint $table) {
             $table->id();
             $table->integer('student_id');
             $table->integer('webinar_id');
@@ -36,6 +36,6 @@ class CareerSupportModelsNormalStudentParticipants extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('career_support_models_normal_student_participants');
+        Schema::dropIfExists('career_support_models_normal_studentparticipants');
     }
 }
