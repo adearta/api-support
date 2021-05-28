@@ -6,20 +6,23 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Traits\ModelHelper;
 
-class CareerSupportModelsNotificationWebinarnormalModel extends Model
+class CareerSupportModelsOrders extends Model
 {
     use HasFactory, ModelHelper;
-    protected $table = "career_support_models_notificationwebinar";
+    protected $table = 'career_support_models_orders';
+
     protected $fillable = [
         'student_id',
-        'message_id',
-        'message_en',
+        'webinar_id',
+        'transaction_id',
+        'order_id',
+        'status',
     ];
     protected $hidden = [
+        'creator_id',
+        'modifier_id',
         'is_deleted',
         'created',
-        'modified',
-        'modifier_id',
-        'creator_id',
+        'modified'
     ];
 }

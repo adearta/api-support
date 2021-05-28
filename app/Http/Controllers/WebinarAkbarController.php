@@ -13,13 +13,8 @@ use App\Models\SchoolModel;
 use Illuminate\Support\Facades\DB;
 use App\Traits\ResponseHelper;
 use Exception;
-use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
-use App\Jobs\SendMailReminderJob;
-use App\Mail\SendMailReminder;
-use App\Mail\SendSchoolMailInvitation;
+
 
 class WebinarAkbarController extends Controller
 {

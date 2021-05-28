@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\CareerSupportModelsStudentParticipant;
 use Illuminate\Http\Request;
 use App\Traits\ResponseHelper;
 use Exception;
 use Illuminate\Support\Facades\Validator;
 use App\Models\CareerSupportModelsWebinarBiasa;
-use App\Models\CareerSupportModelsNotificationWebinarnormalModel;
+// use App\Models\CareerSupportModelsNotificationWebinarnormalModel;
 use App\Models\StudentModel;
+use App\Models\CareerSupportModelsNormalStudentParticipants;
+use App\Models\NotificationWebinarModel;
 use Illuminate\Support\Facades\DB;
 
 class WebinarNormalController extends Controller
@@ -22,8 +23,8 @@ class WebinarNormalController extends Controller
     public function __construct()
     {
         $this->tbWebinar = CareerSupportModelsWebinarBiasa::tableName();
-        $this->tbParticipant = CareerSupportModelsStudentParticipant::tableName();
-        $this->tbNotif = CareerSupportModelsNotificationWebinarnormalModel::tableName();
+        $this->tbParticipant = CareerSupportModelsNormalStudentParticipants::tableName();
+        $this->tbNotif = NotificationWebinarModel::tableName();
         $this->tbStudent = StudentModel::tableName();
     }
 
@@ -43,37 +44,43 @@ class WebinarNormalController extends Controller
     }
     public function detailNormalWebinar($webinar_id)
     {
+        $validation = Validator::make(['webinar_id' => $webinar_id], [
+            'webinar_id' => 'required|numeric'
+        ]);
+        if ($validation->fails()) {
+            return $this->makeJSONResponse($validation->errors(), 400);
+        } else {
+            try {
+                $data = DB::select("select * from " . $this->tbWebinar . " as web left join " . $this->tbParticipant . " as student on student.webinar_id = web.id where web.id = ?", [$webinar_id]);
 
-        try {
-            $data = DB::select("select * from " . $this->tbWebinar . " as web left join " . $this->tbParticipant . " as student on student.webinar_id = web.id where web.id = ?", [$webinar_id]);
+                $student = array();
 
-            $student = array();
+                for ($i = 0; $i < count($data); $i++) {
+                    $temp = DB::connection('pgsql2')->table($this->tbStudent)
+                        ->where('id', '=', $data[$i]->student_id)
+                        ->select('name', 'nim')
+                        ->get();
 
-            for ($i = 0; $i < count($data); $i++) {
-                $temp = DB::connection('pgsql2')->table($this->tbStudent)
-                    ->where('id', '=', $data[$i]->student_id)
-                    ->select('name', 'nim')
-                    ->get();
-
-                $student[$i] = array(
-                    // "id"=> $data[$i]->student_id,
-                    "name" => $temp[0]->name,
-                    "nim" => $temp[0]->nim,
-                );
-                $response = array(
-                    "event_id"   => $webinar_id,
-                    "event_name" => $data[0]->event_name,
-                    "event_date" => $data[0]->event_date,
-                    "event_time" => $data[0]->event_time,
-                    "start_time" => $data[0]->start_time,
-                    "end_time" => $data[0]->end_time,
-                    "event_picture" => $data[0]->event_picture,
-                    "student"    => $student
-                );
-                return $this->makeJSONResponse($response, 200);
+                    $student[$i] = array(
+                        // "id"=> $data[$i]->student_id,
+                        "name" => $temp[0]->name,
+                        "nim" => $temp[0]->nim,
+                    );
+                    $response = array(
+                        "event_id"   => $webinar_id,
+                        "event_name" => $data[0]->event_name,
+                        "event_date" => $data[0]->event_date,
+                        "event_time" => $data[0]->event_time,
+                        "start_time" => $data[0]->start_time,
+                        "end_time" => $data[0]->end_time,
+                        "event_picture" => $data[0]->event_picture,
+                        "student"    => $student
+                    );
+                    return $this->makeJSONResponse($response, 200);
+                }
+            } catch (Exception $e) {
+                echo $e;
             }
-        } catch (Exception $e) {
-            echo $e;
         }
     }
     public function addNormalWebinar(Request $request)

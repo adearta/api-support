@@ -28,23 +28,49 @@ class NotificationWebinarController extends Controller
             student_id
             accept-language
         */
+
         try {
             $queryWhere = "";
             $queryLanguage = "";
             $querySelectId = "";
 
-            if ($request->school_id != null) {
-                $querySelectId = ", tbNotif.school_id";
-                $queryWhere = " where school_id = " . $request->school_id;
+            $validation = Validator::make($request->header('Accept-Language'), [
+                'Accept-Language' => 'required'
+            ]);
+            if ($validation->fails()) {
+                return $this->makeJSONResponse($validation->errors(), 400);
             } else {
-                $querySelectId = ", tbNotif.student_id";
-                $queryWhere = " where student_id = " . $request->student_id;
-            }
+                if ($request->school_id != null) {
+                    $validation = Validator::make($request->all(), [
+                        'school_id' => 'required|numeric',
+                        // 'accept_language' => 'required',
+                    ]);
+                    if ($validation->fails()) {
+                        return $this->makeJSONResponse($validation->errors(), 400);
+                    } else {
+                        $querySelectId = ", tbNotif.school_id";
+                        $queryWhere = " where school_id = " . $request->school_id;
+                    }
+                } else {
+                    $validation = Validator::make($request->all(), [
+                        'student_id' => 'required|numeric',
+                        // 'accept_language' => 'required',
+                    ]);
+                    if ($validation->fails()) {
+                        return $this->makeJSONResponse($validation->errors(), 400);
+                    } else {
+                        $querySelectId = ", tbNotif.student_id";
+                        $queryWhere = " where student_id = " . $request->student_id;
+                    }
+                }
 
-            if ($request->header('Accept-Language') == "en") {
-                $queryLanguage = ", tbNotif.message_en as message";
-            } else {
-                $queryLanguage = ", tbNotif.message_id as message";
+
+                if ($request->header('Accept-Language') == "en") {
+
+                    $queryLanguage = ", tbNotif.message_en as message";
+                } else {
+                    $queryLanguage = ", tbNotif.message_id as message";
+                }
             }
 
             $getnotif = DB::select("select tbNotif.id " . $querySelectId . $queryLanguage . ", tbNotif.created from " . $this->tbNotification . " as tbNotif " . $queryWhere . " order by id desc");

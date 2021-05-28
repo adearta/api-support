@@ -17,8 +17,9 @@ class CareerSupportModelsOrders extends Migration
             $table->id();
             $table->integer('student_id');
             $table->integer('webinar_id');
-            $table->string('transaction_id')->nullable();
-            $table->integer('status');
+            $table->string('token')->nullable();
+            $table->string('order_id');
+            $table->integer('status')->default(1);
             // $table->timestamps();
             $table->bigInteger("creator_id")->nullable(); //
             $table->bigInteger("modifier_id")->nullable(); //
