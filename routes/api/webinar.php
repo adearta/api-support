@@ -5,6 +5,7 @@ use App\Http\Controllers\WebinarAkbarController;
 use App\Http\Controllers\SchoolParticipantAkbarController;
 use App\Http\Controllers\StudentParticipantAkbarController;
 use App\Http\Controllers\NotificationWebinarController;
+use App\Http\Controllers\Payment\WebinarPaymentController;
 use App\Http\Controllers\WebinarNormalController;
 use Illuminate\Support\Facades\Route;
 
@@ -93,4 +94,7 @@ Route::group(['prefix' => 'normal'], function () {
     Route::post('/readnotif', [NotificationNormalWebinarController::class, 'setNotificationReaded']);
 });
 
-////////////////////////////////////////////////////////////////////////
+//payment
+Route::group(['prefix' => 'payment'], function () {
+    Route::get('/charge', [WebinarPaymentController::class, 'charge']);
+});
