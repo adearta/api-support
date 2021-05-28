@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\CareerSupportModelsNotificationWebinarnormalModel;
 use App\Models\CareerSupportModelsNormalStudentParticipants;
 use App\Models\CareerSupportModelsWebinarBiasa;
 use Illuminate\Http\Request;
@@ -12,8 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use App\Models\CareerSupportModelsPercentage;
 use App\Models\CareerSupportModelsOrders;
-
-use function PHPUnit\Framework\returnSelf;
+use App\Models\NotificationWebinarModel;
 
 class StudentNormalWebinarParticipantController extends Controller
 {
@@ -29,7 +27,7 @@ class StudentNormalWebinarParticipantController extends Controller
     {
         $this->tbWebinar = CareerSupportModelsWebinarBiasa::tableName();
         $this->tbParticipant = CareerSupportModelsNormalStudentParticipants::tableName();
-        $this->tbNotif = CareerSupportModelsNotificationWebinarnormalModel::tableName();
+        $this->tbNotif = NotificationWebinarModel::tableName();
         $this->tbPercentage = CareerSupportModelsPercentage::tableName();
         $this->tbOrder = CareerSupportModelsOrders::tableName();
     }
@@ -48,7 +46,11 @@ class StudentNormalWebinarParticipantController extends Controller
             if ($validation->fails()) {
                 return $this->makeJSONResponse($validation->errors(), 400);
             } else {
+
                 foreach ($request->webinar_id as $w) {
+                    $webinar = DB::table($this->tbWebinar)
+                        ->where('id', '=', $request->webinar_id)
+                        ->get();
                     //simpan ke participants
                     DB::table($this->tbParticipant)->insert(array(
                         'webinar_id' => $w,
@@ -66,8 +68,8 @@ class StudentNormalWebinarParticipantController extends Controller
                     DB::table($this->tbNotif)->insert(array(
                         'student_id' => $request->student_id,
                         'webinar_normal_id' => $w,
-                        // 'message_id'    => "Anda mendapatkan undangan untuk mengikuti Webinar dengan judul " . $webinar[0]->event_name . " pada tanggal " . $webinar[0]->event_date . " dan pada jam " . $webinar[0]->event_time,
-                        // 'message_en'    => "You get an invitation to join in a webinar with a title" . $webinar[0]->event_name . " on " . $webinar[0]->event_date . " and at " . $webinar[0]->event_time
+                        'message_id'    => "Anda telah mendaftar untuk mengikuti Webinar dengan judul " . $webinar->event_name . " pada tanggal " . $webinar->event_date . " dan pada jam " . $webinar->event_time,
+                        'message_en'    => "You have been register to join a webinar with a title" . $webinar->event_name . " on " . $webinar->event_date . " and at " . $webinar->event_time
                     ));
                 }
                 $message = "sucessfully register to webinar!";
@@ -89,6 +91,8 @@ class StudentNormalWebinarParticipantController extends Controller
                         'webinar_id' => 'required|numeric',
                         'student_id' => 'required|numeric',
                         'status' => 'required|numeric',
+                        // 'transaction_id'=>'',
+                        // 'order_id'=>'',
                     ]);
                     if ($validation->fails()) {
                         return $this->makeJSONResponse($validation->errors(), 400);
@@ -98,9 +102,16 @@ class StudentNormalWebinarParticipantController extends Controller
                             ->where('student_id', '=', $request->studen_id)
                             ->update(['status' => $request->status]);
                     }
-                    $message = "webinar status booked ";
+                    $message = "webinar status booked, We kindly request you settle the payment request immediatelly before (time)";
                     $code = 200;
                     break;
+
+                case 4:
+                    //pilih dari tabel order sesuai dengan id yang dimasukkan 
+                    //ubah statusnya mejadi 4 
+                    //nantinya ini yang akan dgunakan sebagai paticipants
+                    //simpan token ke kolom token di tabel order
+
             }
         } catch (Exception $e) {
             echo $e;
