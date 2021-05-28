@@ -5,15 +5,20 @@ namespace App\Http\Controllers\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Validator;
-use App\Models\CareerSupportModelsOrder;
+use App\Models\CareerSupportModelsOrders;
 use App\Models\CareerSupportModelsWebinarBiasa;
 use App\Models\StudentModel;
+use CareerSupportModelsOrders as GlobalCareerSupportModelsOrders;
 use Illuminate\Support\Facades\DB;
 use Veritrans_Config;
 use Veritrans_Snap;
+use Veritrans_Transaction;
+use App\Traits\ResponseHelper;
 
 class WebinarPaymentController extends Controller
 {
+    use ResponseHelper;
+
     private $tbOrder;
     private $tbStudent;
     private $tbWebinar;
@@ -25,7 +30,7 @@ class WebinarPaymentController extends Controller
         Veritrans_Config::$isSanitized = true;
         Veritrans_Config::$is3ds = true;
 
-        $this->tbOrder = CareerSupportModelsOrder::tableName();
+        $this->tbOrder = CareerSupportModelsOrders::tableName();
         $this->tbStudent = StudentModel::tableName();
         $this->tbWebinar = CareerSupportModelsWebinarBiasa::tableName();
     }
@@ -78,7 +83,34 @@ class WebinarPaymentController extends Controller
                 return true;
             });
 
-            return $status ? response(['token' => $snapToken], 200) : response(['message' => 'failed'], 400);
+            return $status ? $this->makeJSONResponse(['token' => $snapToken], 200) : $this->makeJSONResponse((['message' => 'failed'], 400);
         }
+    }
+
+    public function updateStatus()
+    {
+        $notif = new Veritrans_Transaction();
+
+        $transaction = $notif->transaction_status;
+        $fraud = $notif->fraud_status;
+        $order_id = $notif->order_id;
+        $status = "failure";
+
+        if ($fraud == "accept") {
+            switch ($transaction) {
+                case "capture":
+                    $status = "success";
+                    break;
+                case "pending":
+                    $status = "pending";
+                    break;
+                case "expire":
+                    $status = "expire";
+                    break;
+            }
+        }
+
+        CareerSupportModelsOrders::where('order_id', $order_id)
+            ->update(['status' => $status]);
     }
 }
