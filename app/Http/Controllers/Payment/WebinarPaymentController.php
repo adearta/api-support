@@ -14,6 +14,7 @@ use Veritrans_Config;
 use Veritrans_Snap;
 use Veritrans_Transaction;
 use App\Traits\ResponseHelper;
+use Carbon\Carbon;
 
 class WebinarPaymentController extends Controller
 {
@@ -56,8 +57,10 @@ class WebinarPaymentController extends Controller
                     ->where('id', '=', $orderWebinar[0]->student_id)
                     ->get();
 
+                $order_id = "WB003" . $student[0]->id . $request->order_id;
+
                 $transaction_details = array(
-                    'order_id' => "WB00" . $student[0]->id . $request->order_id,
+                    'order_id' => $order_id,
                     'gross_amount' => $orderWebinar[0]->price,
                 );
 
@@ -70,14 +73,15 @@ class WebinarPaymentController extends Controller
 
                 $customer_detail = array(
                     'first_name' => $student[0]->name,
-                    'email' => $student[0]->email,
+                    'last_name' => 'last name',
+                    'email' => "gunk.adi15@gmail.com",
                     'phone' => $student[0]->phone
                 );
 
                 $params = array(
                     'transaction_details' => $transaction_details,
                     'item_details' => $item_details,
-                    'customers_detail' => $customer_detail
+                    'customer_details' => $customer_detail
                 );
 
                 $token = Veritrans_Snap::getSnapToken($params);
@@ -85,8 +89,9 @@ class WebinarPaymentController extends Controller
                 DB::table($this->tbOrder)
                     ->where('id', $request->order_id)
                     ->update([
-                        'order_id' => "WB00" . $student[0]->id . $request->order_id,
-                        'token' => $token
+                        'token' => $token,
+                        'order_id' => $order_id,
+                        'modified' => Carbon::now()
                     ]);
 
                 return $token;
@@ -119,7 +124,11 @@ class WebinarPaymentController extends Controller
             }
         }
 
-        CareerSupportModelsOrders::where('order_id', $order_id)
-            ->update(['status' => $status]);
+        DB::table($this->tbOrder)
+            ->where('order_id', $order_id)
+            ->update([
+                'status' => $status,
+                'modified' => Carbon::now()
+            ]);
     }
 }

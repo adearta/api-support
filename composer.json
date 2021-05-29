@@ -15,6 +15,7 @@
         "laravel/framework": "^8.40",
         "laravel/passport": "^10.1",
         "laravel/tinker": "^2.5",
+        "nesbot/carbon": "^2.48",
         "veritrans/veritrans-php": "dev-master"
     },
     "require-dev": {
