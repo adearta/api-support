@@ -47,7 +47,7 @@ class WebinarPaymentController extends Controller
             $snapToken = "";
             $status = DB::transaction(function () use ($request) {
                 $orderWebinar = DB::table($this->tbOrder, 'order')
-                    ->leftJoin($this->tbWebinar . 'as webinar', 'order.webinar_id', '=', 'webinar.id')
+                    ->leftJoin($this->tbWebinar . ' as webinar', 'order.webinar_id', '=', 'webinar.id')
                     ->where('order.id', '=', $request->order_id)
                     ->get();
 
@@ -57,15 +57,16 @@ class WebinarPaymentController extends Controller
                     ->get();
 
                 $transaction_details = array(
-                    'order_id' => "WB00" . $student[0]->id . $orderWebinar[0]->id,
+                    'order_id' => "WB00" . $student[0]->id . $request->order_id,
                     'gross_amount' => $orderWebinar[0]->price,
                 );
 
-                $item_details = array(
-                    'id' => $orderWebinar[0]->id,
+                $item_details = array([
+                    'id' => $request->order_id,
                     'price' => $orderWebinar[0]->price,
-                    'name' => $orderWebinar[0]->event_name
-                );
+                    'name' => $orderWebinar[0]->event_name,
+                    'quantity' => 1
+                ]);
 
                 $customer_detail = array(
                     'first_name' => $student[0]->name,
@@ -79,11 +80,19 @@ class WebinarPaymentController extends Controller
                     'customers_detail' => $customer_detail
                 );
 
-                $this->snapToken = Veritrans_Snap::getSnapToken($params);
-                return true;
+                $token = Veritrans_Snap::getSnapToken($params);
+
+                DB::table($this->tbOrder)
+                    ->where('id', $request->order_id)
+                    ->update([
+                        'order_id' => "WB00" . $student[0]->id . $request->order_id,
+                        'token' => $token
+                    ]);
+
+                return $token;
             });
 
-            return $status ? $this->makeJSONResponse(['token' => $snapToken], 200) : $this->makeJSONResponse((['message' => 'failed'], 400);
+            return $status ? $this->makeJSONResponse(['token' => $status], 200) : $this->makeJSONResponse(['message' => 'failed'], 400);
         }
     }
 

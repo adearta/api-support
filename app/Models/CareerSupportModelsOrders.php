@@ -16,7 +16,7 @@ class CareerSupportModelsOrders extends Model
         'webinar_id',
         'transaction_id',
         'order_id',
-        'status',
+        'token',
     ];
     protected $hidden = [
         'creator_id',

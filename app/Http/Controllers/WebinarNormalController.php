@@ -89,7 +89,6 @@ class WebinarNormalController extends Controller
         $validation = Validator::make($request->all(), [
             'event_name' => 'required',
             'event_date' => 'required',
-            'event_time' => 'required',
             'event_picture' => 'required|mimes:jpg,jpeg,png|max:2000',
             'event_link' => 'required|url',
             'start_time' => 'required',
@@ -108,7 +107,6 @@ class WebinarNormalController extends Controller
                             'event_name' => $request->event_name,
                             'event_link' => $request->event_link,
                             'event_date' => $request->event_date,
-                            'event_time' => $request->event_time,
                             'event_picture' => $path,
                             'start_time' => $request->start_time,
                             'end_time' => $request->end_time,
