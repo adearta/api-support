@@ -61,7 +61,7 @@ class WebinarPaymentController extends Controller
                 $token = "";
 
                 //check the status of order
-                if ($orderWebinar[0]->status == "registered") {
+                if ($orderWebinar[0]->status == "order" || $orderWebinar[0]->status == "expire") {
                     $student = DB::connection('pgsql2')
                         ->table($this->tbStudent)
                         ->where('id', '=', $orderWebinar[0]->student_id)
