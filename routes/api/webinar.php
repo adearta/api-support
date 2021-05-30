@@ -97,5 +97,6 @@ Route::group(['prefix' => 'normal'], function () {
 
 //payment
 Route::group(['prefix' => 'payment'], function () {
+    //api for handle the transaction checkout
     Route::get('/charge', [WebinarPaymentController::class, 'charge']);
 });
