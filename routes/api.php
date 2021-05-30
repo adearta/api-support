@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Payment\WebinarPaymentController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -19,3 +20,6 @@ Route::middleware('auth:api')->prefix('webinar')->group(base_path('routes/api/we
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+
+//api for change the order status and triggered by midtrans
+Route::post('/payment/status', [WebinarPaymentController::class, 'updateStatus']);

@@ -100,5 +100,6 @@ Route::get('/payment-reminder', [WebinarNormalController::class, 'paymentReminde
 
 //payment
 Route::group(['prefix' => 'payment'], function () {
+    //api for handle the transaction checkout
     Route::get('/charge', [WebinarPaymentController::class, 'charge']);
 });
