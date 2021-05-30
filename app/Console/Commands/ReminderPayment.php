@@ -9,6 +9,8 @@ use App\Models\CareerSupportModelsWebinarBiasa;
 use App\Models\NotificationWebinarModel;
 use App\Models\StudentModel;
 use Illuminate\Support\Facades\DB;
+use App\Models\CareerSupportModelsOrdersWebinar;
+use CareerSupportModelsOrders;
 
 class ReminderPayment extends Command
 {
@@ -24,7 +26,7 @@ class ReminderPayment extends Command
      *
      * @var string
      */
-    protected $description = 'Payment Reminder';
+    protected $description = 'reminder payment of webinar';
 
     /**
      * Create a new command instance.
@@ -53,24 +55,40 @@ class ReminderPayment extends Command
         $tbStudent = StudentModel::tableName();
         $tbWebinar = CareerSupportModelsWebinarBiasa::tableName();
         $tbNotification = NotificationWebinarModel::tableName();
+        // $tbOrder = CareerSupportModelsOrdersWebinar::tableName();
+        $tbOrder = CareerSupportModelsOrdersWebinar::tableName();
+        // $interval = "current_date + interval '" . $day . "' day";
+        // $eve = DB::table($tbParticipant, 'participants')
+        //     ->leftJoin($tbWebinar . " as web ", "web.id", "=", "participant.webinar_id")
+        //     ->where("web.event_date", "=", "current_date + interval '" . $day . "' day")
+        //     ->get();
 
-        $event = DB::select("select * from " . $tbParticipant . " as participant left join " . $tbWebinar . " as web on web.id = participant.webinar_id where web.event_date = current_date + interval " . $day . " day");
+        $event = DB::select("select * from " . $tbParticipant . " as participant left join " . $tbWebinar . " as web on web.id = participant.webinar_id where web.event_date = current_date + interval '" . $day . "' day");
 
         if (!empty($event)) {
             foreach ($event as $e) {
-                //select name and email of student
-                $student = DB::connection('pgsql2')->table($tbStudent)
-                    ->where('id', '=', $e->student_id)
-                    ->select('name', 'email')
+                //get status pembayaran
+                $payment = DB::table($tbOrder)
+                    ->where("student_id", "=", $e->student_id)
+                    ->select("status")
                     ->get();
-                DB::table($tbNotification)
-                    ->insert(array(
-                        'student_id' => $e->student_id,
-                        'webinar_id' => $e->webinar_id,
-                        'message_id'    => "Diingatkan kembali bahwa Webinar dengan judul " . $e->event_name . " akan dilaksakan h-" . $day . " dari sekarang, yaitu pada tanggal " . $e->event_date . " dan pada jam " . $e->event_time . " silahkan untuk menyelesaikan pembayaran anda!",
-                        'message_en'    => "Webinar reminder with a title" . $e->event_name . " will be held on " . $e->event_date . " and at " . $e->event_time . " please settle the payment immediately!"
-                    ));
-                SendMailReminderPaymentJob::dispatch($e, $student, $day);
+                if ($payment[0]->status == "registered") {
+                    //select name and email of student
+                    $student = DB::connection('pgsql2')->table($tbStudent)
+                        ->where('id', '=', $e->student_id)
+                        ->select('name', 'email')
+                        ->get();
+                    DB::table($tbNotification)
+                        ->insert(array(
+                            'student_id' => $e->student_id,
+                            'webinar_normal_id' => $e->webinar_id,
+                            'message_id'    => "Diingatkan kembali bahwa Webinar dengan judul " . $e->event_name . " akan dilaksakan h-" . $day . " dari sekarang, yaitu pada tanggal " . $e->event_date . " dan pada jam " . $e->start_time . " silahkan untuk menyelesaikan pembayaran anda!",
+                            'message_en'    => "Webinar reminder with a title" . $e->event_name . " will be held on " . $e->event_date . " and at " . $e->start_time . " please settle the payment immediately!"
+                        ));
+                    SendMailReminderPaymentJob::dispatch($e, $student, $day);
+
+                    echo 'success';
+                }
             }
         }
     }

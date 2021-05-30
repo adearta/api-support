@@ -4,7 +4,7 @@
         sekarang, yaitu pada:</h4>
 
     <h5>Tanggal: {{ $event->event_date }} </h5>
-    <h5>Jam: {{ $event->event_time }} </h5>
+    <h5>Jam: {{ $event->start_time }} sampai {{ $event->end_time }} </h5>
     {{-- <h5>Zoom Link: {{ $event->zoom_link }}</h5> --}}
 
     <img style="width: 200px; height: 200px;"

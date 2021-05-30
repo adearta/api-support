@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Traits\ModelHelper;
 
-class CareerSupportModelsOrders extends Model
+class CareerSupportModelsOrdersWebinar extends Model
 {
     use HasFactory, ModelHelper;
     protected $table = 'career_support_models_orders';

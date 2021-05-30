@@ -93,7 +93,10 @@ Route::group(['prefix' => 'normal'], function () {
     Route::get('/getnotif', [NotificationNormalWebinarController::class, 'getNotification']);
     Route::post('/readnotif', [NotificationNormalWebinarController::class, 'setNotificationReaded']);
     Route::post('/register', [StudentNormalWebinarParticipantController::class, 'registerStudent']);
+    Route::get('/status', [StudentNormalWebinarParticipantController::class, 'status']);
 });
+
+Route::get('/payment-reminder', [WebinarNormalController::class, 'paymentReminder']);
 
 //payment
 Route::group(['prefix' => 'payment'], function () {

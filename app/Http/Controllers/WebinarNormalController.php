@@ -11,6 +11,8 @@ use App\Models\CareerSupportModelsWebinarBiasa;
 use App\Models\StudentModel;
 use App\Models\CareerSupportModelsNormalStudentParticipants;
 use App\Models\NotificationWebinarModel;
+use App\Models\CareerSupportModelsOrdersWebinar;
+use App\Jobs\SendMailReminderPaymentJob;
 use Illuminate\Support\Facades\DB;
 
 class WebinarNormalController extends Controller
@@ -32,12 +34,11 @@ class WebinarNormalController extends Controller
     {
         //count data fom tabel participant to get the registerd
         try {
-            $count = "select count('student.id') from " . $this->tbParticipant . " as student where student.webinar_id = web.id";
-            $daysLeft = "select count('web.event_date - current_date') from " . $this->tbWebinar;
-            //select data from table webinar where event date not this date.
-            $data = DB::select("select web.id as webinar_id, web.event_link, web.event_name, web.event_date, web.event_time, web.start_time, web.end_time, web.price web.event_picture, (500) as quota, (" . $count . ") as registered,(" . $daysLeft . ") as Days_Left from " . $this->tbWebinar . " as web where web.event_date > current_date");
+            //hitung jumlah student yang terdaftar dengan cara menghitung jumlah id webinar yang sama di tabel participants 
+            $count = "select count('part.webinar_id') from " . $this->tbParticipant . " as part where part.webinar_id = web.id";
+            $datas = DB::select("select web.id as webinar_id, web.event_name, web.event_picture, web.event_date, web.start_time, web.end_time, web.price, (500) as quota, (" . $count . ") as registered from " . $this->tbWebinar . " as web where web.event_date > current_date");
 
-            return $this->makeJSONResponse($data, 200);
+            return $this->makeJSONResponse($datas, 200);
         } catch (Exception $e) {
             echo $e;
         }
@@ -70,7 +71,7 @@ class WebinarNormalController extends Controller
                         "event_id"   => $webinar_id,
                         "event_name" => $data[0]->event_name,
                         "event_date" => $data[0]->event_date,
-                        "event_time" => $data[0]->event_time,
+                        // "event_time" => $data[0]->event_time,
                         "start_time" => $data[0]->start_time,
                         "end_time" => $data[0]->end_time,
                         "event_picture" => $data[0]->event_picture,
@@ -125,4 +126,49 @@ class WebinarNormalController extends Controller
         }
     }
     //
+
+    public function paymentReminder()
+    {
+        $day = 7;
+        $tbParticipant = CareerSupportModelsNormalStudentParticipants::tableName();
+        $tbStudent = StudentModel::tableName();
+        $tbWebinar = CareerSupportModelsWebinarBiasa::tableName();
+        $tbNotification = NotificationWebinarModel::tableName();
+        // $tbOrder = CareerSupportModelsOrdersWebinar::tableName();
+        $tbOrder = CareerSupportModelsOrdersWebinar::tableName();
+        // $interval = "current_date + interval '" . $day . "' day";
+        // $eve = DB::table($tbParticipant, 'participants')
+        //     ->leftJoin($tbWebinar . " as web ", "web.id", "=", "participant.webinar_id")
+        //     ->where("web.event_date", "=", "current_date + interval '" . $day . "' day")
+        //     ->get();
+
+        $event = DB::select("select * from " . $tbParticipant . " as participant left join " . $tbWebinar . " as web on web.id = participant.webinar_id where web.event_date = current_date + interval '" . $day . "' day");
+
+        if (!empty($event)) {
+            foreach ($event as $e) {
+                //get status pembayaran
+                $payment = DB::table($tbOrder)
+                    ->where("student_id", "=", $e->student_id)
+                    ->select("status")
+                    ->get();
+                if ($payment[0]->status == "registered") {
+                    //select name and email of student
+                    $student = DB::connection('pgsql2')->table($tbStudent)
+                        ->where('id', '=', $e->student_id)
+                        ->select('name', 'email')
+                        ->get();
+                    DB::table($tbNotification)
+                        ->insert(array(
+                            'student_id' => $e->student_id,
+                            'webinar_normal_id' => $e->webinar_id,
+                            'message_id'    => "Diingatkan kembali bahwa Webinar dengan judul " . $e->event_name . " akan dilaksakan h-" . $day . " dari sekarang, yaitu pada tanggal " . $e->event_date . " dan pada jam " . $e->start_time . " silahkan untuk menyelesaikan pembayaran anda!",
+                            'message_en'    => "Webinar reminder with a title" . $e->event_name . " will be held on " . $e->event_date . " and at " . $e->start_time . " please settle the payment immediately!"
+                        ));
+                    SendMailReminderPaymentJob::dispatch($e, $student, $day);
+
+                    echo 'success';
+                }
+            }
+        }
+    }
 }
