@@ -68,7 +68,7 @@ class WebinarPaymentController extends Controller
                         ->get();
 
                     //generate order_id
-                    $order_id = "WB006" . $student[0]->id . $request->order_id;
+                    $order_id = "WB00" . $student[0]->id . $request->order_id;
 
                     //initialization the detail of transaction_detail
                     $transaction_details = array(
@@ -169,7 +169,8 @@ class WebinarPaymentController extends Controller
                 DB::table($this->tbNotif)->insert(array(
                     'student_id'    => $orderDetail[0]->student_id,
                     'message_id'    => $message_id,
-                    'message_en'    => $message_en
+                    'message_en'    => $message_en,
+                    'webinar_normal_id' => $orderDetail[0]->webinar_id
                 ));
 
                 //update the token, order_id, modified from order

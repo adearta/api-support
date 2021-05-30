@@ -10,6 +10,7 @@ use App\Models\CareerSupportModelsWebinarBiasa;
 // use App\Models\CareerSupportModelsNotificationWebinarnormalModel;
 use App\Models\StudentModel;
 use App\Models\CareerSupportModelsNormalStudentParticipants;
+use App\Models\CareerSupportModelsOrders;
 use App\Models\NotificationWebinarModel;
 use Illuminate\Support\Facades\DB;
 
@@ -20,12 +21,15 @@ class WebinarNormalController extends Controller
     private $tbParticipant;
     private $tbNotif;
     private $tbStudent;
+    private $tbOrder;
+
     public function __construct()
     {
         $this->tbWebinar = CareerSupportModelsWebinarBiasa::tableName();
         $this->tbParticipant = CareerSupportModelsNormalStudentParticipants::tableName();
         $this->tbNotif = NotificationWebinarModel::tableName();
         $this->tbStudent = StudentModel::tableName();
+        $this->tbOrder = CareerSupportModelsOrders::tableName();
     }
 
     public function listNormalWebinar()
@@ -42,6 +46,7 @@ class WebinarNormalController extends Controller
             echo $e;
         }
     }
+
     public function detailNormalWebinar($webinar_id)
     {
         $validation = Validator::make(['webinar_id' => $webinar_id], [
@@ -51,32 +56,26 @@ class WebinarNormalController extends Controller
             return $this->makeJSONResponse($validation->errors(), 400);
         } else {
             try {
-                $data = DB::select("select * from " . $this->tbWebinar . " as web left join " . $this->tbParticipant . " as student on student.webinar_id = web.id where web.id = ?", [$webinar_id]);
+                $data = DB::table($this->tbWebinar, 'webinar')
+                    ->leftJoin($this->tbOrder . ' as pesan', 'webinar.id', '=', 'pesan.webinar_id')
+                    ->where('webinar.id', '=', $webinar_id)
+                    ->get();
 
-                $student = array();
-
-                for ($i = 0; $i < count($data); $i++) {
-                    $temp = DB::connection('pgsql2')->table($this->tbStudent)
-                        ->where('id', '=', $data[$i]->student_id)
-                        ->select('name', 'nim')
-                        ->get();
-
-                    $student[$i] = array(
-                        // "id"=> $data[$i]->student_id,
-                        "name" => $temp[0]->name,
-                        "nim" => $temp[0]->nim,
-                    );
+                if (count($data) > 0) {
                     $response = array(
-                        "event_id"   => $webinar_id,
-                        "event_name" => $data[0]->event_name,
-                        "event_date" => $data[0]->event_date,
-                        "event_time" => $data[0]->event_time,
-                        "start_time" => $data[0]->start_time,
-                        "end_time" => $data[0]->end_time,
+                        "event_id"      => $webinar_id,
+                        "event_name"    => $data[0]->event_name,
+                        "event_date"    => $data[0]->event_date,
+                        "start_time"    => $data[0]->start_time,
+                        "end_time"      => $data[0]->end_time,
                         "event_picture" => $data[0]->event_picture,
-                        "student"    => $student
+                        "registered"    => count($data),
+                        'quota'         => 500
                     );
+
                     return $this->makeJSONResponse($response, 200);
+                } else {
+                    return $this->makeJSONResponse(['message' => 'Data not found'], 202);
                 }
             } catch (Exception $e) {
                 echo $e;
@@ -124,5 +123,4 @@ class WebinarNormalController extends Controller
             }
         }
     }
-    //
 }
