@@ -90,6 +90,7 @@ Route::get('/participant/{webinar_id}', [WebinarAkbarController::class, 'partici
 Route::group(['prefix' => 'normal'], function () {
     Route::get('/listwebinar', [WebinarNormalController::class, 'listNormalWebinar']);
     Route::get('/detail/{webinar_id}', [WebinarNormalController::class, 'detailNormalWebinar']);
+    Route::get('/detail-list/student/{webinar_id}', [WebinarNormalController::class, 'detailNormalWebinarWithStudent']);
     Route::get('/order/detail', [WebinarOrderController::class, 'getDetailOrder']);
     Route::post('/create', [WebinarNormalController::class, 'addNormalWebinar']);
     Route::get('/getnotif', [NotificationNormalWebinarController::class, 'getNotification']);

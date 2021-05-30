@@ -12,6 +12,7 @@ use App\Models\StudentModel;
 use App\Models\CareerSupportModelsNormalStudentParticipants;
 use App\Models\CareerSupportModelsOrders;
 use App\Models\NotificationWebinarModel;
+use App\Models\SchoolModel;
 use Illuminate\Support\Facades\DB;
 
 class WebinarNormalController extends Controller
@@ -22,6 +23,7 @@ class WebinarNormalController extends Controller
     private $tbNotif;
     private $tbStudent;
     private $tbOrder;
+    private $tbSchool;
 
     public function __construct()
     {
@@ -30,6 +32,7 @@ class WebinarNormalController extends Controller
         $this->tbNotif = NotificationWebinarModel::tableName();
         $this->tbStudent = StudentModel::tableName();
         $this->tbOrder = CareerSupportModelsOrders::tableName();
+        $this->tbSchool = SchoolModel::tableName();
     }
 
     public function listNormalWebinar()
@@ -47,6 +50,7 @@ class WebinarNormalController extends Controller
         }
     }
 
+    //get the detail of webinar
     public function detailNormalWebinar($webinar_id)
     {
         $validation = Validator::make(['webinar_id' => $webinar_id], [
@@ -82,9 +86,64 @@ class WebinarNormalController extends Controller
             }
         }
     }
+
+    //get the detail of webinar with the participant list
+    public function detailNormalWebinarWithStudent($webinar_id)
+    {
+        $validation = Validator::make(['webinar_id' => $webinar_id], [
+            'webinar_id' => 'required|numeric'
+        ]);
+        if ($validation->fails()) {
+            return $this->makeJSONResponse($validation->errors(), 400);
+        } else {
+            try {
+                $data = DB::table($this->tbWebinar, 'webinar')
+                    ->leftJoin($this->tbParticipant . ' as participant', 'webinar.id', '=', 'participant.webinar_id')
+                    ->leftJoin($this->tbOrder . ' as order', 'participant.student_id', '=', 'order.student_id')
+                    ->where('webinar.id', '=', $webinar_id)
+                    ->get();
+
+                if (count($data) > 0) {
+                    $student = array();
+
+                    for ($i = 0; $i < count($data); $i++) {
+                        $temp = DB::connection('pgsql2')->table($this->tbStudent, 'student')
+                            ->leftJoin($this->tbSchool . ' as school', 'student.school_id', '=', 'school.id')
+                            ->where('student.id', '=', $data[$i]->student_id)
+                            ->select('student.name as student_name', 'school.name as school_name')
+                            ->get();
+
+                        $student[$i] = array(
+                            "student_id"  => $data[$i]->student_id,
+                            "student_name" => $temp[0]->student_name,
+                            "school_name" => $temp[0]->school_name,
+                            "participant_status" => $data[$i]->status
+                        );
+                    }
+                    $response = array(
+                        "event_id"      => $webinar_id,
+                        "event_name"    => $data[0]->event_name,
+                        "event_date"    => $data[0]->event_date,
+                        "start_time"    => $data[0]->start_time,
+                        "end_time"      => $data[0]->end_time,
+                        "event_picture" => $data[0]->event_picture,
+                        "registered"    => count($data),
+                        'quota'         => 500,
+                        'student'       => $student
+                    );
+
+                    return $this->makeJSONResponse($response, 200);
+                } else {
+                    return $this->makeJSONResponse(['message' => 'Data not found'], 202);
+                }
+            } catch (Exception $e) {
+                echo $e;
+            }
+        }
+    }
+
     public function addNormalWebinar(Request $request)
     {
-
         $validation = Validator::make($request->all(), [
             'event_name' => 'required',
             'event_date' => 'required',
