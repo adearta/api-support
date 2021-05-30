@@ -60,20 +60,27 @@ class WebinarNormalController extends Controller
             return $this->makeJSONResponse($validation->errors(), 400);
         } else {
             try {
-                $data = DB::table($this->tbWebinar, 'webinar')
-                    ->leftJoin($this->tbOrder . ' as pesan', 'webinar.id', '=', 'pesan.webinar_id')
-                    ->where('webinar.id', '=', $webinar_id)
+                $webinar = DB::table($this->tbWebinar)
+                    ->where('id', '=', $webinar_id)
                     ->get();
 
-                if (count($data) > 0) {
+                $registered = DB::table($this->tbWebinar, 'webinar')
+                    ->leftJoin($this->tbOrder . ' as pesan', 'webinar.id', '=', 'pesan.webinar_id')
+                    ->where('webinar.id', '=', $webinar_id)
+                    ->where('pesan.status', '!=', 'order')
+                    ->where('pesan.status', '!=', 'expire')
+                    ->select('pesan.id')
+                    ->get();
+
+                if (count($webinar) > 0) {
                     $response = array(
                         "event_id"      => $webinar_id,
-                        "event_name"    => $data[0]->event_name,
-                        "event_date"    => $data[0]->event_date,
-                        "start_time"    => $data[0]->start_time,
-                        "end_time"      => $data[0]->end_time,
-                        "event_picture" => $data[0]->event_picture,
-                        "registered"    => count($data),
+                        "event_name"    => $webinar[0]->event_name,
+                        "event_date"    => $webinar[0]->event_date,
+                        "start_time"    => $webinar[0]->start_time,
+                        "end_time"      => $webinar[0]->end_time,
+                        "event_picture" => $webinar[0]->event_picture,
+                        "registered"    => count($registered),
                         'quota'         => 500
                     );
 
@@ -97,37 +104,47 @@ class WebinarNormalController extends Controller
             return $this->makeJSONResponse($validation->errors(), 400);
         } else {
             try {
-                $data = DB::table($this->tbWebinar, 'webinar')
-                    ->leftJoin($this->tbParticipant . ' as participant', 'webinar.id', '=', 'participant.webinar_id')
-                    ->leftJoin($this->tbOrder . ' as order', 'participant.student_id', '=', 'order.student_id')
-                    ->where('webinar.id', '=', $webinar_id)
+                $webinar = DB::table($this->tbWebinar)
+                    ->where('id', '=', $webinar_id)
                     ->get();
 
-                if (count($data) > 0) {
+                $registered = DB::table($this->tbWebinar, 'webinar')
+                    ->leftJoin($this->tbParticipant . ' as participant', 'webinar.id', '=', 'participant.webinar_id')
+                    ->leftJoin($this->tbOrder . ' as pesan', 'participant.student_id', '=', 'pesan.student_id')
+                    ->where('webinar.id', '=', $webinar_id)
+                    ->where('pesan.status', '!=', 'order')
+                    ->where('pesan.status', '!=', 'expire')
+                    ->select('pesan.student_id', 'pesan.status')
+                    ->get();
+
+                if (count($webinar) > 0) {
                     $student = array();
 
-                    for ($i = 0; $i < count($data); $i++) {
-                        $temp = DB::connection('pgsql2')->table($this->tbStudent, 'student')
-                            ->leftJoin($this->tbSchool . ' as school', 'student.school_id', '=', 'school.id')
-                            ->where('student.id', '=', $data[$i]->student_id)
-                            ->select('student.name as student_name', 'school.name as school_name')
-                            ->get();
+                    if (count($registered) > 0) {
+                        for ($i = 0; $i < count($registered); $i++) {
+                            $temp = DB::connection('pgsql2')->table($this->tbStudent, 'student')
+                                ->leftJoin($this->tbSchool . ' as school', 'student.school_id', '=', 'school.id')
+                                ->where('student.id', '=', $registered[$i]->student_id)
+                                ->select('student.name as student_name', 'school.name as school_name')
+                                ->get();
 
-                        $student[$i] = array(
-                            "student_id"  => $data[$i]->student_id,
-                            "student_name" => $temp[0]->student_name,
-                            "school_name" => $temp[0]->school_name,
-                            "participant_status" => $data[$i]->status
-                        );
+                            $student[$i] = array(
+                                "student_id"  => $registered[$i]->student_id,
+                                "student_name" => $temp[0]->student_name,
+                                "school_name" => $temp[0]->school_name,
+                                "participant_status" => $registered[$i]->status
+                            );
+                        }
                     }
+
                     $response = array(
                         "event_id"      => $webinar_id,
-                        "event_name"    => $data[0]->event_name,
-                        "event_date"    => $data[0]->event_date,
-                        "start_time"    => $data[0]->start_time,
-                        "end_time"      => $data[0]->end_time,
-                        "event_picture" => $data[0]->event_picture,
-                        "registered"    => count($data),
+                        "event_name"    => $webinar[0]->event_name,
+                        "event_date"    => $webinar[0]->event_date,
+                        "start_time"    => $webinar[0]->start_time,
+                        "end_time"      => $webinar[0]->end_time,
+                        "event_picture" => $webinar[0]->event_picture,
+                        "registered"    => count($registered),
                         'quota'         => 500,
                         'student'       => $student
                     );
