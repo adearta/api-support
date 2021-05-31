@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\NotificationNormalWebinarController;
 use App\Http\Controllers\WebinarAkbarController;
 use App\Http\Controllers\SchoolParticipantAkbarController;
@@ -96,6 +97,7 @@ Route::group(['prefix' => 'normal'], function () {
     Route::get('/getnotif', [NotificationNormalWebinarController::class, 'getNotification']);
     Route::post('/readnotif', [NotificationNormalWebinarController::class, 'setNotificationReaded']);
     Route::post('/register', [StudentNormalWebinarParticipantController::class, 'registerStudent']); //ok
+    Route::post('/addcertificate', [CertificateController::class, 'addCertificate']);
     Route::get('/status', [StudentNormalWebinarParticipantController::class, 'status']); //only tester
 });
 //only tester
