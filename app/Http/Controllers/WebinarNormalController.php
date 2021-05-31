@@ -10,9 +10,14 @@ use App\Models\CareerSupportModelsWebinarBiasa;
 // use App\Models\CareerSupportModelsNotificationWebinarnormalModel;
 use App\Models\StudentModel;
 use App\Models\CareerSupportModelsNormalStudentParticipants;
+use App\Models\CareerSupportModelsOrders;
 use App\Models\NotificationWebinarModel;
+<<<<<<< HEAD
 use App\Models\CareerSupportModelsOrdersWebinar;
 use App\Jobs\SendMailReminderPaymentJob;
+=======
+use App\Models\SchoolModel;
+>>>>>>> 509d2448865bb3229e818b709c663af0103c9b04
 use Illuminate\Support\Facades\DB;
 
 class WebinarNormalController extends Controller
@@ -22,12 +27,17 @@ class WebinarNormalController extends Controller
     private $tbParticipant;
     private $tbNotif;
     private $tbStudent;
+    private $tbOrder;
+    private $tbSchool;
+
     public function __construct()
     {
         $this->tbWebinar = CareerSupportModelsWebinarBiasa::tableName();
         $this->tbParticipant = CareerSupportModelsNormalStudentParticipants::tableName();
         $this->tbNotif = NotificationWebinarModel::tableName();
         $this->tbStudent = StudentModel::tableName();
+        $this->tbOrder = CareerSupportModelsOrders::tableName();
+        $this->tbSchool = SchoolModel::tableName();
     }
 
     public function listNormalWebinar()
@@ -43,6 +53,8 @@ class WebinarNormalController extends Controller
             echo $e;
         }
     }
+
+    //get the detail of webinar
     public function detailNormalWebinar($webinar_id)
     {
         $validation = Validator::make(['webinar_id' => $webinar_id], [
@@ -52,22 +64,85 @@ class WebinarNormalController extends Controller
             return $this->makeJSONResponse($validation->errors(), 400);
         } else {
             try {
-                $data = DB::select("select * from " . $this->tbWebinar . " as web left join " . $this->tbParticipant . " as student on student.webinar_id = web.id where web.id = ?", [$webinar_id]);
+                $webinar = DB::table($this->tbWebinar)
+                    ->where('id', '=', $webinar_id)
+                    ->get();
 
-                $student = array();
+                $registered = DB::table($this->tbWebinar, 'webinar')
+                    ->leftJoin($this->tbOrder . ' as pesan', 'webinar.id', '=', 'pesan.webinar_id')
+                    ->where('webinar.id', '=', $webinar_id)
+                    ->where('pesan.status', '!=', 'order')
+                    ->where('pesan.status', '!=', 'expire')
+                    ->select('pesan.id')
+                    ->get();
 
-                for ($i = 0; $i < count($data); $i++) {
-                    $temp = DB::connection('pgsql2')->table($this->tbStudent)
-                        ->where('id', '=', $data[$i]->student_id)
-                        ->select('name', 'nim')
-                        ->get();
-
-                    $student[$i] = array(
-                        // "id"=> $data[$i]->student_id,
-                        "name" => $temp[0]->name,
-                        "nim" => $temp[0]->nim,
-                    );
+                if (count($webinar) > 0) {
                     $response = array(
+                        "event_id"      => $webinar_id,
+                        "event_name"    => $webinar[0]->event_name,
+                        "event_date"    => $webinar[0]->event_date,
+                        "start_time"    => $webinar[0]->start_time,
+                        "end_time"      => $webinar[0]->end_time,
+                        "event_picture" => $webinar[0]->event_picture,
+                        "registered"    => count($registered),
+                        'quota'         => 500
+                    );
+
+                    return $this->makeJSONResponse($response, 200);
+                } else {
+                    return $this->makeJSONResponse(['message' => 'Data not found'], 202);
+                }
+            } catch (Exception $e) {
+                echo $e;
+            }
+        }
+    }
+
+    //get the detail of webinar with the participant list
+    public function detailNormalWebinarWithStudent($webinar_id)
+    {
+        $validation = Validator::make(['webinar_id' => $webinar_id], [
+            'webinar_id' => 'required|numeric'
+        ]);
+        if ($validation->fails()) {
+            return $this->makeJSONResponse($validation->errors(), 400);
+        } else {
+            try {
+                $webinar = DB::table($this->tbWebinar)
+                    ->where('id', '=', $webinar_id)
+                    ->get();
+
+                $registered = DB::table($this->tbWebinar, 'webinar')
+                    ->leftJoin($this->tbParticipant . ' as participant', 'webinar.id', '=', 'participant.webinar_id')
+                    ->leftJoin($this->tbOrder . ' as pesan', 'participant.student_id', '=', 'pesan.student_id')
+                    ->where('webinar.id', '=', $webinar_id)
+                    ->where('pesan.status', '!=', 'order')
+                    ->where('pesan.status', '!=', 'expire')
+                    ->select('pesan.student_id', 'pesan.status')
+                    ->get();
+
+                if (count($webinar) > 0) {
+                    $student = array();
+
+                    if (count($registered) > 0) {
+                        for ($i = 0; $i < count($registered); $i++) {
+                            $temp = DB::connection('pgsql2')->table($this->tbStudent, 'student')
+                                ->leftJoin($this->tbSchool . ' as school', 'student.school_id', '=', 'school.id')
+                                ->where('student.id', '=', $registered[$i]->student_id)
+                                ->select('student.name as student_name', 'school.name as school_name')
+                                ->get();
+
+                            $student[$i] = array(
+                                "student_id"  => $registered[$i]->student_id,
+                                "student_name" => $temp[0]->student_name,
+                                "school_name" => $temp[0]->school_name,
+                                "participant_status" => $registered[$i]->status
+                            );
+                        }
+                    }
+
+                    $response = array(
+<<<<<<< HEAD
                         "event_id"   => $webinar_id,
                         "event_name" => $data[0]->event_name,
                         "event_date" => $data[0]->event_date,
@@ -76,17 +151,31 @@ class WebinarNormalController extends Controller
                         "end_time" => $data[0]->end_time,
                         "event_picture" => $data[0]->event_picture,
                         "student"    => $student
+=======
+                        "event_id"      => $webinar_id,
+                        "event_name"    => $webinar[0]->event_name,
+                        "event_date"    => $webinar[0]->event_date,
+                        "start_time"    => $webinar[0]->start_time,
+                        "end_time"      => $webinar[0]->end_time,
+                        "event_picture" => $webinar[0]->event_picture,
+                        "registered"    => count($registered),
+                        'quota'         => 500,
+                        'student'       => $student
+>>>>>>> 509d2448865bb3229e818b709c663af0103c9b04
                     );
+
                     return $this->makeJSONResponse($response, 200);
+                } else {
+                    return $this->makeJSONResponse(['message' => 'Data not found'], 202);
                 }
             } catch (Exception $e) {
                 echo $e;
             }
         }
     }
+
     public function addNormalWebinar(Request $request)
     {
-
         $validation = Validator::make($request->all(), [
             'event_name' => 'required',
             'event_date' => 'required',
@@ -125,6 +214,7 @@ class WebinarNormalController extends Controller
             }
         }
     }
+<<<<<<< HEAD
     //
 
     public function paymentReminder()
@@ -171,4 +261,6 @@ class WebinarNormalController extends Controller
             }
         }
     }
+=======
+>>>>>>> 509d2448865bb3229e818b709c663af0103c9b04
 }

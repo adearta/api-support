@@ -61,14 +61,14 @@ class WebinarPaymentController extends Controller
                 $token = "";
 
                 //check the status of order
-                if ($orderWebinar[0]->status == "registered") {
+                if ($orderWebinar[0]->status == "order" || $orderWebinar[0]->status == "expire") {
                     $student = DB::connection('pgsql2')
                         ->table($this->tbStudent)
                         ->where('id', '=', $orderWebinar[0]->student_id)
                         ->get();
 
                     //generate order_id
-                    $order_id = "WB006" . $student[0]->id . $request->order_id;
+                    $order_id = "WB00" . $student[0]->id . $request->order_id;
 
                     //initialization the detail of transaction_detail
                     $transaction_details = array(
@@ -169,7 +169,8 @@ class WebinarPaymentController extends Controller
                 DB::table($this->tbNotif)->insert(array(
                     'student_id'    => $orderDetail[0]->student_id,
                     'message_id'    => $message_id,
-                    'message_en'    => $message_en
+                    'message_en'    => $message_en,
+                    'webinar_normal_id' => $orderDetail[0]->webinar_id
                 ));
 
                 //update the token, order_id, modified from order

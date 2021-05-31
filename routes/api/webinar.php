@@ -9,6 +9,7 @@ use App\Http\Controllers\StudentNormalWebinarParticipantController;
 use App\Http\Controllers\WebinarNormalController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Payment\WebinarPaymentController;
+use App\Http\Controllers\WebinarOrderController;
 
 Route::middleware('admin')->group(function () {
     //super admin create new webinar
@@ -87,9 +88,17 @@ Route::get('/participant/{webinar_id}', [WebinarAkbarController::class, 'partici
 
 //normal webinar
 Route::group(['prefix' => 'normal'], function () {
+<<<<<<< HEAD
     Route::get('/listwebinar', [WebinarNormalController::class, 'listNormalWebinar']); //ok
     Route::get('/detail/{webinar_id}', [WebinarNormalController::class, 'detailNormalWebinar']); //ok
     Route::post('/create', [WebinarNormalController::class, 'addNormalWebinar']); //ok
+=======
+    Route::get('/listwebinar', [WebinarNormalController::class, 'listNormalWebinar']);
+    Route::get('/detail/{webinar_id}', [WebinarNormalController::class, 'detailNormalWebinar']);
+    Route::get('/detail-list/student/{webinar_id}', [WebinarNormalController::class, 'detailNormalWebinarWithStudent']);
+    Route::get('/order/detail', [WebinarOrderController::class, 'getDetailOrder']);
+    Route::post('/create', [WebinarNormalController::class, 'addNormalWebinar']);
+>>>>>>> 509d2448865bb3229e818b709c663af0103c9b04
     Route::get('/getnotif', [NotificationNormalWebinarController::class, 'getNotification']);
     Route::post('/readnotif', [NotificationNormalWebinarController::class, 'setNotificationReaded']);
     Route::post('/register', [StudentNormalWebinarParticipantController::class, 'registerStudent']); //ok
