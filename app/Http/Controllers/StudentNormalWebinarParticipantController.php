@@ -80,17 +80,16 @@ class StudentNormalWebinarParticipantController extends Controller
                             $code = 202;
                         } else {
                             //inser to participant table
-                            DB::table($this->tbParticipant)->insert(array(
+                            $participant = DB::table($this->tbParticipant)->insertGetId(array(
                                 'webinar_id' => $request->webinar_id,
                                 'student_id' => $profilePercentage[0]->student_id,
                             ));
 
                             //simpan ke order
                             DB::table($this->tbOrder)->insert(array(
-                                'student_id' => $profilePercentage[0]->student_id,
+                                'participant_id' => $participant,
                                 'webinar_id' => $request->webinar_id,
                                 //
-
                             ));
                             //simpan ke notif
                             DB::table($this->tbNotif)->insert(array(
@@ -103,7 +102,6 @@ class StudentNormalWebinarParticipantController extends Controller
                             $message = "Success to register student to this webinar";
                             $code = 200;
                         }
-
 
                         return array(
                             'status'    => true,
@@ -131,13 +129,16 @@ class StudentNormalWebinarParticipantController extends Controller
     {
         // $datesquery = "web.event_date = current_date + interval '" . $day . "' day";
         $event = DB::select("select * from " . $this->tbParticipant);
-        $data = DB::table($this->tbOrder)
-            ->where("student_id", "=", $event[0]->student_id)
-            ->select("status")
-            ->get();
+        // $profilePercentage = DB::connection('pgsql2')->select('select percent.percent, std.id as student_id from ' . $this->tbPercentage . " as percent left join " . $this->tbStudent . " as std on percent.user_id = std.id where percent.user_id = 1 ");
+        $registered = DB::select("select count(pesan.webinar_id) as registered from " . $this->tbOrder . " as pesan left join " . $this->tbWebinar . " as web on web.id = pesan.webinar_id where pesan.status != 'order' and pesan.status != 'expire'");
+        // $data = DB::table($this->tbOrder)
+        //     ->where("student_id", "=", $event[0]->student_id)
+        //     ->select("status")
+        //     ->get();
 
-        return $this->makeJSONResponse($data, 200);
+        return $this->makeJSONResponse($registered, 200);
     }
+
     public function updateStatusStudentParticipant(Request $request)
     {
 

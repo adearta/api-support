@@ -10,14 +10,9 @@ use App\Models\CareerSupportModelsWebinarBiasa;
 // use App\Models\CareerSupportModelsNotificationWebinarnormalModel;
 use App\Models\StudentModel;
 use App\Models\CareerSupportModelsNormalStudentParticipants;
-use App\Models\CareerSupportModelsOrders;
-use App\Models\NotificationWebinarModel;
-<<<<<<< HEAD
 use App\Models\CareerSupportModelsOrdersWebinar;
-use App\Jobs\SendMailReminderPaymentJob;
-=======
+use App\Models\NotificationWebinarModel;
 use App\Models\SchoolModel;
->>>>>>> 509d2448865bb3229e818b709c663af0103c9b04
 use Illuminate\Support\Facades\DB;
 
 class WebinarNormalController extends Controller
@@ -36,7 +31,7 @@ class WebinarNormalController extends Controller
         $this->tbParticipant = CareerSupportModelsNormalStudentParticipants::tableName();
         $this->tbNotif = NotificationWebinarModel::tableName();
         $this->tbStudent = StudentModel::tableName();
-        $this->tbOrder = CareerSupportModelsOrders::tableName();
+        $this->tbOrder = CareerSupportModelsOrdersWebinar::tableName();
         $this->tbSchool = SchoolModel::tableName();
     }
 
@@ -142,16 +137,6 @@ class WebinarNormalController extends Controller
                     }
 
                     $response = array(
-<<<<<<< HEAD
-                        "event_id"   => $webinar_id,
-                        "event_name" => $data[0]->event_name,
-                        "event_date" => $data[0]->event_date,
-                        // "event_time" => $data[0]->event_time,
-                        "start_time" => $data[0]->start_time,
-                        "end_time" => $data[0]->end_time,
-                        "event_picture" => $data[0]->event_picture,
-                        "student"    => $student
-=======
                         "event_id"      => $webinar_id,
                         "event_name"    => $webinar[0]->event_name,
                         "event_date"    => $webinar[0]->event_date,
@@ -161,7 +146,6 @@ class WebinarNormalController extends Controller
                         "registered"    => count($registered),
                         'quota'         => 500,
                         'student'       => $student
->>>>>>> 509d2448865bb3229e818b709c663af0103c9b04
                     );
 
                     return $this->makeJSONResponse($response, 200);
@@ -185,82 +169,52 @@ class WebinarNormalController extends Controller
             'end_time' => 'required',
             'price' => 'numeric|required',
         ]);
-
         if ($validation->fails()) {
             return $this->makeJSONResponse($validation->errors(), 202);
         } else {
-            if ($request->event_date > date('Y-m-d')) {
-                if ($file = $request->file('event_picture')) {
-                    try {
-                        $path = $file->store('webinarNormal', 'uploads');
-                        $webinar = array(
-                            'event_name' => $request->event_name,
-                            'event_link' => $request->event_link,
-                            'event_date' => $request->event_date,
-                            'event_picture' => $path,
-                            'start_time' => $request->start_time,
-                            'end_time' => $request->end_time,
-                            'price' => $request->price
-                        );
-                        //masukan ke tabel webinar
-                        DB::table($this->tbWebinar)->insert($webinar);
-                    } catch (Exception $e) {
-                        echo $e;
-                    }
-                    return $this->makeJSONResponse(['message' => 'successfully save data webinar to database'], 200);
-                }
+            //cari webinar dengan nama yang sama atau dengan waktu yang sama 
+            $duplicatename = DB::table($this->tbWebinar)
+                ->where("event_name", "=", $request->event_name)
+                ->get();
+            $samedaytime = DB::table($this->tbWebinar)
+                ->where("event_date", "=", $request->event_date)
+                ->where("event_date", "=", $request->event_date)
+                ->where("start_time", "=", $request->start_time)
+                ->get();
+            if (count($duplicatename) > 0) {
+                $message = "webinar data already exist !";
+                $code = 200;
+                return $this->makeJSONResponse(["message" => $message], $code);
+            } else if (count($samedaytime) > 0) {
+                $message = "same webinar date and time already exist,please select another day or time!";
+                $code = 200;
+                return $this->makeJSONResponse(["message" => $message], $code);
             } else {
-                return $this->makeJSONResponse(['message' => 'the event must be after today!'], 202);
-            }
-        }
-    }
-<<<<<<< HEAD
-    //
-
-    public function paymentReminder()
-    {
-        $day = 7;
-        $tbParticipant = CareerSupportModelsNormalStudentParticipants::tableName();
-        $tbStudent = StudentModel::tableName();
-        $tbWebinar = CareerSupportModelsWebinarBiasa::tableName();
-        $tbNotification = NotificationWebinarModel::tableName();
-        // $tbOrder = CareerSupportModelsOrdersWebinar::tableName();
-        $tbOrder = CareerSupportModelsOrdersWebinar::tableName();
-        // $interval = "current_date + interval '" . $day . "' day";
-        // $eve = DB::table($tbParticipant, 'participants')
-        //     ->leftJoin($tbWebinar . " as web ", "web.id", "=", "participant.webinar_id")
-        //     ->where("web.event_date", "=", "current_date + interval '" . $day . "' day")
-        //     ->get();
-
-        $event = DB::select("select * from " . $tbParticipant . " as participant left join " . $tbWebinar . " as web on web.id = participant.webinar_id where web.event_date = current_date + interval '" . $day . "' day");
-
-        if (!empty($event)) {
-            foreach ($event as $e) {
-                //get status pembayaran
-                $payment = DB::table($tbOrder)
-                    ->where("student_id", "=", $e->student_id)
-                    ->select("status")
-                    ->get();
-                if ($payment[0]->status == "registered") {
-                    //select name and email of student
-                    $student = DB::connection('pgsql2')->table($tbStudent)
-                        ->where('id', '=', $e->student_id)
-                        ->select('name', 'email')
-                        ->get();
-                    DB::table($tbNotification)
-                        ->insert(array(
-                            'student_id' => $e->student_id,
-                            'webinar_normal_id' => $e->webinar_id,
-                            'message_id'    => "Diingatkan kembali bahwa Webinar dengan judul " . $e->event_name . " akan dilaksakan h-" . $day . " dari sekarang, yaitu pada tanggal " . $e->event_date . " dan pada jam " . $e->start_time . " silahkan untuk menyelesaikan pembayaran anda!",
-                            'message_en'    => "Webinar reminder with a title" . $e->event_name . " will be held on " . $e->event_date . " and at " . $e->start_time . " please settle the payment immediately!"
-                        ));
-                    SendMailReminderPaymentJob::dispatch($e, $student, $day);
-
-                    echo 'success';
+                if ($request->event_date > date('Y-m-d')) {
+                    if ($file = $request->file('event_picture')) {
+                        try {
+                            $path = $file->store('webinarNormal', 'uploads');
+                            $webinar = array(
+                                'event_name' => $request->event_name,
+                                'event_link' => $request->event_link,
+                                'event_date' => $request->event_date,
+                                'event_picture' => $path,
+                                'start_time' => $request->start_time,
+                                'end_time' => $request->end_time,
+                                'price' => $request->price
+                            );
+                            //masukan ke tabel webinar
+                            DB::table($this->tbWebinar)->insert($webinar);
+                        } catch (Exception $e) {
+                            echo $e;
+                        }
+                        // echo count($duplicate);
+                        return $this->makeJSONResponse(['message' => 'successfully save data webinar to database'], 200);
+                    }
+                } else {
+                    return $this->makeJSONResponse(['message' => 'the event must be after today!'], 202);
                 }
             }
         }
     }
-=======
->>>>>>> 509d2448865bb3229e818b709c663af0103c9b04
 }
