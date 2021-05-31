@@ -16,6 +16,7 @@
         "laravel/passport": "^10.1",
         "laravel/tinker": "^2.5",
         "nesbot/carbon": "^2.48",
+        "tymon/jwt-auth": "^1.0",
         "veritrans/veritrans-php": "dev-master"
     },
     "require-dev": {
