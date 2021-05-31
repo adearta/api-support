@@ -87,19 +87,18 @@ Route::get('/participant/{webinar_id}', [WebinarAkbarController::class, 'partici
 
 //normal webinar
 Route::group(['prefix' => 'normal'], function () {
-    Route::get('/listwebinar', [WebinarNormalController::class, 'listNormalWebinar']);
-    Route::get('/detail/{webinar_id}', [WebinarNormalController::class, 'detailNormalWebinar']);
-    Route::post('/create', [WebinarNormalController::class, 'addNormalWebinar']);
+    Route::get('/listwebinar', [WebinarNormalController::class, 'listNormalWebinar']); //ok
+    Route::get('/detail/{webinar_id}', [WebinarNormalController::class, 'detailNormalWebinar']); //ok
+    Route::post('/create', [WebinarNormalController::class, 'addNormalWebinar']); //ok
     Route::get('/getnotif', [NotificationNormalWebinarController::class, 'getNotification']);
     Route::post('/readnotif', [NotificationNormalWebinarController::class, 'setNotificationReaded']);
-    Route::post('/register', [StudentNormalWebinarParticipantController::class, 'registerStudent']);
-    Route::get('/status', [StudentNormalWebinarParticipantController::class, 'status']);
+    Route::post('/register', [StudentNormalWebinarParticipantController::class, 'registerStudent']); //ok
+    Route::get('/status', [StudentNormalWebinarParticipantController::class, 'status']); //only tester
 });
-
+//only tester
 Route::get('/payment-reminder', [WebinarNormalController::class, 'paymentReminder']);
 
 //payment
 Route::group(['prefix' => 'payment'], function () {
-    //api for handle the transaction checkout
     Route::get('/charge', [WebinarPaymentController::class, 'charge']);
 });

@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Validator;
-use App\Models\CareerSupportModelsOrders;
+use App\Models\CareerSupportModelsOrdersWebinar;
 use App\Models\CareerSupportModelsWebinarBiasa;
 use App\Models\NotificationWebinarModel;
 use App\Models\StudentModel;
@@ -34,7 +34,7 @@ class WebinarPaymentController extends Controller
         Veritrans_Config::$isSanitized = true;
         Veritrans_Config::$is3ds = true;
 
-        $this->tbOrder = CareerSupportModelsOrders::tableName();
+        $this->tbOrder = CareerSupportModelsOrdersWebinar::tableName();
         $this->tbStudent = StudentModel::tableName();
         $this->tbWebinar = CareerSupportModelsWebinarBiasa::tableName();
         $this->tbNotif = NotificationWebinarModel::tableName();
