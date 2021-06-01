@@ -20,7 +20,6 @@ class CareerSupportModelsOrders extends Migration
             $table->string('token')->nullable();
             $table->string('order_id')->nullable();
             $table->string('status')->default('order');
-            // $table->timestamps();
             $table->bigInteger("creator_id")->nullable(); //
             $table->bigInteger("modifier_id")->nullable(); //
             $table->boolean('is_deleted')->default(false);

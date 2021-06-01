@@ -28,8 +28,6 @@ class CareerSupportModelsWebinarnormal extends Migration
             $table->boolean('is_deleted')->default(false);
             $table->timestamp('created')->useCurrent();
             $table->timestamp('modified')->nullable()->useCurrentOnUpdate();
-            // $table->string('payment_information');
-            // $table->timestamps();
         });
     }
 

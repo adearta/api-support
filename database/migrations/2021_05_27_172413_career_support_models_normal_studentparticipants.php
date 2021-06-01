@@ -17,8 +17,6 @@ class CareerSupportModelsNormalStudentparticipants extends Migration
             $table->id();
             $table->integer('student_id');
             $table->integer('webinar_id');
-            // $table->smallInteger('status');
-            // $table->timestamps();
             $table->bigInteger("creator_id")->nullable(); //
             $table->bigInteger("modifier_id")->nullable(); //
             $table->boolean('is_deleted')->default(false);

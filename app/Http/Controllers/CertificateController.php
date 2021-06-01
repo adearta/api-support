@@ -8,6 +8,7 @@ use App\Models\StudentModel;
 use App\Models\CareerSupportModelsCertificate;
 use App\Models\CareerSupportModelsOrdersWebinar;
 use App\Models\CareerSupportModelsWebinarBiasa;
+use App\Models\NotificationWebinarModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Traits\ResponseHelper;
@@ -21,6 +22,7 @@ class CertificateController extends Controller
     private $tbCertficate;
     private $tbOrder;
     private $tbWebinar;
+    private $tbNtification;
     use ResponseHelper;
 
     public function __construct()
@@ -30,6 +32,7 @@ class CertificateController extends Controller
         $this->tbCertficate = CareerSupportModelsCertificate::tableName();
         $this->tbOrder = CareerSupportModelsOrdersWebinar::tableName();
         $this->tbWebinar = CareerSupportModelsWebinarBiasa::tableName();
+        $this->tbNotification = NotificationWebinarModel::tableName();
     }
 
     public function addCertificate(Request $request)
@@ -84,14 +87,18 @@ class CertificateController extends Controller
 
                             $notif = array(
                                 'student_id'     => $studentId[0]->student_id,
-                                'webinar_akbar_id' => $participantId[0]->webinar_id,
+                                'webinar_normal_id' => $participantId[0]->webinar_id,
                                 'message_id'    => "Selamat Anda telah mengikuti " . $webinar[0]->event_name . " pada tanggal " . $webinar[0]->event_date . " dan pada jam " . $webinar[0]->start_time . " sertifikat anda telah kami kirimkan ke alamat email anda " . $studentId[0]->email,
                                 'message_en'    => "Congratulation you have attended " . $webinar[0]->event_name . " on " . $webinar[0]->event_date . " and at " . $webinar[0]->start_time . " your certificae had been sent to your email" . $studentId[0]->email
                             );
 
-                            DB::table($this->tbNotification)->insert($notif);
-                            CertificateJob::dispatch($webinar, $studentId, $data);
-                            DB::table($this->tbCertficate)->insert($data);
+                            try {
+                                CertificateJob::dispatch($webinar, $studentId, $data);
+                                DB::table($this->tbCertficate)->insert($data);
+                                DB::table($this->tbNotification)->insert($notif);
+                            } catch (Exception $e) {
+                                echo $e;
+                            }
                         }
                     }
                     // echo $amount;

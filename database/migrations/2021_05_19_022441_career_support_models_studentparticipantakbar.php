@@ -24,9 +24,6 @@ class CareerSupportModelsStudentparticipantakbar extends Migration
             $table->timestamp('created')->useCurrent();
             $table->timestamp('modified')->nullable()->useCurrentOnUpdate();
 
-            //this to relational in database
-            // $table->foreign('student_id')->references('id')->on('career_support_models_student');
-            // $table->foreign('school_id')->references('id')->on('career_support_models_school');
             $table->foreign('webinar_id')->references('id')->on('career_support_models_webinarakbar');
         });
     }
