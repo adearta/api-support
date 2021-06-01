@@ -46,7 +46,7 @@ class StudentNormalWebinarParticipantController extends Controller
         } else {
             $message = " ";
             $code = " ";
-            $profilePercentage = DB::connection('pgsql2')->select('select percent.percent, std.id as student_id from ' . $this->tbPercentage . " as percent left join " . $this->tbStudent . " as std on percent.user_id = std.id where percent.user_id = " . $request->student_id);
+            $profilePercentage = DB::connection('pgsql2')->select('select percent.percent, std.id as student_id from ' . $this->tbPercentage . " as percent left join " . $this->tbStudent . " as std on percent.user_id = std.creator_id where percent.user_id = " . $request->student_id);
 
             $registered = DB::select("select count(pesan.webinar_id) as registered from " . $this->tbOrder . " as pesan left join " . $this->tbWebinar . " as web on web.id = pesan.webinar_id where pesan.status != 'order' and pesan.status != 'expire'");
             // cek apakah tabel oder kosong
@@ -93,7 +93,7 @@ class StudentNormalWebinarParticipantController extends Controller
                             ));
                             //simpan ke notif
                             DB::table($this->tbNotif)->insert(array(
-                                'student_id' => $request->student_id,
+                                'student_id' => $profilePercentage[0]->student_id,
                                 'webinar_normal_id' => $request->webinar_id,
                                 'message_id'    => "Anda telah mendaftar untuk mengikuti Webinar dengan judul " . $webinar[0]->event_name . " pada tanggal " . $webinar[0]->event_date . " dan pada jam " . $webinar[0]->start_time,
                                 'message_en'    => "You have been register to join a webinar with a title" . $webinar[0]->event_name . " on " . $webinar[0]->event_date . " and at " . $webinar[0]->start_time

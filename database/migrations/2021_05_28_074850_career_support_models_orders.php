@@ -15,8 +15,8 @@ class CareerSupportModelsOrders extends Migration
     {
         Schema::create('career_support_models_orders', function (Blueprint $table) {
             $table->id();
-            $table->integer('participant_id');
-            $table->integer('webinar_id');
+            $table->integer('participant_id')->unsigned();
+            $table->integer('webinar_id')->unsigned();
             $table->string('token')->nullable();
             $table->string('order_id')->nullable();
             $table->string('status')->default('order');

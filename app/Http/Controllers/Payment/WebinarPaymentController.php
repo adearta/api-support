@@ -134,7 +134,8 @@ class WebinarPaymentController extends Controller
 
             //get the detail of order & webinar by order_id
             $orderDetail = DB::table($this->tbOrder, 'order')
-                ->leftJoin($this->tbWebinar . ' as webinar', 'order.webinar_id', '=', 'webinar.id')
+                ->leftJoin($this->tbParticipant . ' as participant', 'participant.id', '=', 'order.participant_id')
+                ->leftJoin($this->tbWebinar . ' as webinar', 'participant.webinar_id', '=', 'webinar.id')
                 ->where('order.order_id', '=', $order_id)
                 ->get();
 

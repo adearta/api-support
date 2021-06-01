@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
+use Tymon\JWTAuth\Facades\JWTAuth;
+use Tymon\JWTAuth\Facades\JWTFactory;
 
 class AuthController extends Controller
 {
@@ -29,8 +31,9 @@ class AuthController extends Controller
                 'tipe' => $request->tipe,
             ]);
 
-            $token = $user->createToken('LaravelAuth')->accessToken;
-            return response()->json(['token' => $token], 200);
+            //$token = $user->createToken('LaravelAuth')->accessToken;
+            $token = Auth::attempt(['email' => $request->email, 'password' => $request->password]);
+            return $this->respondWithToken($token);
         }
     }
     public function login(Request $request)
@@ -39,11 +42,20 @@ class AuthController extends Controller
             'email' => $request->email,
             'password' => $request->password,
         ];
-        if (Auth::attempt($data)) {
-            $token = Auth::user()->createToken('LaravelAuthApp')->accessToken;
-            return response()->json(['token' => $token], 200);
+        if ($token = Auth::attempt($data)) {
+            // $token = Auth::user()->createToken('LaravelAuthApp')->accessToken;
+            return $this->respondWithToken($token);
         } else {
             return response()->json(['error' => 'Unauthorised'], 401);
         }
+    }
+
+    protected function respondWithToken($token)
+    {
+        return response()->json([
+            'access_token' => $token,
+            'token_type' => 'bearer',
+            'expires_in' => auth()->factory()->getTTL() * 60
+        ], 200);
     }
 }

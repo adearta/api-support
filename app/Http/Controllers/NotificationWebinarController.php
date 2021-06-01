@@ -34,7 +34,7 @@ class NotificationWebinarController extends Controller
             $queryLanguage = "";
             $querySelectId = "";
 
-            $validation = Validator::make($request->header('Accept-Language'), [
+            $validation = Validator::make(['Accept-Language' => $request->header('Accept-Language')], [
                 'Accept-Language' => 'required'
             ]);
             if ($validation->fails()) {
