@@ -24,7 +24,6 @@ class WebinarOrderController extends Controller
         $this->tbOrder = CareerSupportModelsOrdersWebinar::tableName();
         $this->tbParticipant = CareerSupportModelsNormalStudentParticipants::tableName();
     }
-
     //get the detail of webinar + order status by student
     public function getDetailOrder(Request $request)
     {

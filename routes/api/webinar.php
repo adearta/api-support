@@ -98,7 +98,7 @@ Route::group(['prefix' => 'normal'], function () {
     Route::post('/readnotif', [NotificationNormalWebinarController::class, 'setNotificationReaded']);
     Route::post('/register', [StudentNormalWebinarParticipantController::class, 'registerStudent']); //ok
     Route::post('/addcertificate', [CertificateController::class, 'addCertificate']);
-    Route::get('/status', [StudentNormalWebinarParticipantController::class, 'status']); //only tester
+    // Route::get('/status', [StudentNormalWebinarParticipantController::class, 'status']); //only tester
 });
 //only tester
 // Route::get('/payment-reminder', [WebinarNormalController::class, 'paymentReminder']);

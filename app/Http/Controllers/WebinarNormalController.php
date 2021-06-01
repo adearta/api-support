@@ -39,7 +39,6 @@ class WebinarNormalController extends Controller
     {
         //count data fom tabel participant to get the registerd
         try {
-            //hitung jumlah student yang terdaftar dengan cara menghitung jumlah id webinar yang sama di tabel participants 
             $count = "select count('part.webinar_id') from " . $this->tbParticipant . " as part where part.webinar_id = web.id";
             $datas = DB::select("select web.id as webinar_id, web.event_name, web.event_picture, web.event_date, web.start_time, web.end_time, web.price, (500) as quota, (" . $count . ") as registered from " . $this->tbWebinar . " as web where web.event_date > current_date");
 
@@ -172,7 +171,6 @@ class WebinarNormalController extends Controller
         if ($validation->fails()) {
             return $this->makeJSONResponse($validation->errors(), 202);
         } else {
-            //cari webinar dengan nama yang sama atau dengan waktu yang sama 
             $duplicatename = DB::table($this->tbWebinar)
                 ->where("event_name", "=", $request->event_name)
                 ->get();
@@ -203,12 +201,10 @@ class WebinarNormalController extends Controller
                                 'end_time' => $request->end_time,
                                 'price' => $request->price
                             );
-                            //masukan ke tabel webinar
                             DB::table($this->tbWebinar)->insert($webinar);
                         } catch (Exception $e) {
                             echo $e;
                         }
-                        // echo count($duplicate);
                         return $this->makeJSONResponse(['message' => 'successfully save data webinar to database'], 200);
                     }
                 } else {

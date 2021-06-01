@@ -6,7 +6,6 @@ use App\Models\CareerSupportModelsNormalStudentParticipants;
 use App\Models\CareerSupportModelsWebinarBiasa;
 use Illuminate\Http\Request;
 use App\Traits\ResponseHelper;
-use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use App\Models\CareerSupportModelsPercentage;
@@ -47,10 +46,7 @@ class StudentNormalWebinarParticipantController extends Controller
             $message = " ";
             $code = " ";
             $profilePercentage = DB::connection('pgsql2')->select('select percent.percent, std.id as student_id from ' . $this->tbPercentage . " as percent left join " . $this->tbStudent . " as std on percent.user_id = std.creator_id where percent.user_id = " . $request->student_id);
-
             $registered = DB::select("select count(pesan.webinar_id) as registered from " . $this->tbOrder . " as pesan left join " . $this->tbWebinar . " as web on web.id = pesan.webinar_id where pesan.status != 'order' and pesan.status != 'expire'");
-            // cek apakah tabel oder kosong
-
             // check if the student have the percent of profile or percent of profile is under 60
             if (empty($profilePercentage) || $profilePercentage[0]->percent < 60) {
                 $message = "please complete your profile, minimum 60% profile required";
@@ -122,60 +118,6 @@ class StudentNormalWebinarParticipantController extends Controller
                 }
             }
             return $this->makeJSONResponse(["message" => $message], $code);
-        }
-    }
-    //only test query
-    public function status()
-    {
-        // $datesquery = "web.event_date = current_date + interval '" . $day . "' day";
-        $event = DB::select("select * from " . $this->tbParticipant);
-        // $profilePercentage = DB::connection('pgsql2')->select('select percent.percent, std.id as student_id from ' . $this->tbPercentage . " as percent left join " . $this->tbStudent . " as std on percent.user_id = std.id where percent.user_id = 1 ");
-        $registered = DB::select("select count(pesan.webinar_id) as registered from " . $this->tbOrder . " as pesan left join " . $this->tbWebinar . " as web on web.id = pesan.webinar_id where pesan.status != 'order' and pesan.status != 'expire'");
-        // $data = DB::table($this->tbOrder)
-        //     ->where("student_id", "=", $event[0]->student_id)
-        //     ->select("status")
-        //     ->get();
-
-        return $this->makeJSONResponse($registered, 200);
-    }
-
-    public function updateStatusStudentParticipant(Request $request)
-    {
-
-        try {
-            // $webinar = DB::table($this->tbWebinar)
-            //     ->where('id', '=', $request->webinar_id)
-            //     ->get();
-            switch ($request->status) {
-                case 3:
-                    $validation = Validator::make($request->all(), [
-                        'webinar_id' => 'required|numeric',
-                        'student_id' => 'required|numeric',
-                        'status' => 'required|numeric',
-                        // 'transaction_id'=>'',
-                        // 'order_id'=>'',
-                    ]);
-                    if ($validation->fails()) {
-                        return $this->makeJSONResponse($validation->errors(), 400);
-                    } else {
-                        DB::table($this->tbOrder)
-                            ->where('webinar_id', '=', $request->webinar_id)
-                            ->where('student_id', '=', $request->studen_id)
-                            ->update(['status' => $request->status]);
-                    }
-                    $message = "webinar status booked, We kindly request you settle the payment request immediatelly before (time)";
-                    $code = 200;
-                    break;
-
-                case 4:
-                    //pilih dari tabel order sesuai dengan id yang dimasukkan 
-                    //ubah statusnya mejadi 4 
-                    //nantinya ini yang akan dgunakan sebagai paticipants
-                    //simpan token ke kolom token di tabel order
-
-            }
-        } catch (Exception $e) {
-            echo $e;
         }
     }
 }

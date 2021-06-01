@@ -8,7 +8,6 @@ use App\Traits\ResponseHelper;
 use App\Models\NotificationWebinarModel;
 use Exception;
 use Illuminate\Support\Facades\Validator;
-use Throwable;
 
 class NotificationWebinarController extends Controller
 {
@@ -43,7 +42,6 @@ class NotificationWebinarController extends Controller
                 if ($request->school_id != null) {
                     $validation = Validator::make($request->all(), [
                         'school_id' => 'required|numeric',
-                        // 'accept_language' => 'required',
                     ]);
                     if ($validation->fails()) {
                         return $this->makeJSONResponse($validation->errors(), 400);
@@ -54,7 +52,6 @@ class NotificationWebinarController extends Controller
                 } else {
                     $validation = Validator::make($request->all(), [
                         'student_id' => 'required|numeric',
-                        // 'accept_language' => 'required',
                     ]);
                     if ($validation->fails()) {
                         return $this->makeJSONResponse($validation->errors(), 400);

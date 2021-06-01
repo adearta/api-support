@@ -146,7 +146,6 @@ class WebinarAkbarController extends Controller
                                 ->get();
 
                             EmailInvitationSchoolJob::dispatch($webinar, $school);
-                            // Mail::to($school[0]->email)->send(new SendSchoolMailInvitation($webinar, $school));
                         }
                     } catch (Exception $e) {
                         echo $e;

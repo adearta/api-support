@@ -2,9 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Jobs\Certificate;
 use App\Jobs\CertificateJob;
-use App\Mail\SendCertificate;
 use App\Models\CareerSupportModelsNormalStudentParticipants;
 use App\Models\StudentModel;
 use App\Models\CareerSupportModelsCertificate;
@@ -33,13 +31,12 @@ class CertificateController extends Controller
         $this->tbOrder = CareerSupportModelsOrdersWebinar::tableName();
         $this->tbWebinar = CareerSupportModelsWebinarBiasa::tableName();
     }
-    //
+
     public function addCertificate(Request $request)
     {
         $validation = Validator::make($request->all(), [
             'certificate.*' => 'required|mimes:pdf|max:500',
             'webinar_id' => 'required|numeric',
-            // 'participant_id'=>'required|numeric'
         ]);
         if ($validation->fails()) {
             $this->makeJSONResponse($validation->errors(), 400);
@@ -50,9 +47,7 @@ class CertificateController extends Controller
                     // ambil 10 sertifikat saja
                     foreach (array_slice($certificateAll, 0, 10) as $certi) {
                         //ambil nama sertifikat dengan format nim nama
-                        //ambil nama
                         $name = $certi->getClientOriginalName();
-                        //kemdian pisahin, ambil nim nya
                         //split
                         $nim = explode("_", $name);
                         //terus get student_id cari berdasarkan nim nya di tabel student
@@ -77,7 +72,7 @@ class CertificateController extends Controller
                             ->get();
 
                         $path = $certi->store('certificate', 'uploads');
-                        // echo 'order status => ' . $orderStatus;
+
                         if ($orderStatus[0]->status == "success") {
                             // echo 'gass';
                             $data =  array(
@@ -85,16 +80,22 @@ class CertificateController extends Controller
                                 'webinar_id' => $participantId[0]->webinar_id,
                                 'participant_id' => $participantId[0]->participant_id,
                                 'file_name' => $name,
-                                //kirim email pake job
                             );
-                            // $webinarMail = json_decode($webinar[0]);
-                            // $studentMail = json_decode($studentId[0])
+
+                            $notif = array(
+                                'student_id'     => $studentId[0]->student_id,
+                                'webinar_akbar_id' => $participantId[0]->webinar_id,
+                                'message_id'    => "Selamat Anda telah mengikuti " . $webinar[0]->event_name . " pada tanggal " . $webinar[0]->event_date . " dan pada jam " . $webinar[0]->start_time . " sertifikat anda telah kami kirimkan ke alamat email anda " . $studentId[0]->email,
+                                'message_en'    => "Congratulation you have attended " . $webinar[0]->event_name . " on " . $webinar[0]->event_date . " and at " . $webinar[0]->start_time . " your certificae had been sent to your email" . $studentId[0]->email
+                            );
+
+                            DB::table($this->tbNotification)->insert($notif);
                             CertificateJob::dispatch($webinar, $studentId, $data);
                             DB::table($this->tbCertficate)->insert($data);
                         }
                     }
                     // echo $amount;
-                    $message = "success save certificate ";
+                    $message = "success send certificate ";
                     $code = 200;
                     return $this->makeJSONResponse(["message" => $message], $code);
                 }

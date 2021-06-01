@@ -89,12 +89,10 @@ class SchoolParticipantAkbarController extends Controller
                     }
                     break;
 
-                    //jawaban no 1 dan 3
                 case 3:
                     $validation = Validator::make($request->all(), [
                         'webinar_id' => 'required|numeric',
                         'school_id' => 'required|numeric',
-                        // 'start_year'=>'numeric',
                         'status' => 'required|numeric'
                     ]);
                     if ($validation->fails()) {
@@ -131,7 +129,6 @@ class SchoolParticipantAkbarController extends Controller
                                     $cs = $cs - 1;
                                     $decrease = strtotime('+' . $cs . ' days');
                                     $date = date("Y-m-d", $decrease);
-                                    // $interval_now = date_diff($date_to,date_create($date));
                                     DB::table($this->tbSchoolParticipant)
                                         ->where('webinar_id', '=', $request->webinar_id)
                                         ->where('school_id', '=', $request->school_id)
@@ -183,7 +180,7 @@ class SchoolParticipantAkbarController extends Controller
                             //tabel usereducation 
                             $student = DB::connection('pgsql2')->table($this->tbUserEdu)
                                 ->where('school_id', '=', $request->school_id)
-                                //batch diganti start_year
+                                //batch diganti start_year (angkatan)
                                 ->where('start_year', '=', $request->start_year)
                                 //is_verified diganti verified
                                 ->where('verified', '=', true)
@@ -192,11 +189,7 @@ class SchoolParticipantAkbarController extends Controller
                             $registered = 0;
                             $total = 0;
                             $newparticipants = 0;
-                            // $countparticipants =0
-                            //new
-                            // $count = DB::select('select count()')
                             //count
-                            //hitung jumlah peserta sekarang
                             $total = count($participant);
                             //kuota sekarang + jumlah peserta yang akan di daftarkan
                             $newparticipants = count($student);
@@ -204,9 +197,11 @@ class SchoolParticipantAkbarController extends Controller
                             //cek apakah melebihi 500 /tidak
                             if ($countparticipants <= 500) {
                                 for ($i = 0; $i < $newparticipants; $i++) {
+
                                     $studentId = DB::connection('pgsql2')->table($this->tbStudent)->where('nim', '=', $student[$i]->nim)->get();
 
                                     $data = DB::select('select student_id from ' . $this->tbStudentParticipant . " where student_id = " . $studentId[0]->id . " and webinar_id = " . $request->webinar_id);
+
                                     if (empty($data)) {
                                         $registered++;
                                         DB::table($this->tbStudentParticipant)->insert(array(
@@ -226,19 +221,12 @@ class SchoolParticipantAkbarController extends Controller
                                 //success add data
                                 $message = "Succes add data student";
                                 $code = 200;
-                                //if more than 500 automaticcly rejected
+                                //if more than 500 automatically rejected
                             } else {
                                 $message = "gagal";
                                 $code = 200;
                             }
                             break;
-                            // if ($registered > 0) {
-                            //     $message = "Successfully registered " . $registered . " out of " . count($student) . " students data";
-                            //     $code = 200;
-                            // } else {
-                            //     $message = "Cannot registered your data of students because the quota is full";
-                            //     $code = 202;
-                            // }
                         } else {
                             $message = "Cannot registered data of students because you has passed the deadline for registration";
                             $code = 202;
