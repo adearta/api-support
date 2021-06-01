@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CareerSupportModelsNormalStudentParticipants;
 use Illuminate\Http\Request;
 use App\Traits\ResponseHelper;
 use App\Models\CareerSupportModelsWebinarBiasa;
@@ -15,11 +16,13 @@ class WebinarOrderController extends Controller
     use ResponseHelper;
     private $tbWebinar;
     private $tbOrder;
+    private $tbParticipant;
 
     public function __construct()
     {
         $this->tbWebinar = CareerSupportModelsWebinarBiasa::tableName();
         $this->tbOrder = CareerSupportModelsOrdersWebinar::tableName();
+        $this->tbParticipant = CareerSupportModelsNormalStudentParticipants::tableName();
     }
 
     //get the detail of webinar + order status by student
@@ -34,9 +37,10 @@ class WebinarOrderController extends Controller
             return $this->makeJSONResponse($validation->errors(), 400);
         } else {
             $detail = DB::table($this->tbWebinar, 'webinar')
-                ->leftJoin($this->tbOrder . ' as pesan', 'webinar.id', '=', 'pesan.webinar_id')
+                ->leftJoin($this->tbParticipant . ' as participant', 'participant.webinar_id', '=', 'webinar.id')
+                ->leftJoin($this->tbOrder . ' as pesan', 'participant.id', '=', 'pesan.participant_id')
                 ->where('webinar.id', '=', $request->webinar_id)
-                ->where('pesan.student_id', '=', $request->student_id)
+                ->where('participant.student_id', '=', $request->student_id)
                 ->select('webinar.event_name', 'webinar.event_date', 'webinar.event_picture', 'webinar.event_link', 'webinar.start_time', 'webinar.end_time', 'webinar.price', 'pesan.order_id', 'pesan.status')
                 ->get();
 

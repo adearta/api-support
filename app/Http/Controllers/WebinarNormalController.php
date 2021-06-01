@@ -109,11 +109,11 @@ class WebinarNormalController extends Controller
 
                 $registered = DB::table($this->tbWebinar, 'webinar')
                     ->leftJoin($this->tbParticipant . ' as participant', 'webinar.id', '=', 'participant.webinar_id')
-                    ->leftJoin($this->tbOrder . ' as pesan', 'participant.student_id', '=', 'pesan.student_id')
+                    ->leftJoin($this->tbOrder . ' as pesan', 'participant.id', '=', 'pesan.participant_id')
                     ->where('webinar.id', '=', $webinar_id)
                     ->where('pesan.status', '!=', 'order')
                     ->where('pesan.status', '!=', 'expire')
-                    ->select('pesan.student_id', 'pesan.status')
+                    ->select('participant.student_id', 'pesan.status')
                     ->get();
 
                 if (count($webinar) > 0) {

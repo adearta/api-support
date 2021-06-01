@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Payment;
 
+use App\Models\CareerSupportModelsNormalStudentParticipants;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Validator;
@@ -26,6 +27,7 @@ class WebinarPaymentController extends Controller
     private $tbStudent;
     private $tbWebinar;
     private $tbNotif;
+    private $tbParticipant;
 
     public function __construct()
     {
@@ -38,6 +40,7 @@ class WebinarPaymentController extends Controller
         $this->tbStudent = StudentModel::tableName();
         $this->tbWebinar = CareerSupportModelsWebinarBiasa::tableName();
         $this->tbNotif = NotificationWebinarModel::tableName();
+        $this->tbParticipant = CareerSupportModelsNormalStudentParticipants::tableName();
     }
 
     //function for handle transaction checkout
@@ -55,6 +58,7 @@ class WebinarPaymentController extends Controller
                 //get the detail of order & webinar by order_id
                 $orderWebinar = DB::table($this->tbOrder, 'order')
                     ->leftJoin($this->tbWebinar . ' as webinar', 'order.webinar_id', '=', 'webinar.id')
+                    ->leftJoin($this->tbParticipant . ' as participant', 'participant.id', '=', 'order.participant_id')
                     ->where('order.id', '=', $request->order_id)
                     ->get();
 
@@ -85,8 +89,7 @@ class WebinarPaymentController extends Controller
 
                     $customer_detail = array(
                         'first_name' => $student[0]->name,
-                        'last_name' => 'last name',
-                        'email' => "gunk.adi15@gmail.com",
+                        'email' => $student[0]->email,
                         'phone' => $student[0]->phone
                     );
 
