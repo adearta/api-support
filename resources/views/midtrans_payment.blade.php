@@ -10,7 +10,7 @@
   <script type="text/javascript">
     document.getElementById('pay-button').onclick = function(){
         // SnapToken acquired from previous step
-        snap.pay('f4ca2ae0-b331-4dbd-84fc-4beff5e0f2dc', {
+        snap.pay('374a1d43-f8bf-47d7-8da6-372f3901ed3a', {
           // Optional
           onSuccess: function(result){
             /* You may add your own js here, this is just example */ document.getElementById('result-json').innerHTML += JSON.stringify(result, null, 2);
