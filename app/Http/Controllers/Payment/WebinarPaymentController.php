@@ -31,7 +31,7 @@ class WebinarPaymentController extends Controller
 
     public function __construct()
     {
-        Veritrans_Config::$serverKey = 'SB-Mid-server-nz9Nayf1uAfI0C-6TRgt5AK9'; //sendbox serverkey
+        Veritrans_Config::$serverKey = '';
         Veritrans_Config::$isProduction = false; //false -> sandbox, true -> production
         Veritrans_Config::$isSanitized = true;
         Veritrans_Config::$is3ds = true;
