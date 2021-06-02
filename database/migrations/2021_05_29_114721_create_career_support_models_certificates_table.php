@@ -16,8 +16,10 @@ class CreateCareerSupportModelsCertificatesTable extends Migration
         Schema::create('career_support_models_certificates', function (Blueprint $table) {
             $table->id();
             $table->string('certificate');
-            $table->integer('participant_id');
-            $table->integer('webinar_id');
+            $table->integer('participant_id')->unsigned()->nullable();
+            $table->integer('participant_akbar_id')->unsigned()->nullable();
+            $table->integer('webinar_id')->unsigned()->nullable();
+            $table->integer('webinar_akbar_id')->unsigned()->nullable();
             $table->string('file_name');
             $table->bigInteger("creator_id")->nullable();
             $table->bigInteger("modifier_id")->nullable();
@@ -27,6 +29,8 @@ class CreateCareerSupportModelsCertificatesTable extends Migration
 
             $table->foreign('webinar_id')->references('id')->on('career_support_models_webinarnormal');
             $table->foreign('participant_id')->references('id')->on('career_support_models_normal_studentparticipants');
+            $table->foreign('participant_akbar_id')->references('id')->on('career_support_models_studentparticipantakbar');
+            $table->foreign('webinar_akbar_id')->references('id')->on('career_support_models_webinarakbar');
         });
     }
 

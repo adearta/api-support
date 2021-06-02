@@ -11,6 +11,7 @@ use App\Http\Controllers\WebinarNormalController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Payment\WebinarPaymentController;
 use App\Http\Controllers\WebinarOrderController;
+use App\Models\WebinarAkbarModel;
 
 Route::middleware('admin')->group(function () {
     //super admin create new webinar
@@ -86,7 +87,7 @@ Route::group(['prefix' => 'notification'], function () {
 });
 //super admin get the data from database (candidate name, and candidate school)
 Route::get('/participant/{webinar_id}', [WebinarAkbarController::class, 'participantList']);
-
+Route::post('/addcertificate', [CertificateController::class, 'addCertificateAkbar']);
 //normal webinar
 Route::group(['prefix' => 'normal'], function () {
     Route::get('/listwebinar', [WebinarNormalController::class, 'listNormalWebinar']);
