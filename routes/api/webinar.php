@@ -68,7 +68,7 @@ Route::group(['prefix' => 'school'], function () {
 
 
 Route::group(['prefix' => 'notification'], function () {
-    //get the notification
+    //get the notification of webinar normal and webinar biasa
     //method get = >  
     /* the parameter used:
         on params 
@@ -95,8 +95,7 @@ Route::group(['prefix' => 'normal'], function () {
     Route::get('/detail-list/student/{webinar_id}', [WebinarNormalController::class, 'detailNormalWebinarWithStudent']);
     Route::get('/order/detail', [WebinarOrderController::class, 'getDetailOrder']);
     Route::post('/create', [WebinarNormalController::class, 'addNormalWebinar']);
-    Route::get('/getnotif', [NotificationNormalWebinarController::class, 'getNotification']);
-    Route::post('/readnotif', [NotificationNormalWebinarController::class, 'setNotificationReaded']);
+
     Route::post('/register', [StudentNormalWebinarParticipantController::class, 'registerStudent']); //ok
     Route::post('/addcertificate', [CertificateController::class, 'addCertificate']);
 });
