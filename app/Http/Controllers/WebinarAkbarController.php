@@ -141,7 +141,7 @@ class WebinarAkbarController extends Controller
                                 'event_date' => $request->event_date,
                                 'event_time' => $request->event_time,
                                 'event_picture' => $path,
-                                'is_deleted' => true
+                                // 'is_deleted' => true
                             );
 
                             $webinarId = DB::table($this->tbWebinar)->insertGetId($webinar);

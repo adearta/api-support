@@ -201,7 +201,7 @@ class WebinarNormalController extends Controller
                                 'start_time' => $request->start_time,
                                 'end_time' => $request->end_time,
                                 'price' => $request->price,
-                                'is_deleted'=>true
+                                // 'is_deleted'=>true
                             );
                             DB::table($this->tbWebinar)->insert($webinar);
                         } catch (Exception $e) {
