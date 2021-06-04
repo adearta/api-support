@@ -15,6 +15,8 @@ use App\Models\WebinarAkbarModel;
 Route::group(['prefix' => 'webinar-akbar'], function () {
     Route::middleware('admin')->group(function () {
         Route::post('/create', [WebinarAkbarController::class, 'addWebinar']);
+        Route::delete('/delete/{webinar_id}', [WebinarAkbarController::class, 'destroyWebinar']); //masih perlu dibenerin
+        Route::patch('/edit/{webinar_id}', [WebinarAkbarController::class, 'editWebinar']);
         Route::get('/list/{id}', [WebinarAkbarController::class, 'getWebinarBySchoolId']);
         Route::post('/update-status', [SchoolParticipantAkbarController::class, 'updateSchoolWebinar']);
         Route::get('/detail/{webinar_id}', [WebinarAkbarController::class, 'detailWebinar']);
@@ -28,11 +30,12 @@ Route::group(['prefix' => 'webinar-akbar'], function () {
 });
 Route::group(['prefix' => 'webinar-internal'], function () {
     Route::middleware('admin')->group(function () {
+        Route::post('/create', [WebinarNormalController::class, 'addNormalWebinar']);
+        Route::patch('/edit/{webinar_id}', [WebinarNormalController::class, 'editWebinar']);
         Route::get('/listwebinar', [WebinarNormalController::class, 'listNormalWebinar']);
         Route::get('/detail/{webinar_id}', [WebinarNormalController::class, 'detailNormalWebinar']);
         Route::get('/detail-list/student/{webinar_id}', [WebinarNormalController::class, 'detailNormalWebinarWithStudent']);
         Route::get('/order/detail', [WebinarOrderController::class, 'getDetailOrder']);
-        Route::post('/create', [WebinarNormalController::class, 'addNormalWebinar']);
         Route::post('/register', [StudentNormalWebinarParticipantController::class, 'registerStudent']); //ok
         Route::post('/addcertificate', [CertificateController::class, 'addCertificate']);
         Route::group(['prefix' => 'notification'], function () {

@@ -14,6 +14,7 @@ use App\Models\CareerSupportModelsOrdersWebinar;
 use App\Models\NotificationWebinarModel;
 use App\Models\SchoolModel;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class WebinarNormalController extends Controller
 {
@@ -176,8 +177,8 @@ class WebinarNormalController extends Controller
                 ->get();
             $samedaytime = DB::table($this->tbWebinar)
                 ->where("event_date", "=", $request->event_date)
-                ->where("event_date", "=", $request->event_date)
                 ->where("start_time", "=", $request->start_time)
+                ->where("end_time", "=", $request->end_time)
                 ->get();
             if (count($duplicatename) > 0) {
                 $message = "webinar data already exist !";
@@ -210,6 +211,47 @@ class WebinarNormalController extends Controller
                 } else {
                     return $this->makeJSONResponse(['message' => 'the event must be after today!'], 202);
                 }
+            }
+        }
+    }
+    public function editWebinar(Request $request, $webinar_id)
+    {
+        $validation = Validator::make($request->all(), [
+            'event_name' => 'required',
+            'event_date' => 'required',
+            'event_link' => 'required|url',
+            'start_time' => 'required',
+            'end_time' => 'required',
+            'price' => 'numeric|required',
+        ]);
+        if ($validation->fails()) {
+            return $this->makeJSONResponse($validation->errors(), 202);
+        } else {
+            $find = DB::table($this->tbWebinar)
+                ->where('id', '=', $webinar_id)
+                ->select('id as webinar_id')
+                ->get();
+
+            $datetime = Carbon::now();
+            $datetime->toDateTimeString();
+            //cek duplicate
+            if ($find) {
+                $update = array(
+                    'event_name' => $request->event_name,
+                    'event_date' => $request->event_date,
+                    'event_link' => $request->event_link,
+                    'start_time' => $request->start_time,
+                    'end_time' => $request->end_time,
+                    'price' => $request->price,
+                    'modified' => $datetime
+                );
+                DB::table($this->tbWebinar)
+                    ->where('id', '=', $webinar_id)
+                    ->update($update);
+
+                $message = "sucessfully update data webinar!";
+                $code = 200;
+                return response()->json(["message" => $message], $code);
             }
         }
     }
