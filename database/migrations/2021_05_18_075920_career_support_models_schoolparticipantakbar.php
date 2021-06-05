@@ -32,7 +32,7 @@ class CareerSupportModelsSchoolparticipantakbar extends Migration
             // 3 -> accepted
             // 4 -> submit the data of student
 
-            $table->foreign('webinar_id')->references('id')->on('career_support_models_webinarakbar');
+            $table->foreign('webinar_id')->references('id')->on('career_support_models_webinarakbar')->onDelete('cascade');
         });
     }
 

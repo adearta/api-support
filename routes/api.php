@@ -16,10 +16,10 @@ use App\Http\Controllers\Payment\WebinarPaymentController;
 */
 
 //the routes of webinar
-Route::middleware('auth:api')->prefix('webinar')->group(base_path('routes/api/webinar.php'));
+Route::middleware('auth:api')->prefix('administrator')->group(base_path('routes/api/administrator.php'));
 
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('/administrator/register', [AuthController::class, 'register']);
+Route::post('/administrator/login', [AuthController::class, 'login']);
 
 //api for change the order status and triggered by midtrans
-Route::post('/payment/status', [WebinarPaymentController::class, 'updateStatus']);
+Route::post('/administator/payment/status', [WebinarPaymentController::class, 'updateStatus']);

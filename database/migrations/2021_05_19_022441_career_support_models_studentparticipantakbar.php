@@ -24,7 +24,7 @@ class CareerSupportModelsStudentparticipantakbar extends Migration
             $table->timestamp('created')->useCurrent();
             $table->timestamp('modified')->nullable()->useCurrentOnUpdate();
 
-            $table->foreign('webinar_id')->references('id')->on('career_support_models_webinarakbar');
+            $table->foreign('webinar_id')->references('id')->on('career_support_models_webinarakbar')->onDelete('cascade');
         });
     }
 

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\EmailInvitationSchoolJob;
+use App\Models\CareerSupportModelsWebinarBiasa;
 use App\Models\NotificationWebinarModel;
 use App\Models\SchoolParticipantAkbarModel;
 use Illuminate\Http\Request;
@@ -15,6 +16,8 @@ use App\Traits\ResponseHelper;
 use Exception;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
+use Illuminate\Contracts\Cache\Store;
+use Illuminate\Support\Facades\Storage;
 
 
 class WebinarAkbarController extends Controller
@@ -134,7 +137,7 @@ class WebinarAkbarController extends Controller
                 if ($request->event_date > date("Y-m-d")) {
                     if ($file = $request->file('event_picture')) {
                         try {
-                            $path = $file->store('webinar', 'uploads');
+                            $path = $file->store('webinar_akbar', 'public');
                             $webinar = array(
                                 'zoom_link' => $request->zoom_link,
                                 'event_name' => $request->event_name,
@@ -293,19 +296,19 @@ class WebinarAkbarController extends Controller
     public function destroyWebinar($webinar_id)
     {
         $delete = WebinarAkbarModel::findOrfail($webinar_id);
-        $check = DB::table($this->tbWebinar)
-            ->where('id', '=', $webinar_id)
-            ->where('is_deleted', '=', true)
-            ->select('id as id_webinar')
-            ->get();
 
-        if (!empty($check[0])) {
-            $delete->delete($check);
-            $message_ok = "deleted!";
-            return $this->makeJSONResponse($message_ok, 200);
-        } else {
-            $message_err = "cant find data!";
-            return $this->makeJSONResponse($message_err, 400);
+        if ($delete) {
+            if (Storage::disk('public')->exists($delete->event_picture)) {
+                Storage::disk('public')->delete($delete->event_picture);
+                $delete->delete();
+
+                $message_ok = "sucessfully delete webinar!";
+
+                return $this->makeJSONResponse($message_ok, 200);
+            } else {
+                $message_ok = "can't delete...";
+                return $this->makeJSONResponse($message_ok, 200);
+            }
         }
     }
 

@@ -30,8 +30,8 @@ class CareerSupportModelsNotificationwebinar extends Migration
             $table->timestamp('created')->useCurrent();
             $table->timestamp('modified')->nullable()->useCurrentOnUpdate();
 
-            $table->foreign('webinar_akbar_id')->references('id')->on('career_support_models_webinarakbar');
-            $table->foreign('webinar_normal_id')->references('id')->on('career_support_models_webinarnormal');
+            $table->foreign('webinar_akbar_id')->references('id')->on('career_support_models_webinarakbar')->onDelete('cascade');
+            $table->foreign('webinar_normal_id')->references('id')->on('career_support_models_webinarnormal')->onDelete('cascade');
         });
     }
 

@@ -15,6 +15,8 @@ use App\Models\NotificationWebinarModel;
 use App\Models\SchoolModel;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use CareerSupportModelsWebinarnormal;
+use Illuminate\Support\Facades\Storage;
 
 class WebinarNormalController extends Controller
 {
@@ -192,7 +194,7 @@ class WebinarNormalController extends Controller
                 if ($request->event_date > date('Y-m-d')) {
                     if ($file = $request->file('event_picture')) {
                         try {
-                            $path = $file->store('webinarNormal', 'uploads');
+                            $path = $file->store('webinar_internal', 'public');
                             $webinar = array(
                                 'event_name' => $request->event_name,
                                 'event_link' => $request->event_link,
@@ -253,6 +255,26 @@ class WebinarNormalController extends Controller
                 $message = "sucessfully update data webinar!";
                 $code = 200;
                 return response()->json(["message" => $message], $code);
+            }
+        }
+    }
+    public function destroyWebinar($webinar_id)
+    {
+        $delete = CareerSupportModelsWebinarBiasa::findOrfail($webinar_id);
+        if (!empty($delete)) {
+            if (Storage::disk('public')->exists($delete->event_picture)) {
+                Storage::disk('public')->delete($delete->event_picture);
+                $delete->delete();
+
+                $message = "sucessfully delete webinar!";
+                $code = 200;
+
+                return $this->makeJSONResponse(["message" => $message], $code);
+            } else {
+                $message = "can't delete...";
+                $code = 500;
+
+                return $this->makeJSONResponse(["message" => $message], $code);
             }
         }
     }

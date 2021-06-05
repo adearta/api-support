@@ -59,7 +59,7 @@ class CertificateController extends Controller
                     foreach (array_slice($certificateAll, 0, 10) as $certi) {
                         $name = $certi->getClientOriginalName();
                         $nim = explode("_", $name);
-                        
+
                         $studentId = DB::connection('pgsql2')
                             ->table($this->tbStudent)
                             ->where("nim", "=", $nim[0])
@@ -82,8 +82,8 @@ class CertificateController extends Controller
                             ->select('status')
                             ->get();
 
-                        $path = $certi->store('certificate_akbar', 'uploads');
                         if ($school[0]->status == "5") {
+                            $path = $certi->store('certificate_akbar', 'public');
                             $data =  array(
                                 'certificate' => $path,
                                 'webinar_akbar_id' => $participantId[0]->webinar_id,
@@ -105,6 +105,10 @@ class CertificateController extends Controller
                             } catch (Exception $e) {
                                 echo $e;
                             }
+                        } else {
+                            $message = "cannot save, order status not sucess";
+                            $code = 400;
+                            return $this->makeJSONResponse(["message" => $message], $code);
                         }
                     }
 
@@ -157,10 +161,10 @@ class CertificateController extends Controller
                             ->select('*')
                             ->get();
 
-                        $path = $certi->store('certificate', 'uploads');
 
                         if ($orderStatus[0]->status == "success") {
-                            // echo 'gass';
+                            $path = $certi->store('certificate_internal', 'public');
+
                             $data =  array(
                                 'certificate' => $path,
                                 'webinar_id' => $participantId[0]->webinar_id,
@@ -182,6 +186,10 @@ class CertificateController extends Controller
                             } catch (Exception $e) {
                                 echo $e;
                             }
+                        } else {
+                            $message = "cannot save, order status not sucess";
+                            $code = 400;
+                            return $this->makeJSONResponse(["message" => $message], $code);
                         }
                     }
                     $message = "success send certificate ";
