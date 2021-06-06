@@ -49,6 +49,7 @@ class WebinarAkbarController extends Controller
         //     return $this->makeJSONResponse($validation->errors(), 400);
         // } else {
         //id -> school_id
+        //INI BELUM BISA
         try {
             //menghitung id student yang sudah terdaftar di webinar
             // $selectCount = "select count('student.id') from " . $this->tbStudentParticipants . " as student where student.webinar_id = web.id";
@@ -210,20 +211,16 @@ class WebinarAkbarController extends Controller
 
                                 $detail = DB::select("select * from " . $this->tbWebinar . " as web left join " . $this->tbSchoolParticipants . " as school on school.webinar_id = web.id where web.id = " . $webinarId);
 
+                                $schoolId = [];
+
                                 for ($i = 0; $i < count($detail); $i++) {
                                     $temp = DB::connection('pgsql2')->table($this->tbSchool)
                                         ->where('id', '=', $detail[$i]->school_id)
-                                        ->select('name')
+                                        ->select('*')
                                         ->get();
-
-                                    $schoolId[$i] = array(
-                                        "id"  => $detail[$i]->school_id,
-                                        "name" => $temp[0]->name,
-                                        "status" => $detail[$i]->status
-                                    );
+                                    $schoolId[$i] = $temp[0];
                                 }
 
-                                // $school = DB::table
                                 EmailInvitationSchoolJob::dispatch($webinar, $school);
                             }
                         } catch (Exception $e) {
@@ -254,11 +251,13 @@ class WebinarAkbarController extends Controller
     public function editWebinar(Request $request, $webinar_id)
     {
         //validasi 
+        //return response($request->zoom_link, 200);
         $validation = Validator::make($request->all(), [
             'zoom_link' => 'required|url',
             'event_name' => 'required',
             'event_date' => 'required',
             'event_time' => 'required',
+            'event_picture' => 'mimes:jpg,jpeg,png|max:2000',
         ]);
         if ($validation->fails()) {
             return response()->json($validation->errors(), 202);
@@ -266,29 +265,117 @@ class WebinarAkbarController extends Controller
             //find webinar id
             $webinar = DB::table($this->tbWebinar)
                 ->where('id', '=', $webinar_id)
-                ->select('id as webinar_id')
+                ->select('id as webinar_id', 'event_picture as path')
                 ->get();
             //set modified
-            $datetime = Carbon::now();
-            $datetime->toDateTimeString();
 
             if (!empty($webinar)) {
+                $data = DB::transaction(function () use ($request, $webinar, $webinar_id) {
+                    $path = $webinar[0]->path;
+                    if ($file = $request->file('event_picture')) {
+                        $path = $file->store('webinar_akbar', 'public');
+                    }
+                    $datetime = Carbon::now();
+                    $datetime->toDateTimeString();
+                    $edited = array(
+                        'zoom_link' => $request->zoom_link,
+                        'event_name' => $request->event_name,
+                        'event_date' => $request->event_date,
+                        'event_time' => $request->event_time,
+                        'modified' => $datetime,
+                        'event_picture' => $path
+                    );
+                    DB::table($this->tbWebinar)
+                        ->where('id', '=', $webinar_id)
+                        ->update($edited);
+                    //respon
 
-                $edited = array(
-                    'zoom_link' => $request->zoom_link,
-                    'event_name' => $request->event_name,
-                    'event_date' => $request->event_date,
-                    'event_time' => $request->event_time,
-                    'modified' => $datetime
-                );
-                DB::table($this->tbWebinar)
-                    ->where('id', '=', $webinar_id)
-                    ->update($edited);
+                    $cekSchool = DB::table($this->tbSchoolParticipants)
+                        ->where('webinar_id', '=', $webinar_id)
+                        ->get();
 
-                $message = "webinar data sucessfully updated!";
-                $code = 200;
-                return response()->json(["message" => $message], $code);
+                    //delete school participant //masih gabisa delete
+                    foreach ($request->school_id as $schoolNew) {
+                        $delete = true;
+                        foreach ($cekSchool as $temp) {
+                            if ($temp->school_id == $schoolNew) {
+                                $delete = false;
+                            }
+                        }
+
+                        if ($delete) {
+                            DB::table($this->tbSchoolParticipants)
+                                ->where('school_id', '=', $schoolNew)
+                                ->delete();
+                        }
+                    }
+
+                    //add school participant
+                    foreach ($request->school_id as $temp) {
+                        $data = DB::table($this->tbSchoolParticipants)
+                            ->where('school_id', '=', $temp)
+                            ->get();
+
+                        if (count($data) == 0) {
+                            //add school participant
+                            DB::table($this->tbSchoolParticipants)->insert(array(
+                                'webinar_id'    => $webinar_id,
+                                'school_id'     => $temp,
+                            ));
+
+                            //add notif
+                            DB::table($this->tbNotification)->insert(array(
+                                'school_id'     => $temp,
+                                'webinar_akbar_id' => $webinar_id,
+                                'message_id'    => "Anda mendapatkan undangan untuk mengikuti Webinar dengan judul " . $request->event_name . " pada tanggal " . $request->event_date . " dan pada jam " . $request->event_time,
+                                'message_en'    => "You get an invitation to join in a webinar with a title" . $request->event_name . " on " . $request->event_date . " and at " . $request->event_time
+                            ));
+
+                            $school = DB::connection("pgsql2")->table($this->tbSchool)
+                                ->where('id', '=', $temp)
+                                ->select('name', 'email')
+                                ->get();
+                            //send email
+                            EmailInvitationSchoolJob::dispatch($edited, $school);
+                        }
+                    }
+
+                    $detail = DB::select("select * from " . $this->tbWebinar . " as web left join " . $this->tbSchoolParticipants . " as school on school.webinar_id = web.id where web.id = " . $webinar_id);
+                    $schoolId = [];
+                    for ($i = 0; $i < count($detail); $i++) {
+                        $temp = DB::connection('pgsql2')->table($this->tbSchool)
+                            ->where('id', '=', $detail[$i]->school_id)
+                            ->select('*')
+                            ->get();
+
+                        $schoolId[$i] = $temp[0];
+                    }
+
+                    $response = array(
+                        "id"   => $webinar_id,
+                        "event_name" => $request->event_name,
+                        "event_date" => $request->event_date,
+                        "event_time" => $request->event_time,
+                        "event_picture" => $detail[0]->event_picture,
+                        "schools"    => $schoolId,
+                        "zoom_link" => $request->zoom_link,
+                        "is_certificate" => false,
+                        "certificate" => "link not found",
+                    );
+                    return array(
+                        'response' => $response,
+                        'code' => 200
+                    );
+                });
+                if ($data) {
+                    $message = $data['response'];
+                    $code = $data['code'];
+                } else {
+                    $message = "failed";
+                    $code = 400;
+                }
             }
+            return $this->makeJSONResponse($message, $code);
         }
     }
     public function addSchoolParticipants(Request $request)

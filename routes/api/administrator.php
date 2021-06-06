@@ -19,6 +19,7 @@ Route::group(['prefix' => 'webinar-akbar'], function () {
         Route::get('', [WebinarAkbarController::class, 'getWebinarBySchoolId']);
         Route::post('/update-status', [SchoolParticipantAkbarController::class, 'updateSchoolWebinar']);
         Route::get('/detail/{webinar_id}', [WebinarAkbarController::class, 'detailWebinar']);
+        //list school participant
         Route::get('/participant/{webinar_id}', [WebinarAkbarController::class, 'participantList']);
         Route::post('/detail/upload-certificate', [CertificateController::class, 'addCertificateAkbar']);
         Route::group(['prefix' => 'notification'], function () {
@@ -32,7 +33,7 @@ Route::group(['prefix' => 'webinar-internal'], function () {
         Route::post('/create', [WebinarNormalController::class, 'addNormalWebinar']);
         Route::patch('/edit/{webinar_id}', [WebinarNormalController::class, 'editWebinar']);
         Route::delete('/delete/{webinar_id}', [WebinarNormalController::class, 'destroyWebinar']);
-        Route::get('/listwebinar', [WebinarNormalController::class, 'listNormalWebinar']);
+        Route::get('', [WebinarNormalController::class, 'listNormalWebinar']); //blm
         Route::get('/detail/{webinar_id}', [WebinarNormalController::class, 'detailNormalWebinar']);
         Route::get('/detail-list/student/{webinar_id}', [WebinarNormalController::class, 'detailNormalWebinarWithStudent']);
         Route::get('/order/detail', [WebinarOrderController::class, 'getDetailOrder']);

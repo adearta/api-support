@@ -208,8 +208,8 @@ class CertificateController extends Controller
                             $notif = array(
                                 'student_id'     => $studentId[0]->student_id,
                                 'webinar_normal_id' => $participantId[0]->webinar_id,
-                                'message_id'    => "Selamat Anda telah mengikuti " . $webinar[0]->event_name . " pada tanggal " . $webinar[0]->event_date . " dan pada jam " . $webinar[0]->start_time . " sertifikat anda telah kami kirimkan ke alamat email anda " . $studentId[0]->email,
-                                'message_en'    => "Congratulation you have attended " . $webinar[0]->event_name . " on " . $webinar[0]->event_date . " and at " . $webinar[0]->start_time . " your certificae had been sent to your email" . $studentId[0]->email
+                                'message_id'    => "Selamat Anda telah mengikuti " . $webinar[0]->event_name . " pada tanggal " . $webinar[0]->event_date . " dan pada jam " . $webinar[0]->event_start . " sertifikat anda telah kami kirimkan ke alamat email anda " . $studentId[0]->email,
+                                'message_en'    => "Congratulation you have attended " . $webinar[0]->event_name . " on " . $webinar[0]->event_date . " and at " . $webinar[0]->event_start . " your certificae had been sent to your email" . $studentId[0]->email
                             );
 
                             try {
@@ -231,31 +231,44 @@ class CertificateController extends Controller
                         ->select('*')
                         ->get();
 
-                    $detail = DB::select("select * from " . $this->tbWebinar . " as web left join " . $this->tbSchool . " as school on school.webinar_id = web.id where web.id = " . $request->webinar_id);
+                    // $detail = DB::select("select * from " . $this->tbWebinar . " as web left join " . $this->tbParticipant . " as school on school.webinar_id = web.id where web.id = " . $request->webinar_id);
 
-                    for ($i = 0; $i < count($detail); $i++) {
+                    $participant = DB::table($this->tbParticipant, 'participant')
+                        ->leftJoin($this->tbOrder . " as order", "participant.id", "=", "order.participant_id")
+                        ->where("order.status", "=", "success")
+                        ->select("student_id")
+                        ->get();
+
+                    $dataStudent = [];
+                    $dataSchool = [];
+                    for ($i = 0; $i < count($participant); $i++) {
+                        $school = DB::connection('pgsql2')->table($this->tbStudent, "student")
+                            ->leftJoin($this->tbSch . " as school", "student.school_id", "=", "school.id")
+                            ->where('student.id', '=', $participant[$i]->student_id)
+                            ->select("school_id")
+                            ->get();
+                        $dataSchool[$i] = $school[0];
+                    }
+                    for ($i = 0; $i < count($dataSchool); $i++) {
                         $temp = DB::connection('pgsql2')->table($this->tbSch)
-                            ->where('id', '=', $detail[$i]->school_id)
-                            ->select('name')
+                            ->where('id', '=', $dataSchool[$i]->school_id)
+                            ->select('*')
                             ->get();
 
-                        $schoolId[$i] = array(
-                            "id"  => $detail[$i]->school_id,
-                            "name" => $temp[0]->name,
-                            "status" => $detail[$i]->status
-                        );
+                        $dataStudent[$i] = $temp[0];
                     }
 
                     $response = array(
                         "id"   => $webinar[0]->id,
                         "event_name" => $webinar[0]->event_name,
                         "event_date" => $webinar[0]->event_date,
-                        "event_time" => $webinar[0]->event_time,
+                        "event_start" => $webinar[0]->event_start,
+                        "event_end" => $webinar[0]->event_end,
                         "event_picture" => $webinar[0]->event_picture,
-                        "schools"    => $schoolId,
-                        "zoom_link" => $webinar[0]->zoom_link,
+                        "schools"    => $dataStudent,
+                        "event_link" => $webinar[0]->event_link,
                         "is_certificate" => true,
-                        "certificate" => "www.masih salah cuy aku gapaham ini maksudnya apa",
+                        "certificate" => "link not found",
                     );
                     $code = 200;
                     return $this->makeJSONResponse($response, $code);
