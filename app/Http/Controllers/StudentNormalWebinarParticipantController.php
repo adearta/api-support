@@ -64,10 +64,10 @@ class StudentNormalWebinarParticipantController extends Controller
                             ->leftJoin($this->tbWebinar . " as web", 'web.id', '=', 'participant.webinar_id')
                             ->where('participant.student_id', '=', $profilePercentage[0]->student_id)
                             ->where('web.event_date', '=', $webinar[0]->event_date)
-                            ->where('web.start_time', '<=', $webinar[0]->start_time)
-                            ->where('web.end_time', '>=', $webinar[0]->start_time)
-                            ->where('web.start_time', '<=', $webinar[0]->end_time)
-                            ->where('web.end_time', '>=', $webinar[0]->end_time)
+                            ->where('web.event_start', '<=', $webinar[0]->event_start)
+                            ->where('web.event_end', '>=', $webinar[0]->event_start)
+                            ->where('web.event_start', '<=', $webinar[0]->event_end)
+                            ->where('web.event_end', '>=', $webinar[0]->event_end)
                             ->get();
 
                         //check if the student has been registered on other webinar with the same time before            
@@ -91,8 +91,8 @@ class StudentNormalWebinarParticipantController extends Controller
                             DB::table($this->tbNotif)->insert(array(
                                 'student_id' => $profilePercentage[0]->student_id,
                                 'webinar_normal_id' => $request->webinar_id,
-                                'message_id'    => "Anda telah mendaftar untuk mengikuti Webinar dengan judul " . $webinar[0]->event_name . " pada tanggal " . $webinar[0]->event_date . " dan pada jam " . $webinar[0]->start_time,
-                                'message_en'    => "You have been register to join a webinar with a title" . $webinar[0]->event_name . " on " . $webinar[0]->event_date . " and at " . $webinar[0]->start_time
+                                'message_id'    => "Anda telah mendaftar untuk mengikuti Webinar dengan judul " . $webinar[0]->event_name . " pada tanggal " . $webinar[0]->event_date . " dan pada jam " . $webinar[0]->event_start,
+                                'message_en'    => "You have been register to join a webinar with a title" . $webinar[0]->event_name . " on " . $webinar[0]->event_date . " and at " . $webinar[0]->event_start
                             ));
 
                             $message = "Success to register student to this webinar";

@@ -40,7 +40,7 @@ class WebinarOrderController extends Controller
                 ->leftJoin($this->tbOrder . ' as pesan', 'participant.id', '=', 'pesan.participant_id')
                 ->where('webinar.id', '=', $request->webinar_id)
                 ->where('participant.student_id', '=', $request->student_id)
-                ->select('webinar.event_name', 'webinar.event_date', 'webinar.event_picture', 'webinar.event_link', 'webinar.start_time', 'webinar.end_time', 'webinar.price', 'pesan.order_id', 'pesan.status')
+                ->select('webinar.event_name', 'webinar.event_date', 'webinar.event_picture', 'webinar.event_link', 'webinar.event_start', 'webinar.event_end', 'webinar.price', 'pesan.order_id', 'pesan.status')
                 ->get();
 
             if (count($detail) > 0) {

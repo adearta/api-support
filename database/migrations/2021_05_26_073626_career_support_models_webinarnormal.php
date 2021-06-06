@@ -19,8 +19,8 @@ class CareerSupportModelsWebinarnormal extends Migration
             $table->date('event_date');
             $table->string('event_picture');
             $table->string('event_link');
-            $table->time('start_time');
-            $table->time('end_time');
+            $table->time('event_start');
+            $table->time('event_end');
             $table->integer('price')->nullable();
 
             $table->bigInteger("creator_id")->nullable(); //

@@ -43,7 +43,7 @@ class WebinarNormalController extends Controller
         //count data fom tabel participant to get the registerd
         try {
             $count = "select count('part.webinar_id') from " . $this->tbParticipant . " as part where part.webinar_id = web.id";
-            $datas = DB::select("select web.id as webinar_id, web.event_name, web.event_picture, web.event_date, web.start_time, web.end_time, web.price, (500) as quota, (" . $count . ") as registered from " . $this->tbWebinar . " as web where web.event_date > current_date");
+            $datas = DB::select("select web.id as webinar_id, web.event_name, web.event_picture, web.event_date, web.event_start, web.event_end, web.price, (500) as quota, (" . $count . ") as registered from " . $this->tbWebinar . " as web where web.event_date > current_date");
 
             return $this->makeJSONResponse($datas, 200);
         } catch (Exception $e) {
@@ -65,27 +65,67 @@ class WebinarNormalController extends Controller
                     ->where('id', '=', $webinar_id)
                     ->get();
 
-                $registered = DB::table($this->tbWebinar, 'webinar')
-                    ->leftJoin($this->tbOrder . ' as pesan', 'webinar.id', '=', 'pesan.webinar_id')
-                    ->where('webinar.id', '=', $webinar_id)
-                    ->where('pesan.status', '!=', 'order')
-                    ->where('pesan.status', '!=', 'expire')
-                    ->select('pesan.id')
+                // $registered = DB::table($this->tbWebinar, 'webinar')
+                //     ->leftJoin($this->tbOrder . ' as pesan', 'webinar.id', '=', 'pesan.webinar_id')
+                //     ->where('webinar.id', '=', $webinar_id)
+                //     ->where('pesan.status', '!=', 'order')
+                //     ->where('pesan.status', '!=', 'expire')
+                //     ->select('pesan.id')
+                //     ->get();
+
+                $participant = DB::table($this->tbParticipant, 'participant')
+                    ->leftJoin($this->tbOrder . " as order", "participant.id", "=", "order.participant_id")
+                    ->where("order.status", "=", "success")
+                    ->select("student_id")
                     ->get();
 
-                if (count($webinar) > 0) {
-                    $response = array(
-                        "event_id"      => $webinar_id,
-                        "event_name"    => $webinar[0]->event_name,
-                        "event_date"    => $webinar[0]->event_date,
-                        "start_time"    => $webinar[0]->start_time,
-                        "end_time"      => $webinar[0]->end_time,
-                        "event_picture" => $webinar[0]->event_picture,
-                        "registered"    => count($registered),
-                        'quota'         => 500
-                    );
+                $dataStudent = [];
+                $dataSchool = [];
+                for ($i = 0; $i < count($participant); $i++) {
+                    $school = DB::connection('pgsql2')->table($this->tbStudent, "student")
+                        ->leftJoin($this->tbSchool . " as school", "student.school_id", "=", "school.id")
+                        ->where('student.id', '=', $participant[$i]->student_id)
+                        ->select("school_id")
+                        ->get();
+                    $dataSchool[$i] = $school[0];
+                }
+                for ($i = 0; $i < count($dataSchool); $i++) {
+                    $temp = DB::connection('pgsql2')->table($this->tbSchool)
+                        ->where('id', '=', $dataSchool[$i]->school_id)
+                        ->select('*')
+                        ->get();
 
-                    return $this->makeJSONResponse($response, 200);
+                    $dataStudent[$i] = $temp[0];
+                }
+
+                if (count($webinar) > 0) {
+                    $responsea = array(
+                        "id"   => $webinar_id,
+                        "event_name" => $webinar[0]->event_name,
+                        "event_date" => $webinar[0]->event_date,
+                        "event_start"    => $webinar[0]->event_start,
+                        "event_end"      => $webinar[0]->event_end,
+                        "event_picture" => $webinar[0]->event_picture,
+                        "schools"    => $dataStudent,
+                        "event_link" => $webinar[0]->event_link,
+                        "is_certificate" => false,
+                        "certificate" => "link not found",
+                        // "participant" => count($participant),
+                        // "data sch" => $dataSchool,
+                        // "data stu" => $dataStudent
+                    );
+                    // $response = array(
+                    //     "event_id"      => $webinar_id,
+                    //     "event_name"    => $webinar[0]->event_name,
+                    //     "event_date"    => $webinar[0]->event_date,
+                    //     "event_start"    => $webinar[0]->event_start,
+                    //     "event_end"      => $webinar[0]->event_end,
+                    //     "event_picture" => $webinar[0]->event_picture,
+                    //     "registered"    => count($registered),
+                    //     'quota'         => 500
+                    // );
+
+                    return $this->makeJSONResponse($responsea, 200);
                 } else {
                     return $this->makeJSONResponse(['message' => 'Data not found'], 202);
                 }
@@ -142,8 +182,8 @@ class WebinarNormalController extends Controller
                         "event_id"      => $webinar_id,
                         "event_name"    => $webinar[0]->event_name,
                         "event_date"    => $webinar[0]->event_date,
-                        "start_time"    => $webinar[0]->start_time,
-                        "end_time"      => $webinar[0]->end_time,
+                        "event_start"    => $webinar[0]->event_start,
+                        "event_end"      => $webinar[0]->event_end,
                         "event_picture" => $webinar[0]->event_picture,
                         "registered"    => count($registered),
                         'quota'         => 500,
@@ -167,8 +207,8 @@ class WebinarNormalController extends Controller
             'event_date' => 'required',
             'event_picture' => 'required|mimes:jpg,jpeg,png|max:2000',
             'event_link' => 'required|url',
-            'start_time' => 'required',
-            'end_time' => 'required',
+            'event_start' => 'required',
+            'event_end' => 'required',
             'price' => 'numeric|required',
         ]);
         if ($validation->fails()) {
@@ -179,8 +219,8 @@ class WebinarNormalController extends Controller
                 ->get();
             $samedaytime = DB::table($this->tbWebinar)
                 ->where("event_date", "=", $request->event_date)
-                ->where("start_time", "=", $request->start_time)
-                ->where("end_time", "=", $request->end_time)
+                ->where("event_start", "=", $request->event_start)
+                ->where("event_end", "=", $request->event_end)
                 ->get();
             if (count($duplicatename) > 0) {
                 $message = "webinar data already exist !";
@@ -200,16 +240,31 @@ class WebinarNormalController extends Controller
                                 'event_link' => $request->event_link,
                                 'event_date' => $request->event_date,
                                 'event_picture' => $path,
-                                'start_time' => $request->start_time,
-                                'end_time' => $request->end_time,
+                                'event_start' => $request->event_start,
+                                'event_end' => $request->event_end,
                                 'price' => $request->price,
                                 // 'is_deleted'=>true
                             );
-                            DB::table($this->tbWebinar)->insert($webinar);
+                            $save =  DB::table($this->tbWebinar)->insertGetId($webinar);
                         } catch (Exception $e) {
                             echo $e;
                         }
-                        return $this->makeJSONResponse(['message' => 'successfully save data webinar to database'], 200);
+                        $thisWebinar = DB::table($this->tbWebinar)
+                            ->where('id', '=', $save)
+                            ->select('*')
+                            ->get();
+                        $currency = "Rp " . number_format($request->price, 2, ',', '.');
+                        $response = array(
+                            "id"   => $thisWebinar[0]->id,
+                            "event_name" => $request->event_name,
+                            "event_date" => $request->event_date,
+                            "event_picture" => $thisWebinar[0]->event_picture,
+                            "event_link" => $request->event_link,
+                            'event_start' => $request->event_start,
+                            'event_end' => $request->event_end,
+                            'price' => $currency,
+                        );
+                        return $this->makeJSONResponse($response, 200);
                     }
                 } else {
                     return $this->makeJSONResponse(['message' => 'the event must be after today!'], 202);
@@ -219,43 +274,77 @@ class WebinarNormalController extends Controller
     }
     public function editWebinar(Request $request, $webinar_id)
     {
+        //validasi 
         $validation = Validator::make($request->all(), [
             'event_name' => 'required',
             'event_date' => 'required',
             'event_link' => 'required|url',
-            'start_time' => 'required',
-            'end_time' => 'required',
+            'event_start' => 'required',
+            'event_end' => 'required',
             'price' => 'numeric|required',
+            'event_picture' => 'mimes:jpg,jpeg,png|max:2000'
         ]);
         if ($validation->fails()) {
-            return $this->makeJSONResponse($validation->errors(), 202);
+            return response()->json($validation->errors(), 202);
         } else {
-            $find = DB::table($this->tbWebinar)
+            //find webinar id
+            $webinar = DB::table($this->tbWebinar)
                 ->where('id', '=', $webinar_id)
-                ->select('id as webinar_id')
+                ->select('id as webinar_id', 'event_picture as path')
                 ->get();
+            //set modified
 
-            $datetime = Carbon::now();
-            $datetime->toDateTimeString();
-            //cek duplicate
-            if ($find) {
-                $update = array(
-                    'event_name' => $request->event_name,
-                    'event_date' => $request->event_date,
-                    'event_link' => $request->event_link,
-                    'start_time' => $request->start_time,
-                    'end_time' => $request->end_time,
-                    'price' => $request->price,
-                    'modified' => $datetime
-                );
-                DB::table($this->tbWebinar)
-                    ->where('id', '=', $webinar_id)
-                    ->update($update);
+            if (!empty($webinar)) {
+                $data = DB::transaction(function () use ($request, $webinar, $webinar_id) {
+                    $path = $webinar[0]->path;
+                    if ($file = $request->file('event_picture')) {
+                        $path = $file->store('webinar_internal', 'public');
+                    }
+                    $datetime = Carbon::now();
+                    $datetime->toDateTimeString();
+                    $edited = array(
+                        'event_name' => $request->event_name,
+                        'event_date' => $request->event_date,
+                        'event_link' => $request->event_link,
+                        'event_start' => $request->event_start,
+                        'event_end' => $request->event_end,
+                        'price' => $request->price,
+                        'modified' => $datetime,
+                        'event_picture' => $path
+                    );
+                    DB::table($this->tbWebinar)
+                        ->where('id', '=', $webinar_id)
+                        ->update($edited);
 
-                $message = "sucessfully update data webinar!";
-                $code = 200;
-                return response()->json(["message" => $message], $code);
+                    $tableUpdated = DB::table($this->tbWebinar)
+                        ->where('id', '=', $webinar_id)
+                        ->select('*')
+                        ->get();
+                    $currency = "Rp " . number_format($request->price, 2, ',', '.');
+                    $response = array(
+                        "id"   => $webinar_id,
+                        "event_name" => $request->event_name,
+                        "event_date" => $request->event_date,
+                        "event_picture" => $tableUpdated[0]->event_picture,
+                        "zoom_link" => $request->zoom_link,
+                        'event_start' => $request->event_start,
+                        'event_end' => $request->event_end,
+                        'price' => $currency,
+                    );
+                    return array(
+                        'response' => $response,
+                        'code' => 200
+                    );
+                });
+                if ($data) {
+                    $message = $data['response'];
+                    $code = $data['code'];
+                } else {
+                    $message = "failed";
+                    $code = 400;
+                }
             }
+            return $this->makeJSONResponse($message, $code);
         }
     }
     public function destroyWebinar($webinar_id)
