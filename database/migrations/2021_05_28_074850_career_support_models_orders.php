@@ -26,8 +26,8 @@ class CareerSupportModelsOrders extends Migration
             $table->timestamp('created')->useCurrent();
             $table->timestamp('modified')->nullable()->useCurrentOnUpdate();
 
-            $table->foreign('webinar_id')->references('id')->on('career_support_models_webinarnormal');
-            $table->foreign('participant_id')->references('id')->on('career_support_models_normal_studentparticipants');
+            $table->foreign('webinar_id')->references('id')->on('career_support_models_webinarnormal')->onDelete('cascade');
+            $table->foreign('participant_id')->references('id')->on('career_support_models_normal_studentparticipants')->onDelete('cascade');
         });
     }
 
