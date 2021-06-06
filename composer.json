@@ -13,7 +13,6 @@
         "fruitcake/laravel-cors": "^2.0",
         "guzzlehttp/guzzle": "^7.0.1",
         "laravel/framework": "^8.40",
-        "laravel/passport": "^10.1",
         "laravel/tinker": "^2.5",
         "nesbot/carbon": "^2.48",
         "tymon/jwt-auth": "^1.0",

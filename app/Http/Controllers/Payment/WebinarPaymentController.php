@@ -31,7 +31,7 @@ class WebinarPaymentController extends Controller
 
     public function __construct()
     {
-        Veritrans_Config::$serverKey = '';
+        Veritrans_Config::$serverKey = 'SB-Mid-server-nz9Nayf1uAfI0C-6TRgt5AK9';
         Veritrans_Config::$isProduction = false; //false -> sandbox, true -> production
         Veritrans_Config::$isSanitized = true;
         Veritrans_Config::$is3ds = true;
@@ -72,7 +72,7 @@ class WebinarPaymentController extends Controller
                         ->get();
 
                     //generate order_id
-                    $order_id = "WB00" . $student[0]->id . $request->order_id;
+                    $order_id = "WB007" . $student[0]->id . $request->order_id;
 
                     //initialization the detail of transaction_detail
                     $transaction_details = array(
