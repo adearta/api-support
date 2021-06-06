@@ -16,7 +16,7 @@ Route::group(['prefix' => 'webinar-akbar'], function () {
         Route::post('/create', [WebinarAkbarController::class, 'addWebinar']);
         Route::delete('/delete/{webinar_id}', [WebinarAkbarController::class, 'destroyWebinar']);
         Route::patch('/edit/{webinar_id}', [WebinarAkbarController::class, 'editWebinar']);
-        Route::get('/list/{id}', [WebinarAkbarController::class, 'getWebinarBySchoolId']);
+        Route::get('', [WebinarAkbarController::class, 'getWebinarBySchoolId']);
         Route::post('/update-status', [SchoolParticipantAkbarController::class, 'updateSchoolWebinar']);
         Route::get('/detail/{webinar_id}', [WebinarAkbarController::class, 'detailWebinar']);
         Route::get('/participant/{webinar_id}', [WebinarAkbarController::class, 'participantList']);

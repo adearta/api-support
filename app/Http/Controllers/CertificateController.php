@@ -10,6 +10,7 @@ use App\Models\CareerSupportModelsCertificate;
 use App\Models\CareerSupportModelsOrdersWebinar;
 use App\Models\CareerSupportModelsWebinarBiasa;
 use App\Models\NotificationWebinarModel;
+use App\Models\SchoolModel;
 use App\Models\SchoolParticipantAkbarModel;
 use App\Models\StudentParticipantAkbarModel;
 use App\Models\WebinarAkbarModel;
@@ -30,6 +31,7 @@ class CertificateController extends Controller
     private $tbWebinarakbar;
     private $tbParticipantakbar;
     private $tbSchool;
+    private $tbSch;
     use ResponseHelper;
 
     public function __construct()
@@ -43,6 +45,7 @@ class CertificateController extends Controller
         $this->tbWebinarakbar = WebinarAkbarModel::tableName();
         $this->tbParticipantakbar = StudentParticipantAkbarModel::tableName();
         $this->tbSchool = SchoolParticipantAkbarModel::tableName();
+        $this->tbSch = SchoolModel::tableName();
     }
     public function addCertificateAkbar(Request $request)
     {
@@ -111,17 +114,47 @@ class CertificateController extends Controller
                             return $this->makeJSONResponse(["message" => $message], $code);
                         }
                     }
+                    //response
+                    $webinar = DB::table($this->tbWebinarakbar)
+                        ->where('id', '=', $request->webinar_id)
+                        ->select('*')
+                        ->get();
 
-                    $message = "success send certificate ";
+                    $detail = DB::select("select * from " . $this->tbWebinarakbar . " as web left join " . $this->tbSchool . " as school on school.webinar_id = web.id where web.id = " . $request->webinar_id);
+
+                    for ($i = 0; $i < count($detail); $i++) {
+                        $temp = DB::connection('pgsql2')->table($this->tbSch)
+                            ->where('id', '=', $detail[$i]->school_id)
+                            ->select('name')
+                            ->get();
+
+                        $schoolId[$i] = array(
+                            "id"  => $detail[$i]->school_id,
+                            "name" => $temp[0]->name,
+                            "status" => $detail[$i]->status
+                        );
+                    }
+
+                    $response = array(
+                        "id"   => $webinar[0]->id,
+                        "event_name" => $webinar[0]->event_name,
+                        "event_date" => $webinar[0]->event_date,
+                        "event_time" => $webinar[0]->event_time,
+                        "event_picture" => $webinar[0]->event_picture,
+                        "schools"    => $schoolId,
+                        "zoom_link" => $webinar[0]->zoom_link,
+                        "is_certificate" => true,
+                        "certificate" => "www.masih salah cuy aku gapaham ini maksudnya apa",
+                    );
                     $code = 200;
-                    return $this->makeJSONResponse(["message" => $message], $code);
+                    return $this->makeJSONResponse($response, $code);
                 }
             } catch (Exception $e) {
                 echo $e;
             }
         }
     }
-
+    //internal
     public function addCertificate(Request $request)
     {
         $validation = Validator::make($request->all(), [
@@ -192,9 +225,40 @@ class CertificateController extends Controller
                             return $this->makeJSONResponse(["message" => $message], $code);
                         }
                     }
-                    $message = "success send certificate ";
+                    //response
+                    $webinar = DB::table($this->tbWebinar)
+                        ->where('id', '=', $request->webinar_id)
+                        ->select('*')
+                        ->get();
+
+                    $detail = DB::select("select * from " . $this->tbWebinar . " as web left join " . $this->tbSchool . " as school on school.webinar_id = web.id where web.id = " . $request->webinar_id);
+
+                    for ($i = 0; $i < count($detail); $i++) {
+                        $temp = DB::connection('pgsql2')->table($this->tbSch)
+                            ->where('id', '=', $detail[$i]->school_id)
+                            ->select('name')
+                            ->get();
+
+                        $schoolId[$i] = array(
+                            "id"  => $detail[$i]->school_id,
+                            "name" => $temp[0]->name,
+                            "status" => $detail[$i]->status
+                        );
+                    }
+
+                    $response = array(
+                        "id"   => $webinar[0]->id,
+                        "event_name" => $webinar[0]->event_name,
+                        "event_date" => $webinar[0]->event_date,
+                        "event_time" => $webinar[0]->event_time,
+                        "event_picture" => $webinar[0]->event_picture,
+                        "schools"    => $schoolId,
+                        "zoom_link" => $webinar[0]->zoom_link,
+                        "is_certificate" => true,
+                        "certificate" => "www.masih salah cuy aku gapaham ini maksudnya apa",
+                    );
                     $code = 200;
-                    return $this->makeJSONResponse(["message" => $message], $code);
+                    return $this->makeJSONResponse($response, $code);
                 }
             } catch (Exception $e) {
                 echo $e;
