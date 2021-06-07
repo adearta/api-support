@@ -7,7 +7,6 @@ use App\Traits\ResponseHelper;
 use Exception;
 use Illuminate\Support\Facades\Validator;
 use App\Models\CareerSupportModelsWebinarBiasa;
-// use App\Models\CareerSupportModelsNotificationWebinarnormalModel;
 use App\Models\StudentModel;
 use App\Models\CareerSupportModelsNormalStudentParticipants;
 use App\Models\CareerSupportModelsOrdersWebinar;
@@ -15,7 +14,6 @@ use App\Models\NotificationWebinarModel;
 use App\Models\SchoolModel;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
-use CareerSupportModelsWebinarnormal;
 use Illuminate\Support\Facades\Storage;
 
 class WebinarNormalController extends Controller
@@ -64,19 +62,11 @@ class WebinarNormalController extends Controller
                 $webinar = DB::table($this->tbWebinar)
                     ->where('id', '=', $webinar_id)
                     ->get();
-
-                // $registered = DB::table($this->tbWebinar, 'webinar')
-                //     ->leftJoin($this->tbOrder . ' as pesan', 'webinar.id', '=', 'pesan.webinar_id')
-                //     ->where('webinar.id', '=', $webinar_id)
-                //     ->where('pesan.status', '!=', 'order')
-                //     ->where('pesan.status', '!=', 'expire')
-                //     ->select('pesan.id')
-                //     ->get();
-
                 $participant = DB::table($this->tbParticipant, 'participant')
-                    ->leftJoin($this->tbOrder . " as order", "participant.id", "=", "order.participant_id")
-                    ->where("order.status", "=", "success")
-                    ->select("student_id")
+                    ->leftJoin($this->tbOrder . ' as order', 'participant.id', '=', 'order.participant_id')
+                    ->where('order.webinar_id', '=', $webinar_id)
+                    ->where('order.status', '=', 'success')
+                    ->select('participant.student_id')
                     ->get();
 
                 $dataStudent = [];
@@ -110,20 +100,7 @@ class WebinarNormalController extends Controller
                         "event_link" => $webinar[0]->event_link,
                         "is_certificate" => false,
                         "certificate" => "link not found",
-                        // "participant" => count($participant),
-                        // "data sch" => $dataSchool,
-                        // "data stu" => $dataStudent
                     );
-                    // $response = array(
-                    //     "event_id"      => $webinar_id,
-                    //     "event_name"    => $webinar[0]->event_name,
-                    //     "event_date"    => $webinar[0]->event_date,
-                    //     "event_start"    => $webinar[0]->event_start,
-                    //     "event_end"      => $webinar[0]->event_end,
-                    //     "event_picture" => $webinar[0]->event_picture,
-                    //     "registered"    => count($registered),
-                    //     'quota'         => 500
-                    // );
 
                     return $this->makeJSONResponse($responsea, 200);
                 } else {
@@ -293,7 +270,6 @@ class WebinarNormalController extends Controller
                 ->select('id as webinar_id', 'event_picture as path')
                 ->get();
             //set modified
-
             if (!empty($webinar)) {
                 $data = DB::transaction(function () use ($request, $webinar, $webinar_id) {
                     $path = $webinar[0]->path;
@@ -366,5 +342,101 @@ class WebinarNormalController extends Controller
                 return $this->makeJSONResponse(["message" => $message], $code);
             }
         }
+    }
+    public function listWebinar(Request $request)
+    {
+        /*
+        Param:
+        1. Page -> default(0 or null)
+        2. Search -> default(null) -> search by webinar event name
+        */
+        $current_page = 1;
+        $data = [];
+        $query_pagination = "";
+        $query_search = "";
+
+        $webinar_count = DB::select('select count(id) from ' . $this->tbWebinar);
+        $total_page = ceil($webinar_count[0]->count / 10);
+
+        if ($request->page == null || $request->page <= 1) {
+            $current_page = 1;
+        } else {
+            $start_item = 0;
+            $current_page = $request->page;
+
+            if ($current_page > $total_page) {
+                $current_page = $total_page;
+            }
+
+            if ($current_page > 1) {
+                $start_item = ($current_page - 1) * 10;
+            }
+
+            $query_pagination = " limit 10 offset " . $start_item;
+        }
+
+        if ($request->search != null) {
+            $searchLength = preg_replace('/\s+/', '', $request->search);
+            if (strlen($searchLength) > 0) {
+                $search = strtolower($request->search);
+                $query_search = " where lower(event_name) like '%" . $search . "%'";
+            }
+        }
+
+        $webinar = DB::select('select * from ' . $this->tbWebinar . $query_search . " order by id desc" . $query_pagination);
+
+        for ($i = 0; $i < count($webinar); $i++) {
+            $currency = "Rp " . number_format($webinar[$i]->price, 2, ',', '.');
+
+            $participant = DB::table($this->tbParticipant, 'participant')
+                ->leftJoin($this->tbOrder . ' as order', 'participant.id', '=', 'order.participant_id')
+                ->where('order.webinar_id', '=', $webinar[$i]->id)
+                ->where('order.status', '=', 'success')
+                ->select('participant.student_id')
+                ->get();
+
+            $listSchool = [];
+            $participantSchoolArray = [];
+            for ($j = 0; $j < count($participant); $j++) {
+                $participantSchool = DB::connection('pgsql2')->table($this->tbStudent, 'student')
+                    ->leftJoin($this->tbSchool . ' as school', 'student.school_id', '=', 'school.id')
+                    ->where('student.id', '=', $participant[$j]->student_id)
+                    ->select('student.school_id')
+                    ->get();
+                $participantSchoolArray[$j] = $participantSchool[0];
+                $school = DB::connection('pgsql2')->table($this->tbSchool)
+                    ->where('id', '=', $participantSchoolArray[$j]->school_id)
+                    ->get();
+
+                $listSchool[$j] = $school[0];
+            }
+
+            $data[$i] = (object) array(
+                'id'                => $webinar[$i]->id,
+                'event_name'        => $webinar[$i]->event_name,
+                'event_date'        => $webinar[$i]->event_date,
+                'event_start'       => $webinar[$i]->event_start,
+                'event_end'         => $webinar[$i]->event_end,
+                'event_picture'     => $webinar[$i]->event_picture,
+                'schools'           => $listSchool,
+                'event_link'        => $webinar[$i]->event_link,
+                'price'             => $currency,
+                'is_certificate'    => false,
+                'certificate'       => 'link not found'
+            );
+        }
+
+        $response = (object) array(
+            'data' => $data,
+            'pagination' => (object) array(
+                'first_page' => 1,
+                'last_page' => $total_page,
+                'current_page' => $current_page,
+                'current_data' => count($webinar),
+                'total_data' => $webinar_count[0]->count
+            )
+        );
+
+        return $this->makeJSONResponse($response, 200);
     }
 }
