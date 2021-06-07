@@ -33,13 +33,12 @@ Route::group(['prefix' => 'webinar-internal'], function () {
         Route::post('/create', [WebinarNormalController::class, 'addNormalWebinar']);
         Route::patch('/edit/{webinar_id}', [WebinarNormalController::class, 'editWebinar']);
         Route::delete('/delete/{webinar_id}', [WebinarNormalController::class, 'destroyWebinar']);
-        // Route::get('', [WebinarNormalController::class, 'listNormalWebinar']); //blm
         Route::get('/', [WebinarNormalController::class, 'listWebinar']);
         Route::get('/detail/{webinar_id}', [WebinarNormalController::class, 'detailNormalWebinar']);
         Route::get('/detail-list/student/{webinar_id}', [WebinarNormalController::class, 'detailNormalWebinarWithStudent']);
         Route::get('/order/detail', [WebinarOrderController::class, 'getDetailOrder']);
         Route::post('/register', [StudentNormalWebinarParticipantController::class, 'registerStudent']); //ok
-        Route::post('/addcertificate', [CertificateController::class, 'addCertificate']);
+        Route::post('/detail/upload-certificate', [CertificateController::class, 'addCertificate']);
         Route::group(['prefix' => 'notification'], function () {
             Route::get('/', [NotificationWebinarController::class, 'getNotification']);
             Route::post('/read', [NotificationWebinarController::class, 'setNotificationReaded']);

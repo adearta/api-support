@@ -91,7 +91,7 @@ class WebinarNormalController extends Controller
                     $dataStudent[$i] = $temp[0];
                 }
 
-                $unique = (array) array_unique($dataStudent, SORT_REGULAR);
+                $unique = array_values(array_unique($dataStudent, SORT_REGULAR));
 
                 if (count($webinar) > 0) {
                     $responsea = array(
@@ -415,7 +415,7 @@ class WebinarNormalController extends Controller
 
                 $listSchool[$j] = $school[0];
             }
-            $unique = (array) array_unique($listSchool, SORT_REGULAR);
+            $unique = array_values(array_unique($listSchool, SORT_REGULAR));
 
             $data[$i] = (object) array(
                 'id'                => $webinar[$i]->id,

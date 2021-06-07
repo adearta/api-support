@@ -137,14 +137,14 @@ class CertificateController extends Controller
 
                         $schoolId[$i] = $temp[0];
                     }
-
+                    $unique = array_values(array_unique($schoolId, SORT_REGULAR));
                     $response = array(
                         "id"   => $webinar[0]->id,
                         "event_name" => $webinar[0]->event_name,
                         "event_date" => $webinar[0]->event_date,
                         "event_time" => $webinar[0]->event_time,
                         "event_picture" => $webinar[0]->event_picture,
-                        "schools"    => $schoolId,
+                        "schools"    => $unique,
                         "zoom_link" => $webinar[0]->zoom_link,
                         "is_certificate" => true,
                         "certificate" => "link not found",
@@ -260,7 +260,7 @@ class CertificateController extends Controller
 
                         $dataStudent[$i] = $temp[0];
                     }
-                    $unique = (array) array_unique($dataStudent, SORT_REGULAR);
+                    $unique = array_values(array_unique($dataStudent, SORT_REGULAR));
 
                     $response = array(
                         "id"   => $webinar[0]->id,
