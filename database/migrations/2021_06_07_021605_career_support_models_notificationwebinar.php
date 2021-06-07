@@ -20,6 +20,7 @@ class CareerSupportModelsNotificationwebinar extends Migration
             $table->integer('student_id')->unsigned()->nullable();
             $table->bigInteger('webinar_akbar_id')->unsigned()->nullable();
             $table->bigInteger('webinar_normal_id')->unsigned()->nullable();
+            $table->bigInteger('room_chat_id')->unsigned()->nullable();
             $table->bigInteger("creator_id")->nullable(); //
             $table->bigInteger("modifier_id")->nullable(); //
             //translation
@@ -32,6 +33,7 @@ class CareerSupportModelsNotificationwebinar extends Migration
 
             $table->foreign('webinar_akbar_id')->references('id')->on('career_support_models_webinarakbar')->onDelete('cascade');
             $table->foreign('webinar_normal_id')->references('id')->on('career_support_models_webinarnormal')->onDelete('cascade');
+            $table->foreign('room_chat_id')->references('id')->on('career_support_models_roomchat')->onDelete('cascade');
         });
     }
 

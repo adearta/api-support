@@ -8,6 +8,7 @@ use App\Models\StudentParticipantAkbarModel;
 use App\Models\StudentModel;
 use App\Models\WebinarAkbarModel;
 use App\Jobs\SendMailReminderJob;
+use App\Models\SchoolParticipantAkbarModel;
 use Illuminate\Support\Facades\DB;
 
 class ReminderCommand extends Command
@@ -50,13 +51,14 @@ class ReminderCommand extends Command
     public function reminderStudent($day)
     {
         $tbStudentParticipant = StudentParticipantAkbarModel::tableName();
+        $tbSchoolParticipant = SchoolParticipantAkbarModel::tableName();
         $tbStudent = StudentModel::tableName();
         $tbWebinar = WebinarAkbarModel::tableName();
         $tbNotification = NotificationWebinarModel::tableName();
 
-        $event = DB::select("select * from " . $tbStudentParticipant . " as participant left join " . $tbWebinar . " as web on web.id = participant.webinar_id where web.event_date = current_date + interval '" . $day . "' day");
+        $event = DB::select("select * from " . $tbWebinar . " as web left join " . $tbSchoolParticipant . " as school on web.id = school.webinar_id left join " . $tbStudentParticipant . " as participant on school.id = participant.school_participant_id where school.status > 2 and web.event_date = current_date + interval '" . $day . " days'");
 
-        if (!empty($event)) {
+        if (count($event) > 0) {
             foreach ($event as $e) {
                 $student = DB::connection('pgsql2')->table($tbStudent)
                     ->where('id', '=', $e->student_id)

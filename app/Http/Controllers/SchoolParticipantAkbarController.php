@@ -34,6 +34,7 @@ class SchoolParticipantAkbarController extends Controller
     private $tbUserEdu;
     private $tbWebinar;
     private $tbStudent;
+    private $tbSchool;
 
     public function __construct()
     {
@@ -44,6 +45,7 @@ class SchoolParticipantAkbarController extends Controller
         $this->tbUserEdu = UserEducationModel::tableName();
         $this->tbWebinar = WebinarAkbarModel::tableName();
         $this->tbStudent = StudentModel::tableName();
+        $this->tbSchool = SchoolModel::tableName();
     }
 
     public function updateSchoolWebinar(Request $request)
@@ -166,9 +168,9 @@ class SchoolParticipantAkbarController extends Controller
                     if ($validation->fails()) {
                         return $this->makeJSONResponse($validation->errors(), 400);
                     } else {
-                        $schoolSchedule = DB::select('select schedule from ' . $this->tbSchoolParticipant . " where school_id = " . $request->school_id . " and webinar_id = " . $request->webinar_id);
+                        $schoolParticipant = DB::select('select schedule, id from ' . $this->tbSchoolParticipant . " where school_id = " . $request->school_id . " and webinar_id = " . $request->webinar_id);
 
-                        if ($schoolSchedule[0]->schedule >= date("Y-m-d")) {
+                        if ($schoolParticipant[0]->schedule >= date("Y-m-d")) {
                             DB::table($this->tbSchoolParticipant)
                                 ->where('webinar_id', '=', $request->webinar_id)
                                 ->where('school_id', '=', $request->school_id)
@@ -205,9 +207,9 @@ class SchoolParticipantAkbarController extends Controller
                                     if (empty($data)) {
                                         $registered++;
                                         DB::table($this->tbStudentParticipant)->insert(array(
-                                            'school_id'     => $request->school_id,
-                                            'webinar_id'    => $request->webinar_id,
-                                            'student_id'    => $studentId[0]->id
+                                            'school_participant_id' => $schoolParticipant[0]->id,
+                                            'webinar_id'            => $request->webinar_id,
+                                            'student_id'            => $studentId[0]->id
                                         ));
                                         DB::table($this->tbNotification)->insert(array(
                                             'student_id'       => $studentId[0]->id,
@@ -282,5 +284,22 @@ class SchoolParticipantAkbarController extends Controller
         } catch (Exception $e) {
             echo $e;
         }
+    }
+
+    public function listSchool(Request $request)
+    {
+        //param -> search -> nullable -> search by student name;
+        $query_search = "";
+        if ($request->search != null) {
+            $searchLength = preg_replace('/\s+/', '', $request->search);
+            if (strlen($searchLength) > 0) {
+                $search = strtolower($request->search);
+                $query_search = " where lower(name) like '%" . $search . "%'";
+            }
+        }
+
+        $response = DB::connection("pgsql2")->select('select * from ' . $this->tbSchool . $query_search);
+
+        return $this->makeJSONResponse($response, 200);
     }
 }

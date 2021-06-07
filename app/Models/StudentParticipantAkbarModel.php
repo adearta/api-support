@@ -20,7 +20,7 @@ class StudentParticipantAkbarModel extends Model
     ];
 
     protected $fillable = [
-        'school_id',
+        'school_pariticipant_akbar',
         'webinar_id',
         'student_id'
     ];
