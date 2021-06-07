@@ -26,6 +26,7 @@ class WebinarNormalController extends Controller
     private $tbOrder;
     private $tbSchool;
 
+
     public function __construct()
     {
         $this->tbWebinar = CareerSupportModelsWebinarBiasa::tableName();
@@ -35,6 +36,8 @@ class WebinarNormalController extends Controller
         $this->tbOrder = CareerSupportModelsOrdersWebinar::tableName();
         $this->tbSchool = SchoolModel::tableName();
     }
+
+
 
     public function listNormalWebinar()
     {
@@ -88,6 +91,8 @@ class WebinarNormalController extends Controller
                     $dataStudent[$i] = $temp[0];
                 }
 
+                $unique = (array) array_unique($dataStudent, SORT_REGULAR);
+
                 if (count($webinar) > 0) {
                     $responsea = array(
                         "id"   => $webinar_id,
@@ -96,7 +101,7 @@ class WebinarNormalController extends Controller
                         "event_start"    => $webinar[0]->event_start,
                         "event_end"      => $webinar[0]->event_end,
                         "event_picture" => $webinar[0]->event_picture,
-                        "schools"    => $dataStudent,
+                        "schools"    => $unique,
                         "event_link" => $webinar[0]->event_link,
                         "is_certificate" => false,
                         "certificate" => "link not found",
@@ -410,6 +415,7 @@ class WebinarNormalController extends Controller
 
                 $listSchool[$j] = $school[0];
             }
+            $unique = (array) array_unique($listSchool, SORT_REGULAR);
 
             $data[$i] = (object) array(
                 'id'                => $webinar[$i]->id,
@@ -418,7 +424,7 @@ class WebinarNormalController extends Controller
                 'event_start'       => $webinar[$i]->event_start,
                 'event_end'         => $webinar[$i]->event_end,
                 'event_picture'     => $webinar[$i]->event_picture,
-                'schools'           => $listSchool,
+                'schools'           => $unique,
                 'event_link'        => $webinar[$i]->event_link,
                 'price'             => $currency,
                 'is_certificate'    => false,

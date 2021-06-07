@@ -260,6 +260,7 @@ class CertificateController extends Controller
 
                         $dataStudent[$i] = $temp[0];
                     }
+                    $unique = (array) array_unique($dataStudent, SORT_REGULAR);
 
                     $response = array(
                         "id"   => $webinar[0]->id,
@@ -268,7 +269,7 @@ class CertificateController extends Controller
                         "event_start" => $webinar[0]->event_start,
                         "event_end" => $webinar[0]->event_end,
                         "event_picture" => $webinar[0]->event_picture,
-                        "schools"    => $dataStudent,
+                        "schools"    => $unique,
                         "event_link" => $webinar[0]->event_link,
                         "is_certificate" => true,
                         "certificate" => "link not found",
