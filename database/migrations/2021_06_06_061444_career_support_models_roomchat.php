@@ -17,7 +17,6 @@ class CareerSupportModelsRoomchat extends Migration
             $table->id();
             $table->integer('school_id')->nullable();
             $table->integer('student_id')->nullable();
-            $table->boolean('broadcast_reply')->default(true);
             $table->bigInteger("creator_id")->nullable();
             $table->bigInteger("modifier_id")->nullable();
             $table->boolean('is_deleted')->default(false);
