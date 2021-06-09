@@ -484,9 +484,8 @@ class WebinarAkbarController extends Controller
             if ($current_page > 1) {
                 $start_item = ($current_page - 1) * 10;
             }
-
-            $query_pagination = " limit 10 offset " . $start_item;
         }
+        $query_pagination = " limit 10 offset " . $start_item;
 
         if ($request->search != null) {
             $searchLength = preg_replace('/\s+/', '', $request->search);
