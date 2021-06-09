@@ -22,6 +22,7 @@ class CareerSupportModelsChat extends Migration
             $table->string('type'); //chat or broadcast
             $table->integer('broadcast_type')->default(0); //1,2,3
             $table->dateTime('send_time');
+            $table->string('sender'); //student or school
             $table->bigInteger("creator_id")->nullable();
             $table->bigInteger("modifier_id")->nullable();
             $table->boolean('is_deleted')->default(false);

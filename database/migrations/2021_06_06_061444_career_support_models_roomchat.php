@@ -21,6 +21,7 @@ class CareerSupportModelsRoomchat extends Migration
             $table->bigInteger("creator_id")->nullable();
             $table->bigInteger("modifier_id")->nullable();
             $table->boolean('is_deleted')->default(false);
+            $table->timestamp('created')->useCurrent();
             $table->timestamp('modified')->nullable()->useCurrentOnUpdate();
             $table->timestamps();
         });
