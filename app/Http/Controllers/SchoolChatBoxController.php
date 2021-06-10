@@ -184,7 +184,7 @@ class SchoolChatBoxController extends Controller
         }
     }
     //kurang bikin handling kalau 
-    public function listChat(Request $request)
+    public function     listChat(Request $request)
     {
         $validation = Validator::make($request->all(), [
             'room_chat_id' => 'required|numeric',
