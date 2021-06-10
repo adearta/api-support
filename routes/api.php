@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AssetController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
@@ -20,11 +21,14 @@ use App\Http\Controllers\StudentChatBoxController;
 //the routes of webinar
 Route::middleware('auth:api')->prefix('administrator')->group(base_path('routes/api/administrator.php'));
 
-Route::post('/administrator/register', [AuthController::class, 'register']);
-Route::post('/administrator/login', [AuthController::class, 'login']);
+Route::group(['prefix' => 'administrator'], function () {
+	Route::post('/register', [AuthController::class, 'register']);
+	Route::post('/login', [AuthController::class, 'login']);
+	Route::post('/payment/status', [WebinarPaymentController::class, 'updateStatus']);
+	Route::get('/img/{folder}/{img}', [AssetController::class, 'img']);
+});
 
 //api for change the order status and triggered by midtrans
-Route::post('/administator/payment/status', [WebinarPaymentController::class, 'updateStatus']);
 Route::post('/student-chat/inbox', [StudentChatBoxController::class, 'createChatStudent']);
 Route::get('/student-chat/school', [StudentChatBoxController::class, 'listOfChat']);
 Route::delete('/student-chat/delete-chat/{chat_id}', [StudentChatBoxController::class, 'deleteChat']);
