@@ -13,6 +13,7 @@ class NotificationWebinarModel extends Model
     protected $fillable = [
         'school_id',
         'student_id',
+        'room_chat_id',
         'message_id',
         'message_en',
     ];

@@ -18,6 +18,7 @@ class ChatModel extends Model
         'type',
         'broadcast_type',
         'send_time',
+        'year'
     ];
     protected $hidden = [
         'is_deleted',

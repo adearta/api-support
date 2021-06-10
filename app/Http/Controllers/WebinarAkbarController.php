@@ -467,6 +467,7 @@ class WebinarAkbarController extends Controller
         $data = [];
         $query_pagination = "";
         $query_search = "";
+        $start_item = 0;
 
         $webinar_count = DB::select('select count(id) from ' . $this->tbWebinar);
         $total_page = ceil($webinar_count[0]->count / 10);
@@ -474,7 +475,6 @@ class WebinarAkbarController extends Controller
         if ($request->page == null || $request->page <= 1) {
             $current_page = 1;
         } else {
-            $start_item = 0;
             $current_page = $request->page;
 
             if ($current_page > $total_page) {
@@ -485,6 +485,7 @@ class WebinarAkbarController extends Controller
                 $start_item = ($current_page - 1) * 10;
             }
         }
+
         $query_pagination = " limit 10 offset " . $start_item;
 
         if ($request->search != null) {

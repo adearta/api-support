@@ -13,7 +13,6 @@ class ChatRoomModel extends Model
     protected $fillable = [
         'school_id',
         'student_id',
-        'broadcast_reply'
     ];
     protected $hidden = [
         'is_deleted',
