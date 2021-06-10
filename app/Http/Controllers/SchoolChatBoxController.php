@@ -97,7 +97,7 @@ class SchoolChatBoxController extends Controller
                     'room_chat_id'  => $chattable[0]->room_chat_id,
                     'chat'          => $chattable[0]->chat,
                     'type'          => "chat",
-                    'image'         => $chattable[0]->image,
+                    'image'         => url('api/v1/administrator/img/' . $chattable[0]->image),
                     'sender'        => "student",
                     'send_time'     => $chattable[0]->send_time
                 );
@@ -112,7 +112,7 @@ class SchoolChatBoxController extends Controller
                     'room_chat_id'  => $chattable[$arr_length - 1]->room_chat_id,
                     'chat'          => $chattable[$arr_length - 1]->chat,
                     'type'          => "chat",
-                    'image'         => $chattable[$arr_length - 1]->image,
+                    'image'         => url('api/v1/administrator/img/' . $chattable[$arr_length - 1]->image),
                     'sender'        => "student",
                     'send_time'     => $chattable[$arr_length - 1]->send_time
                 );
@@ -241,7 +241,7 @@ class SchoolChatBoxController extends Controller
                         "chat_id"       => $chatting[$i]->chat_id,
                         "sender"        => $chatting[$i]->sender,
                         "chat"          => $chatting[$i]->chat,
-                        "image"         => $chatting[$i]->image,
+                        "image"         => url('api/v1/administrator/img/' . $chatting[$i]->image),
                         "send_time"     => $chatting[$i]->send_time,
                     );
                 }
@@ -266,24 +266,24 @@ class SchoolChatBoxController extends Controller
             return $this->makeJSONResponse($response, 200);
         }
     }
-    public function detailChat($room_chat_id)
-    {
-        $validation = Validator::make(['room_chat_id' => $room_chat_id], ['room_chat_id' => 'required|numeric']);
-        if ($validation->fails()) {
-            return $this->makeJSONResponse($validation->errors(), 400);
-        } else {
-            try {
-                $detail =  DB::table($this->tbRoom, 'room')
-                    ->leftJoin($this->tbChat . " as chat ", "room.id", "=", "chat.room_chat_id")
-                    ->where('chat.room_chat_id', '=', $room_chat_id)
-                    ->get();
-                if (empty($detail)) {
-                    return $this->makeJSONResponse(["message" => "no chat history, start a chat!"], 200);
-                }
-            } catch (Exception $e) {
-                echo $e;
-            }
-            return $this->makeJSONResponse(["chat" => $detail], 200);
-        }
-    }
+    // public function detailChat($room_chat_id)
+    // {
+    //     $validation = Validator::make(['room_chat_id' => $room_chat_id], ['room_chat_id' => 'required|numeric']);
+    //     if ($validation->fails()) {
+    //         return $this->makeJSONResponse($validation->errors(), 400);
+    //     } else {
+    //         try {
+    //             $detail =  DB::table($this->tbRoom, 'room')
+    //                 ->leftJoin($this->tbChat . " as chat ", "room.id", "=", "chat.room_chat_id")
+    //                 ->where('chat.room_chat_id', '=', $room_chat_id)
+    //                 ->get();
+    //             if (empty($detail)) {
+    //                 return $this->makeJSONResponse(["message" => "no chat history, start a chat!"], 200);
+    //             }
+    //         } catch (Exception $e) {
+    //             echo $e;
+    //         }
+    //         return $this->makeJSONResponse(["chat" => $detail], 200);
+    //     }
+    // }
 }

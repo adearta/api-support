@@ -101,7 +101,7 @@ class StudentChatBoxController extends Controller
                     'room_chat_id'  => $chattable[0]->room_chat_id,
                     'chat'          => $chattable[0]->chat,
                     'type'          => "chat",
-                    'image'         => $chattable[0]->image,
+                    'image'         => url('api/v1/administrator/img/' . $chattable[0]->image),
                     'sender'        => "student",
                     'send_time'     => $chattable[0]->send_time
                 );
@@ -141,7 +141,7 @@ class StudentChatBoxController extends Controller
                     'room_chat_id'  => $chattable[$arr_length - 1]->room_chat_id,
                     'chat'          => $chattable[$arr_length - 1]->chat,
                     'type'          => "chat",
-                    'image'         => $chattable[$arr_length - 1]->image,
+                    'image'         => url('api/v1/administrator/img/' . $chattable[$arr_length - 1]->image),
                     'sender'        => "student",
                     'send_time'     => $chattable[$arr_length - 1]->send_time
                 );
@@ -210,7 +210,7 @@ class StudentChatBoxController extends Controller
                     "chat_id"       => $chatting[$i]->chat_id,
                     "sender"        => $chatting[$i]->sender,
                     "chat"          => $chatting[$i]->chat,
-                    "image"         => $chatting[$i]->image,
+                    "image"         => url('api/v1/administrator/img/' . $chatting[$i]->image),
                     "send_time"     => $chatting[$i]->send_time,
                 );
             }

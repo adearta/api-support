@@ -85,15 +85,15 @@ class WebinarAkbarController extends Controller
                 }
 
                 $response = array(
-                    "event_id"   => $webinar_id,
-                    "event_name" => $detail[0]->event_name,
-                    "event_date" => $detail[0]->event_date,
-                    "event_time" => $detail[0]->event_time,
-                    "event_picture" => $detail[0]->event_picture,
-                    "schools"    => $school,
-                    "zoom_link" => $detail[0]->zoom_link,
-                    "is_certificate" => false,
-                    "certificate" => "link not found",
+                    "event_id"          => $webinar_id,
+                    "event_name"        => $detail[0]->event_name,
+                    "event_date"        => $detail[0]->event_date,
+                    "event_time"        => $detail[0]->event_time,
+                    "event_picture"     => url('api/v1/administrator/img/' . $detail[0]->event_picture),
+                    "schools"           => $school,
+                    "zoom_link"         => $detail[0]->zoom_link,
+                    "is_certificate"    => false,
+                    "certificate"       => "link not found",
                 );
 
                 return $this->makeJSONResponse($response, 200);
@@ -130,10 +130,10 @@ class WebinarAkbarController extends Controller
                         try {
                             $path = $file->store('webinar_akbar', 'public');
                             $webinar = array(
-                                'zoom_link' => $request->zoom_link,
-                                'event_name' => $request->event_name,
-                                'event_date' => $request->event_date,
-                                'event_time' => $request->event_time,
+                                'zoom_link'     => $request->zoom_link,
+                                'event_name'    => $request->event_name,
+                                'event_date'    => $request->event_date,
+                                'event_time'    => $request->event_time,
                                 'event_picture' => $path,
                                 // 'is_deleted' => true
                             );
@@ -179,15 +179,15 @@ class WebinarAkbarController extends Controller
                             echo $e;
                         }
                         $response = array(
-                            "id"   => $webinarId,
-                            "event_name" => $respon[0]->event_name,
-                            "event_date" => $respon[0]->event_date,
-                            "event_time" => $respon[0]->event_time,
-                            "event_picture" => $respon[0]->event_picture,
-                            "schools"    => $schoolAll,
-                            "zoom_link" => $respon[0]->zoom_link,
-                            "is_certificate" => false,
-                            "certificate" => "link not found"
+                            "id"                => $webinarId,
+                            "event_name"        => $respon[0]->event_name,
+                            "event_date"        => $respon[0]->event_date,
+                            "event_time"        => $respon[0]->event_time,
+                            "event_picture"     => url('api/v1/administrator/img/' . $respon[0]->event_picture),
+                            "schools"           => $schoolAll,
+                            "zoom_link"         => $respon[0]->zoom_link,
+                            "is_certificate"    => false,
+                            "certificate"       => "link not found"
                         );
 
                         return $this->makeJSONResponse($response, 200);
@@ -309,15 +309,15 @@ class WebinarAkbarController extends Controller
                     }
 
                     $response = array(
-                        "id"   => $request->webinar_id,
-                        "event_name" => $request->event_name,
-                        "event_date" => $request->event_date,
-                        "event_time" => $request->event_time,
-                        "event_picture" => $detail[0]->event_picture,
-                        "schools"    => $schoolId,
-                        "zoom_link" => $request->zoom_link,
-                        "is_certificate" => false,
-                        "certificate" => "link not found",
+                        "id"                => $request->webinar_id,
+                        "event_name"        => $request->event_name,
+                        "event_date"        => $request->event_date,
+                        "event_time"        => $request->event_time,
+                        "event_picture"     => url('api/v1/administrator/img/' . $detail[0]->event_picture),
+                        "schools"           => $schoolId,
+                        "zoom_link"         => $request->zoom_link,
+                        "is_certificate"    => false,
+                        "certificate"       => "link not found",
                     );
                     return array(
                         'response' => $response,
@@ -377,11 +377,11 @@ class WebinarAkbarController extends Controller
                             ->get();
 
                         $webinarEmail = array(
-                            'zoom_link' => $webinar[0]->zoom_link,
-                            'event_name' => $webinar[0]->event_name,
-                            'event_date' => $webinar[0]->event_date,
-                            'event_time' => $webinar[0]->event_time,
-                            'event_picture' => $webinar[0]->event_picture
+                            'zoom_link'         => $webinar[0]->zoom_link,
+                            'event_name'        => $webinar[0]->event_name,
+                            'event_date'        => $webinar[0]->event_date,
+                            'event_time'        => $webinar[0]->event_time,
+                            'event_picture'     => url('api/v1/administrator/img/' . $webinar[0]->event_picture)
                         );
 
                         EmailInvitationSchoolJob::dispatch($webinarEmail, $school);
@@ -517,7 +517,7 @@ class WebinarAkbarController extends Controller
                 'event_name'        => $webinar[$i]->event_name,
                 'event_date'        => $webinar[$i]->event_date,
                 'event_time'        => $webinar[$i]->event_time,
-                'event_picture'     => $webinar[$i]->event_picture,
+                'event_picture'     => url('api/v1/administrator/img/' . $webinar[$i]->event_picture),
                 'schools'           => $listSchool,
                 'zoom_link'         => $webinar[$i]->zoom_link,
                 'is_certificate'    => false,
@@ -528,11 +528,11 @@ class WebinarAkbarController extends Controller
         $response = (object) array(
             'data' => $data,
             'pagination' => (object) array(
-                'first_page' => 1,
-                'last_page' => $total_page,
-                'current_page' => $current_page,
-                'current_data' => count($webinar), // total data based on filter search and page
-                'total_data' => $webinar_count[0]->count
+                'first_page'    => 1,
+                'last_page'     => $total_page,
+                'current_page'  => $current_page,
+                'current_data'  => count($webinar), // total data based on filter search and page
+                'total_data'    => $webinar_count[0]->count
             )
         );
 

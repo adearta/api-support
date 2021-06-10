@@ -95,16 +95,16 @@ class WebinarNormalController extends Controller
 
                 if (count($webinar) > 0) {
                     $responsea = array(
-                        "id"   => $webinar_id,
-                        "event_name" => $webinar[0]->event_name,
-                        "event_date" => $webinar[0]->event_date,
-                        "event_start"    => $webinar[0]->event_start,
-                        "event_end"      => $webinar[0]->event_end,
-                        "event_picture" => $webinar[0]->event_picture,
-                        "schools"    => $unique,
-                        "event_link" => $webinar[0]->event_link,
-                        "is_certificate" => false,
-                        "certificate" => "link not found",
+                        "id"                => $webinar_id,
+                        "event_name"        => $webinar[0]->event_name,
+                        "event_date"        => $webinar[0]->event_date,
+                        "event_start"       => $webinar[0]->event_start,
+                        "event_end"         => $webinar[0]->event_end,
+                        "event_picture"     => url('api/v1/administrator/img/' . $webinar[0]->event_picture),
+                        "schools"           => $unique,
+                        "event_link"        => $webinar[0]->event_link,
+                        "is_certificate"    => false,
+                        "certificate"       => "link not found",
                     );
 
                     return $this->makeJSONResponse($responsea, 200);
@@ -164,9 +164,9 @@ class WebinarNormalController extends Controller
                         "event_id"      => $webinar_id,
                         "event_name"    => $webinar[0]->event_name,
                         "event_date"    => $webinar[0]->event_date,
-                        "event_start"    => $webinar[0]->event_start,
-                        "event_end"      => $webinar[0]->event_end,
-                        "event_picture" => $webinar[0]->event_picture,
+                        "event_start"   => $webinar[0]->event_start,
+                        "event_end"     => $webinar[0]->event_end,
+                        "event_picture" => url('api/v1/administrator/img/' . $webinar[0]->event_picture),
                         "registered"    => count($registered),
                         'quota'         => 500,
                         'student'       => $student
@@ -237,14 +237,14 @@ class WebinarNormalController extends Controller
                             ->get();
                         $currency = "Rp " . number_format($request->price, 2, ',', '.');
                         $response = array(
-                            "id"   => $thisWebinar[0]->id,
-                            "event_name" => $request->event_name,
-                            "event_date" => $request->event_date,
-                            "event_picture" => $thisWebinar[0]->event_picture,
-                            "event_link" => $request->event_link,
-                            'event_start' => $request->event_start,
-                            'event_end' => $request->event_end,
-                            'price' => $currency,
+                            "id"            => $thisWebinar[0]->id,
+                            "event_name"    => $request->event_name,
+                            "event_date"    => $request->event_date,
+                            "event_picture" => url('api/v1/administrator/img/' . $thisWebinar[0]->event_picture),
+                            "event_link"    => $request->event_link,
+                            'event_start'   => $request->event_start,
+                            'event_end'     => $request->event_end,
+                            'price'         => $currency,
                         );
                         return $this->makeJSONResponse($response, 200);
                     }
@@ -303,14 +303,14 @@ class WebinarNormalController extends Controller
                         ->get();
                     $currency = "Rp " . number_format($request->price, 2, ',', '.');
                     $response = array(
-                        "id"   => $webinar_id,
-                        "event_name" => $request->event_name,
-                        "event_date" => $request->event_date,
-                        "event_picture" => $tableUpdated[0]->event_picture,
-                        "zoom_link" => $request->zoom_link,
-                        'event_start' => $request->event_start,
-                        'event_end' => $request->event_end,
-                        'price' => $currency,
+                        "id"            => $webinar_id,
+                        "event_name"    => $request->event_name,
+                        "event_date"    => $request->event_date,
+                        "event_picture" => url('api/v1/administrator/img/' . $tableUpdated[0]->event_picture),
+                        "zoom_link"     => $request->zoom_link,
+                        'event_start'   => $request->event_start,
+                        'event_end'     => $request->event_end,
+                        'price'         => $currency,
                     );
                     return array(
                         'response' => $response,
@@ -423,7 +423,7 @@ class WebinarNormalController extends Controller
                 'event_date'        => $webinar[$i]->event_date,
                 'event_start'       => $webinar[$i]->event_start,
                 'event_end'         => $webinar[$i]->event_end,
-                'event_picture'     => $webinar[$i]->event_picture,
+                'event_picture'     => url('api/v1/administrator/img/' . $webinar[$i]->event_picture),
                 'schools'           => $unique,
                 'event_link'        => $webinar[$i]->event_link,
                 'price'             => $currency,

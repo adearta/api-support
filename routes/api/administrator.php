@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BroadcastChat\BroadcastController;
 use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\WebinarAkbarController;
 use App\Http\Controllers\SchoolParticipantAkbarController;
@@ -49,4 +50,8 @@ Route::group(['prefix' => 'webinar-internal'], function () {
     });
 });
 
-Route::get('/reminder', [WebinarAkbarController::class, 'reminderStudent']);
+Route::group(['prefix' => 'broadcast'], function () {
+    Route::middleware('admin')->group(function () {
+        Route::post('/create', [BroadcastController::class, 'create']);
+    });
+});
