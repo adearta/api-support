@@ -359,6 +359,7 @@ class WebinarNormalController extends Controller
         $data = [];
         $query_pagination = "";
         $query_search = "";
+        $start_item = 0;
 
         $webinar_count = DB::select('select count(id) from ' . $this->tbWebinar);
         $total_page = ceil($webinar_count[0]->count / 10);
