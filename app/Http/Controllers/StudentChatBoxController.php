@@ -80,7 +80,6 @@ class StudentChatBoxController extends Controller
                 ));
                 //insert to tb notif to inform the school
                 DB::table($this->tbNotif)->insert(array(
-
                     'school_id'     => $school[0]->school_id,
                     'room_chat_id'  => $room,
                     'message_id'    => "Anda mendapatkan chat baru dari siswa",
@@ -110,7 +109,7 @@ class StudentChatBoxController extends Controller
                     "room" => $roomResponse,
                     "chat" => $chatResponse,
                 ));
-            } else if ($count == 1) {
+            } else {
                 $lastRoom = DB::table($this->tbRoom)
                     ->where('student_id', '=', $request->student_id)
                     ->where('school_id', '=', $school[0]->school_id)
