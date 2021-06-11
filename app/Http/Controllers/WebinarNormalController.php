@@ -258,11 +258,11 @@ class WebinarNormalController extends Controller
     {
         //validasi 
         $validation = Validator::make($request->all(), [
-            'event_name' => 'required',
-            'event_date' => 'required',
-            'event_link' => 'required|url',
-            'event_start' => 'required',
-            'event_end' => 'required',
+            'event_name' => '',
+            'event_date' => '',
+            'event_link' => '|url',
+            'event_start' => '',
+            'event_end' => '',
             // 'price' => 'numeric|required',
             'event_picture' => 'mimes:jpg,jpeg,png|max:2000'
         ]);
