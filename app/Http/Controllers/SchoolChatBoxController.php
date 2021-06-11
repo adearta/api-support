@@ -136,44 +136,76 @@ class SchoolChatBoxController extends Controller
     }
     public function listRoom(Request $request)
     {
+        /**
+         * list-of-room and search by student name
+         * response
+         *  
+         * room
+         * student
+         * last-chat
+         * 
+         */
         $validation = Validator::make($request->all(), [
-            'school_id' => 'required'
+            'school_id' => 'required',
+            'search' => ''
 
         ]);
         if ($validation->fails()) {
             return $this->makeJSONResponse($validation->errors(), 400);
         } else {
-            $listRoom = DB::table($this->tbRoom)
-                ->where('school_id', '=', $request->school_id)
-                ->get();
-
-            $studentRoom = DB::table($this->tbRoom)
-                ->where('school_id', '=', $request->school_id)
-                ->get();
-            $school = DB::connection('pgsql2')->table($this->tbSchool)
-                ->where('id', '=', $request->school_id)
-                ->get();
-            for ($i = 0; $i < count($studentRoom); $i++) {
-                $student = DB::connection('pgsql2')->table($this->tbStudent)
-                    ->where('id', '=', $studentRoom[$i]->student_id)
-                    ->select('*')
-                    ->get();
-
-                for ($j = 0; $j < count($listRoom); $j++) {
-                    $arrayRoom[$i] = (object) array(
-                        'room'          => $studentRoom[$i],
-                        'student'       => $student[0]
-                    );
-
-                    $response = array_values(array(
-                        'school'        => $school[0],
-                        'student_room'  => array_values($arrayRoom)
-                        // $arrayRoom,
-                    ));
+            try {
+                if ($request->search != null) {
+                    $search_length = preg_replace('/\s+/', '', $request->search);
+                    if (strlen($search_length) > 0) {
+                        $search = strtolower($request->search);
+                        $studentname = DB::connection('pgsql2')->table($this->tbStudent)
+                            ->select('*')
+                            ->where("name", "like", "%{$search}%")
+                            ->get();
+                        $studentRoom = DB::table($this->tbRoom)
+                            ->where('school_id', '=', $request->school_id)
+                            ->where('student_id', '=', $studentname[0]->id)
+                            ->get();
+                    }
+                } else {
+                    //show all
+                    $studentRoom = DB::table($this->tbRoom)
+                        ->where('school_id', '=', $request->school_id)
+                        ->get();
                 }
+                for ($i = 0; $i < count($studentRoom); $i++) {
+                    $student = DB::connection('pgsql2')->table($this->tbStudent)
+                        ->where('id', '=', $studentRoom[0]->student_id)
+                        ->select('*')
+                        ->get();
+
+                    $chat = DB::table($this->tbChat)
+                        ->where('room_chat_id', '=', $studentRoom[0]->id)
+                        ->get();
+
+                    $countcht = (count($chat) - 1);
+                    if ($countcht > 0) {
+                        $countcht = $chat[$countcht];
+                    } else {
+                        $countcht = (object)$chat;
+                    }
+                    //
+                    for ($j = 0; $j < count($studentRoom); $j++) {
+                        $response[$i] = array_values(array(
+                            'room'          => $studentRoom[$i],
+                            'chat'          => $countcht,
+                            'student'       => $student[0],
+                        ));
+                    }
+                }
+                if (empty($studentRoom)) {
+                    return $this->makeJSONResponse(["message" => "no chat found !"], 200);
+                }
+                return $this->makeJSONResponse($response, 200);
+            } catch (Exception $e) {
+                echo $e;
             }
         }
-        return $this->makeJSONResponse($response, 200);
     }
     public function deleteRoom($room_chat_id)
     {
@@ -184,7 +216,7 @@ class SchoolChatBoxController extends Controller
         }
     }
     //kurang bikin handling kalau 
-    public function     listChat(Request $request)
+    public function listChat(Request $request)
     {
         $validation = Validator::make($request->all(), [
             'room_chat_id' => 'required|numeric',
@@ -200,7 +232,6 @@ class SchoolChatBoxController extends Controller
                 $query_search = "";
 
                 $count_chat = DB::select("select count(room_chat_id) from " . $this->tbChat . " where room_chat_id = " . $request->room_chat_id . " group by room_chat_id");
-                // if(!empty($count_chat))
                 $total_page = ceil($count_chat[0]->count / 10);
 
 
@@ -219,11 +250,14 @@ class SchoolChatBoxController extends Controller
                     $search_length = preg_replace('/\s+/', '', $request->search);
                     if (strlen($search_length) > 0) {
                         $search = strtolower($request->search);
-                        $query_search = " and lower(chat.chat) like '%" . $search . "%'";
+                        $query_search = " and lower(chat.chat) like '%" . $search . "%' ";
                     }
+                } else {
+                    //show all
+                    $query_search = "";
                 }
 
-                $chatting = DB::select("select chat.room_chat_id, chat.id as chat_id, chat.sender, room.student_id, room.school_id, chat.chat, chat.image, chat.send_time from " . $this->tbChat . " as chat left join " . $this->tbRoom . " as room on chat.room_chat_id = room.id where room.id = " . $request->room_chat_id . $query_search . " order by chat.id desc" . $query_pagination);
+                $chatting = DB::select("select chat.room_chat_id, chat.id as chat_id, chat.sender, room.student_id, room.school_id, chat.chat, chat.image, chat.send_time from " . $this->tbChat . " as chat left join " . $this->tbRoom . " as room on chat.room_chat_id = room.id where room.id = " . $request->room_chat_id . $query_search . "order by chat.id desc" . $query_pagination);
                 $dbStudent = DB::connection('pgsql2')->table($this->tbStudent)
                     ->where("id", "=", $chatting[0]->student_id)
                     ->get();
