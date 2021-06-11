@@ -191,7 +191,7 @@ class WebinarNormalController extends Controller
             'event_link' => 'required|url',
             'event_start' => 'required',
             'event_end' => 'required',
-            'price' => 'numeric|required',
+            // 'price' => 'numeric|required',
         ]);
         if ($validation->fails()) {
             return $this->makeJSONResponse($validation->errors(), 202);
@@ -263,7 +263,7 @@ class WebinarNormalController extends Controller
             'event_link' => 'required|url',
             'event_start' => 'required',
             'event_end' => 'required',
-            'price' => 'numeric|required',
+            // 'price' => 'numeric|required',
             'event_picture' => 'mimes:jpg,jpeg,png|max:2000'
         ]);
         if ($validation->fails()) {
