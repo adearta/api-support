@@ -91,7 +91,7 @@ class NotificationWebinarController extends Controller
     public function setNotificationReaded(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'notification_id' => 'required|numeric|exists:' . $this->tbNotification . ',id'
+            'notification_id.*' => 'required|numeric|exists:' . $this->tbNotification . ',id'
         ]);
         if ($validator->fails()) {
             return $this->makeJSONResponse($validator->errors(), 400);
