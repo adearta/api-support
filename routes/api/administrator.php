@@ -53,5 +53,6 @@ Route::group(['prefix' => 'webinar-internal'], function () {
 Route::group(['prefix' => 'broadcast'], function () {
     Route::middleware('admin')->group(function () {
         Route::post('/create', [BroadcastController::class, 'create']);
+        Route::get('/', [BroadcastController::class, 'listRoomBroadcast']);
     });
 });
