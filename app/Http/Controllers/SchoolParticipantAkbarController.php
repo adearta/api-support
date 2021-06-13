@@ -75,9 +75,9 @@ class SchoolParticipantAkbarController extends Controller
             switch ($request->status) {
                 case 2:
                     $validation = Validator::make($request->all(), [
-                        'webinar_id' => 'required|numeric',
-                        'school_id' => 'required|numeric',
-                        'status' => 'required|numeric'
+                        'webinar_id'    => 'required|numeric|exists:' . $this->tbWebinar . ',id',
+                        'school_id'     => 'required|numeric|exists:pgsql2' . $this->tbSchool . ',id',
+                        'status'        => 'required|numeric'
                     ]);
                     if ($validation->fails()) {
                         return $this->makeJSONResponse($validation->errors(), 400);
@@ -93,8 +93,8 @@ class SchoolParticipantAkbarController extends Controller
 
                 case 3:
                     $validation = Validator::make($request->all(), [
-                        'webinar_id' => 'required|numeric',
-                        'school_id' => 'required|numeric',
+                        'webinar_id'    => 'required|numeric|exists:' . $this->tbWebinar . ',id',
+                        'school_id'     => 'required|numeric|exists:pgsql2' . $this->tbSchool . ',id',
                         'status' => 'required|numeric'
                     ]);
                     if ($validation->fails()) {
@@ -160,9 +160,9 @@ class SchoolParticipantAkbarController extends Controller
                     //jawaban 2
                 case 4:
                     $validation = Validator::make($request->all(), [
-                        'webinar_id' => 'required|numeric',
-                        'school_id' => 'required|numeric',
-                        'start_year' => 'required|numeric',
+                        'webinar_id'    => 'required|numeric|exists:' . $this->tbWebinar . ',id',
+                        'school_id'     => 'required|numeric|exists:pgsql2' . $this->tbSchool . ',id',
+                        'start_year'    => 'required|numeric',
                         'status' => 'required|numeric'
                     ]);
                     if ($validation->fails()) {
@@ -237,8 +237,8 @@ class SchoolParticipantAkbarController extends Controller
                     break;
                 case 5:
                     $validation = Validator::make($request->all(), [
-                        'webinar_id' => 'required|numeric',
-                        'school_id' => 'required|numeric',
+                        'webinar_id'    => 'required|numeric|exists:' . $this->tbWebinar . ',id',
+                        'school_id'     => 'required|numeric|exists:pgsql2' . $this->tbSchool . ',id',
                         'status' => 'required|numeric'
                     ]);
                     if ($validation->fails()) {
@@ -289,17 +289,24 @@ class SchoolParticipantAkbarController extends Controller
     public function listSchool(Request $request)
     {
         //param -> search -> nullable -> search by student name;
-        $query_search = "";
-        if ($request->search != null) {
-            $searchLength = preg_replace('/\s+/', '', $request->search);
-            if (strlen($searchLength) > 0) {
-                $search = strtolower($request->search);
-                $query_search = " where lower(name) like '%" . $search . "%'";
+        $validation = Validator::make($request->all(), [
+            'search' => 'text'
+        ]);
+        if ($validation->fails()) {
+            return $this->makeJSONResponse($validation->errors(), 400);
+        } else {
+            $query_search = "";
+            if ($request->search != null) {
+                $searchLength = preg_replace('/\s+/', '', $request->search);
+                if (strlen($searchLength) > 0) {
+                    $search = strtolower($request->search);
+                    $query_search = " where lower(name) like '%" . $search . "%'";
+                }
             }
+
+            $response = DB::connection("pgsql2")->select('select * from ' . $this->tbSchool . $query_search);
+
+            return $this->makeJSONResponse($response, 200);
         }
-
-        $response = DB::connection("pgsql2")->select('select * from ' . $this->tbSchool . $query_search);
-
-        return $this->makeJSONResponse($response, 200);
     }
 }

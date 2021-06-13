@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Traits\ResponseHelper;
 use App\Models\CareerSupportModelsWebinarBiasa;
 use App\Models\CareerSupportModelsOrdersWebinar;
+use App\Models\StudentModel;
 use Illuminate\Support\Facades\DB;
 use Exception;
 use Illuminate\Support\Facades\Validator;
@@ -17,19 +18,22 @@ class WebinarOrderController extends Controller
     private $tbWebinar;
     private $tbOrder;
     private $tbParticipant;
+    private $tbStudent;
 
     public function __construct()
     {
         $this->tbWebinar = CareerSupportModelsWebinarBiasa::tableName();
         $this->tbOrder = CareerSupportModelsOrdersWebinar::tableName();
         $this->tbParticipant = CareerSupportModelsNormalStudentParticipants::tableName();
+        $this->tbStudent = StudentModel::tableName();
     }
     //get the detail of webinar + order status by student
     public function getDetailOrder(Request $request)
     {
+
         $validation = Validator::make($request->all(), [
-            'webinar_id' => 'required|numeric',
-            'student_id' => 'required|numeric'
+            'webinar_id' => 'required|numeric|exists:' . $this->tbWebinar . ',id',
+            'student_id' => 'required|numeric|exists:' . $this->tbStudent . ',id'
         ]);
 
         if ($validation->fails()) {

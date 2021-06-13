@@ -47,8 +47,8 @@ class WebinarPaymentController extends Controller
     public function charge(Request $request)
     {
         //param -> order_id
-        $validation = Validator::make(['order_id' => $request->order_id], [
-            'order_id' => 'required|numeric'
+        $validation = Validator::make($request->all(), [
+            'order_id' => 'required|numeric|exists:' . $this->tbOrder . ',id'
         ]);
 
         if ($validation->fails()) {
