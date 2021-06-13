@@ -34,8 +34,8 @@ class SchoolChatBoxController extends Controller
     public function createChat(Request $request)
     {
         $validation = Validator::make($request->all(), [
-            'school_id' => 'required|numeric|exists:pgsql2' . $this->tbSchool . ',id',
-            'student_id' => 'required|numeric|exist:pgsql2' . $this->tbStudent . ',id',
+            'school_id' => 'required|numeric|exists:pgsql2.' . $this->tbSchool . ',id',
+            'student_id' => 'required|numeric|exist:pgsql2.' . $this->tbStudent . ',id',
             'chat' => 'required',
             'image' => 'mimes:jpg,jpeg,pdf,png|max:2000',
             'datetime' => 'date_format:Y-m-d H:i:s'
@@ -153,7 +153,7 @@ class SchoolChatBoxController extends Controller
          * 
          */
         $validation = Validator::make($request->all(), [
-            'school_id' => 'required|numeric|exists:pgsql2' . $this->tbSchool . ',id',
+            'school_id' => 'required|numeric|exists:pgsql2.' . $this->tbSchool . ',id',
             // 'search'    => 'string'
 
         ]);

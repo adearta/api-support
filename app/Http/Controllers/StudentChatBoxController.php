@@ -36,7 +36,7 @@ class StudentChatBoxController extends Controller
     {
         $validation = Validator::make($request->all(), [
             'student_id' => "required|numeric|exists:pgsql2" . $this->tbStudent . ',id',
-            'chat' => 'required',
+            'chat' => 'required|string',
             'image' => 'mimes:jpg,jpeg,pdf,png|max:2000',
             // 'link' => 'url'
         ]);
@@ -161,7 +161,7 @@ class StudentChatBoxController extends Controller
     public function listOfChat(Request $request)
     {
         $validation = Validator::make($request->all(), [
-            'student_id' => 'required|numeric|exists:pgsql2' . $this->tbStudent . ',id',
+            'student_id' => 'required|numeric|exists:pgsql2.' . $this->tbStudent . ',id',
             'page'       => 'numeric',
             // 'search' => ''
         ]);
@@ -246,19 +246,26 @@ class StudentChatBoxController extends Controller
     }
     public function deleteChat($chat_id)
     {
-        $delete = ChatModel::findOrfail($chat_id);
-        if ($delete) {
-            if (Storage::disk('public')->exists($delete->image)) {
-                Storage::disk('public')->delete($delete->image);
+        $validation = Validator::make(["chat_id" => $chat_id], [
+            'chat_id' => 'numeric|required|exists:' . $this->tbChat . ',id'
+        ]);
+        if ($validation->fails()) {
+            return $this->makeJSONResponse($validation->errors(), 400);
+        } else {
+            $delete = ChatModel::findOrfail($chat_id);
+            if ($delete) {
+                if (Storage::disk('public')->exists($delete->image)) {
+                    Storage::disk('public')->delete($delete->image);
+                }
+                $delete->delete();
             }
-            $delete->delete();
+            return $this->makeJSONResponse(["message" => "chat has been deleted!"], 200);
         }
-        return $this->makeJSONResponse(["message" => "chat has been deleted!"], 200);
     }
     public function detailSchool(Request $request)
     {
         $validation = Validator::make($request->all(), [
-            'student_id' => 'required|numeric|exists:pgsql2' . $this->tbStudent . ',id'
+            'student_id' => 'required|numeric|exists:pgsql2.' . $this->tbStudent . ',id'
         ]);
         if ($validation->fails()) {
             return $this->makeJSONResponse($validation->errors(), 400);

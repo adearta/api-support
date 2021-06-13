@@ -56,3 +56,12 @@ Route::group(['prefix' => 'broadcast'], function () {
         Route::get('/', [BroadcastController::class, 'listRoomBroadcast']);
     });
 });
+Route::group(['prefix' => 'school-chat'], function () {
+    Route::middleware('admin')->group(function () {
+        Route::post('/room/inbox', [SchoolChatBoxController::class, 'createChat']);
+        Route::get('/room/student', [SchoolChatBoxController::class, 'listChat']);
+        Route::delete('/delete-chat/{chat_id}', [SchoolChatBoxController::class, 'deleteChat']);
+        Route::get('/room', [SchoolChatBoxController::class, 'listRoom']);
+        Route::delete('/room/delete/{room_caht_id}', [SchoolChatBoxController::class, 'deleteRoom']);
+    });
+});

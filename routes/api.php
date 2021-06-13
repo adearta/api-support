@@ -36,8 +36,3 @@ Route::delete('/student-chat/delete-chat/{chat_id}', [StudentChatBoxController::
 Route::get('/student_chat/school/detail', [StudentChatBoxController::class, 'detailSchool']);
 
 //school chat
-Route::post('/school-chat/room/inbox', [SchoolChatBoxController::class, 'createChat']);
-Route::get('/school-chat/room/student', [SchoolChatBoxController::class, 'listChat']);
-Route::delete('/school-chat/delete-chat/{chat_id}', [SchoolChatBoxController::class, 'deleteChat']);
-Route::get('/school-chat/room', [SchoolChatBoxController::class, 'listRoom']);
-Route::delete('/school-chat/room/delete/{room_caht_id}', [SchoolChatBoxController::class, 'deleteRoom']);

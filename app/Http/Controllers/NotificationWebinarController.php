@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Traits\ResponseHelper;
 use App\Models\NotificationWebinarModel;
+use App\Models\SchoolModel;
+use App\Models\StudentModel;
 use Exception;
 use Illuminate\Support\Facades\Validator;
 
@@ -14,10 +16,14 @@ class NotificationWebinarController extends Controller
     use ResponseHelper;
 
     private $tbNotification;
+    private $tbSchool;
+    private $tbStudent;
 
     public function __construct()
     {
         $this->tbNotification = NotificationWebinarModel::tableName();
+        $this->tbSchool = SchoolModel::tableName();
+        $this->tbStudent = StudentModel::tableName();
     }
 
     public function getNotification(Request $request)
@@ -39,9 +45,9 @@ class NotificationWebinarController extends Controller
             if ($validation->fails()) {
                 return $this->makeJSONResponse($validation->errors(), 400);
             } else {
-                if ($request->school_id != null) {
+                if ($request->school_id != null && $request->student_id == null) {
                     $validation = Validator::make($request->all(), [
-                        'school_id' => 'required|numeric',
+                        'school_id' => 'required|numeric|exists:pgsql2.' . $this->tbSchool . ',id',
                     ]);
                     if ($validation->fails()) {
                         return $this->makeJSONResponse($validation->errors(), 400);
@@ -49,9 +55,9 @@ class NotificationWebinarController extends Controller
                         $querySelectId = ", tbNotif.school_id";
                         $queryWhere = " where school_id = " . $request->school_id;
                     }
-                } else {
+                } else if ($request->student_id != null && $request->school_id == null) {
                     $validation = Validator::make($request->all(), [
-                        'student_id' => 'required|numeric',
+                        'student_id' => 'required|numeric|exists:pgsql2.' . $this->tbStudent . ',id',
                     ]);
                     if ($validation->fails()) {
                         return $this->makeJSONResponse($validation->errors(), 400);
@@ -59,14 +65,18 @@ class NotificationWebinarController extends Controller
                         $querySelectId = ", tbNotif.student_id";
                         $queryWhere = " where student_id = " . $request->student_id;
                     }
+                } else {
+                    return $this->makeJSONResponse(['message' => 'choose only student_id or school_id!'], 400);
                 }
 
 
                 if ($request->header('Accept-Language') == "en") {
 
                     $queryLanguage = ", tbNotif.message_en as message";
-                } else {
+                } else if ($request->header('Accept-Language') == "id") {
                     $queryLanguage = ", tbNotif.message_id as message";
+                } else {
+                    return $this->makeJSONResponse(['message' => 'only can choose language between indonesia(id) or english(en)!'], 400);
                 }
             }
 

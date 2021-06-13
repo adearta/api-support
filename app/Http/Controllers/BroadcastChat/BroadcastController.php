@@ -184,7 +184,7 @@ class BroadcastController extends Controller
             return $this->makeJSONResponse($validation->errors(), 400);
         } else {
             $status = DB::transaction(function () use ($request) {
-                $currenpage = 1;
+                $current_page = 1;
                 $data = [];
                 $query_pagination = "";
                 $query_search = "";
