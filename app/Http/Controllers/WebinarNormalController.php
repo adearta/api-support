@@ -272,7 +272,7 @@ class WebinarNormalController extends Controller
                 }
             });
             if ($data) {
-                return $this->makeJSONResponse($data, 200);
+                return $this->makeJSONResponse($data->original, 200);
             } else {
                 return $this->makeJSONResponse(["message" => "transaction failed!"], 400);
             }
@@ -354,21 +354,28 @@ class WebinarNormalController extends Controller
     }
     public function destroyWebinar($webinar_id)
     {
-        $delete = CareerSupportModelsWebinarBiasa::findOrfail($webinar_id);
-        if (!empty($delete)) {
-            if (Storage::disk('public')->exists($delete->event_picture)) {
-                Storage::disk('public')->delete($delete->event_picture);
-                $delete->delete();
+        $validation = Validator::make(['webinar_id' => $webinar_id], [
+            'webinar_id' => 'required|numeric|exists:' . $this->tbWebinar . ',id'
+        ]);
+        if ($validation->fails()) {
+            return $this->makeJSONResponse($validation->errors(), 400);
+        } else {
+            $delete = CareerSupportModelsWebinarBiasa::findOrfail($webinar_id);
+            if (!empty($delete)) {
+                if (Storage::disk('public')->exists($delete->event_picture)) {
+                    Storage::disk('public')->delete($delete->event_picture);
+                    $delete->delete();
 
-                $message = "sucessfully delete webinar!";
-                $code = 200;
+                    $message = "sucessfully delete webinar!";
+                    $code = 200;
 
-                return $this->makeJSONResponse(["message" => $message], $code);
-            } else {
-                $message = "can't delete...";
-                $code = 500;
+                    return $this->makeJSONResponse(["message" => $message], $code);
+                } else {
+                    $message = "can't delete...";
+                    $code = 500;
 
-                return $this->makeJSONResponse(["message" => $message], $code);
+                    return $this->makeJSONResponse(["message" => $message], $code);
+                }
             }
         }
     }

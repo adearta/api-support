@@ -51,7 +51,7 @@ class CertificateController extends Controller
     public function addCertificateAkbar(Request $request)
     {
         $validation = Validator::make($request->all(), [
-            'certificate.*' => 'required|mimes:pdf|max:500',
+            'certificate.*' => 'required|mimes:jpg,png,jpeg|max:2000',
             'webinar_id' => 'required|numeric|exists:' . $this->tbWebinarakbar . ',id',
         ]);
 
@@ -170,7 +170,7 @@ class CertificateController extends Controller
     {
         $validation = Validator::make($request->all(), [
             'certificate.*' => 'required|mimes:jpg,jpeg,png|max:2000',
-            'webinar_id' => 'required|numeric|exists:' . $this->tbWebinarakbar . 'id',
+            'webinar_id' => 'required|numeric|exists:' . $this->tbWebinar . ',id'
         ]);
         if ($validation->fails()) {
             $this->makeJSONResponse($validation->errors(), 400);
@@ -288,9 +288,9 @@ class CertificateController extends Controller
                     }
                 });
                 if ($data) {
-                    return $this->makeJSONResponse($data, 200);
+                    return $this->makeJSONResponse($data->original, 200);
                 } else {
-                    return $this->makeJSONResponse(["message" => "transaction failed!"], 400);
+                    return $this->makeJSONResponse(["message" => "transaction failed, student status must be success to get certificate!"], 400);
                 }
             } catch (Exception $e) {
                 echo $e;
