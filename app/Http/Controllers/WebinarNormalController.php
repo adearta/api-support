@@ -61,6 +61,9 @@ class WebinarNormalController extends Controller
         if ($validation->fails()) {
             return $this->makeJSONResponse($validation->errors(), 400);
         } else {
+            if ($webinar_id == null) {
+                return $this->makeJSONResponse(["message" => "webinar must not empty!"], 400);
+            }
             try {
                 $data = DB::transaction(function () use ($webinar_id) {
                     $webinar = DB::table($this->tbWebinar)
@@ -143,8 +146,8 @@ class WebinarNormalController extends Controller
                         ->leftJoin($this->tbParticipant . ' as participant', 'webinar.id', '=', 'participant.webinar_id')
                         ->leftJoin($this->tbOrder . ' as pesan', 'participant.id', '=', 'pesan.participant_id')
                         ->where('webinar.id', '=', $webinar_id)
-                        ->where('pesan.status', '!=', 'order')
-                        ->where('pesan.status', '!=', 'expire')
+                        ->where('pesan.status', '=', 'success')
+                        ->orWhere('pesan.status', '=', 'pending')
                         ->select('participant.student_id', 'pesan.status')
                         ->get();
 
@@ -204,7 +207,7 @@ class WebinarNormalController extends Controller
             'event_picture' => 'required|mimes:jpg,jpeg,png|max:2000',
             'event_link'    => 'required|url',
             'event_start'   => 'required|date_format:H:i:s',
-            'event_end'     => 'required|date_format:H:i:s',
+            'event_end'     => 'required|date_format:H:i:s|after:event_start',
             // 'price' => 'numeric|required',
         ]);
         if ($validation->fails()) {
@@ -283,7 +286,7 @@ class WebinarNormalController extends Controller
             'event_date'    => 'date_format:Y-m-d',
             'event_link'    => 'url',
             'event_start'   => 'date_format:H:i:s',
-            'event_end'     => 'date_format:H:i:s',
+            'event_end'     => 'date_format:H:i:s|after:event_start',
             // 'price' => 'numeric|required',
             'event_picture' => 'mimes:jpg,jpeg,png|max:2000'
         ]);

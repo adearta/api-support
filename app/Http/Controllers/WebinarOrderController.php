@@ -33,7 +33,7 @@ class WebinarOrderController extends Controller
 
         $validation = Validator::make($request->all(), [
             'webinar_id' => 'required|numeric|exists:' . $this->tbWebinar . ',id',
-            'student_id' => 'required|numeric|exists:' . $this->tbStudent . ',id'
+            'student_id' => 'required|numeric|exists:pgsql2.' . $this->tbStudent . ',id'
         ]);
 
         if ($validation->fails()) {

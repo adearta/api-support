@@ -38,7 +38,7 @@ class StudentNormalWebinarParticipantController extends Controller
     {
         $validation = Validator::make($request->all(), [
             'webinar_id' => 'required|numeric|exists:' . $this->tbWebinar . ',id',
-            'student_id' => 'required|numeric|exists:pgsql2' . $this->tbStudent . ',id',
+            'student_id' => 'required|numeric|exists:pgsql2.' . $this->tbStudent . ',id',
         ]);
         if ($validation->fails()) {
             return $this->makeJSONResponse($validation->errors(), 400);

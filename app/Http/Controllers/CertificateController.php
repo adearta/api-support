@@ -169,7 +169,7 @@ class CertificateController extends Controller
     public function addCertificate(Request $request)
     {
         $validation = Validator::make($request->all(), [
-            'certificate.*' => 'required|mimes:pdf|max:500',
+            'certificate.*' => 'required|mimes:jpg,jpeg,png|max:2000',
             'webinar_id' => 'required|numeric|exists:' . $this->tbWebinarakbar . 'id',
         ]);
         if ($validation->fails()) {
