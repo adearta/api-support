@@ -52,17 +52,65 @@ class CertificateController extends Controller
     {
         $validation = Validator::make($request->all(), [
             'webinar_id' => 'required|numeric|exists:' . $this->tbWebinarakbar . ',id',
+            'certificate.*' => 'required|mimes:pdf|max:2000',
         ]);
 
         if ($validation->fails()) {
             return $this->makeJSONResponse($validation->errors(), 400);
         } else {
+            $validStudent = true;
+            $invalidNim = [];
+            $indexNim = 0;
+            foreach ($request->certificate as $certi) {
+                $nim = explode("_", $certi->getClientOriginalName());
+                $getStudent = DB::connection('pgsql2')->table($this->tbStudent)
+                    ->where('nim', '=', $nim[0])
+                    ->select('id')
+                    ->get();
 
+                if (count($getStudent) > 0) {
+                    $cekRegistered = DB::table($this->tbParticipantakbar)
+                        ->where('webinar_id', '=', $request->webinar_id)
+                        ->where('student_id', '=', $getStudent[0]->id)
+                        ->get();
+
+                    if (count($cekRegistered) == 0) {
+                        $validStudent = false;
+                        $invalidNim[$indexNim] = (object) array(
+                            'nim'   => $nim[0]
+                        );
+                        $indexNim++;
+                    }
+                } else {
+                    $validStudent = false;
+                    $invalidNim[$indexNim] = (object) array(
+                        'nim'   => $nim[0]
+                    );
+                    $indexNim++;
+                }
+            }
+
+            //invalid student
+            if (!$validStudent) {
+                $nimList = "";
+                for ($i = 0; $i < count($invalidNim); $i++) {
+                    if ($i == 0) {
+                        $nimList = $invalidNim[$i]->nim;
+                    } else {
+                        $nimList .= ", " . $invalidNim[$i]->nim;
+                    }
+                }
+                $message = 'Student with the nim ' . $nimList . ' is not registered to this webinar';
+                return $this->makeJSONResponse(['message' => $message], 400);
+            } else {
+                //valid student
+                return $this->makeJSONResponse(['message' => 'validation success'], 200);
+            }
             try {
                 $data = DB::transaction(function () use ($request) {
                     if ($request->hasFile('certificate')) {
                         $validationType = Validator::make($request->all(), [
-                            'certificate.*' => 'required|mimes:jpg,jpeg,png|max:2000',
+                            'certificate.*' => 'required|mimetypes:application/pdf|max:2000'
                         ]);
                         if ($validationType->fails()) {
                             return $this->makeJSONResponse($validationType->errors(), 400);
