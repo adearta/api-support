@@ -193,7 +193,7 @@ class BroadcastController extends Controller
                 $room_count = DB::select('select count(id) from ' . $this->tbRoomBroadcast . ' where school_id = ' . $request->school_id);
                 $total_page = ceil($room_count[0]->count / 10);
 
-                if ($request->page != null || $request->page > 1) {
+                if ($request->page != null && $request->page > 1) {
                     $current_page = $request->page;
 
                     if ($current_page > $total_page) {

@@ -52,7 +52,7 @@ class CertificateController extends Controller
     {
         $validation = Validator::make($request->all(), [
             'certificate.*' => 'required|mimes:pdf|max:500',
-            'webinar_id' => 'required|numeric|exists:' . $this->tbWebinarakbar . 'id',
+            'webinar_id' => 'required|numeric|exists:' . $this->tbWebinarakbar . ',id',
         ]);
 
         if ($validation->fails()) {
@@ -145,7 +145,7 @@ class CertificateController extends Controller
                             "event_name" => $webinar[0]->event_name,
                             "event_date" => $webinar[0]->event_date,
                             "event_time" => $webinar[0]->event_time,
-                            "event_picture" => $webinar[0]->event_picture,
+                            "event_picture" => url('api/v1/administrator/img/' . $webinar[0]->event_picture),
                             "schools"    => $unique,
                             "zoom_link" => $webinar[0]->zoom_link,
                             "is_certificate" => true,
