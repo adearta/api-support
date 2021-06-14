@@ -179,7 +179,8 @@ class WebinarNormalController extends Controller
                             "event_date"    => $webinar[0]->event_date,
                             "event_start"   => $webinar[0]->event_start,
                             "event_end"     => $webinar[0]->event_end,
-                            "event_picture" => url('api/v1/administrator/img/' . $webinar[0]->event_picture),
+                            ///career-support/webinar_internal/
+                            "event_picture" => url('/career-support/webinar_internal/' . $webinar[0]->event_picture),
                             "registered"    => count($registered),
                             'quota'         => 500,
                             'student'       => $student
