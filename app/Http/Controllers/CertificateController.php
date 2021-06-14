@@ -52,7 +52,7 @@ class CertificateController extends Controller
     {
         $validation = Validator::make($request->all(), [
             'webinar_id' => 'required|numeric|exists:' . $this->tbWebinarakbar . ',id',
-            'certificate.*' => 'required|mimes:image|max:2000',
+            'certificate.*' => 'required|mimes:jpg,jpeg,png|max:2000',
         ]);
 
         if ($validation->fails()) {
@@ -109,111 +109,105 @@ class CertificateController extends Controller
                 try {
                     $data = DB::transaction(function () use ($request) {
                         if ($request->hasFile('certificate')) {
-                            $validationType = Validator::make($request->all(), [
-                                'certificate.*' => 'required|mimetypes:image|max:2000'
-                            ]);
-                            if ($validationType->fails()) {
-                                return $this->makeJSONResponse($validationType->errors(), 400);
-                            } else {
-                                $certificateAll = $request->file('certificate');
-                                foreach (array_slice($certificateAll, 0, 10) as $certi) {
-                                    $name = $certi->getClientOriginalName();
-                                    $nim = explode("_", $name);
-                                    $validationNim = Validator::make(["nim" => $nim[0]], [
-                                        "nim" => "numeric|exists:pgsql2." . $this->tbStudent . ",nim"
-                                    ]);
-                                    if ($validationNim->fails()) {
-                                        return $this->makeJSONResponse($validationNim->errors(), 404);
-                                    } else {
-                                        $studentId = DB::connection('pgsql2')
-                                            ->table($this->tbStudent)
-                                            ->where("nim", "=", $nim[0])
-                                            ->select("id as student_id", "email", "name", "school_id")
+                            $certificateAll = $request->file('certificate');
+                            foreach (array_slice($certificateAll, 0, 10) as $certi) {
+                                $name = $certi->getClientOriginalName();
+                                $nim = explode("_", $name);
+                                $validationNim = Validator::make(["nim" => $nim[0]], [
+                                    "nim" => "numeric|exists:pgsql2." . $this->tbStudent . ",nim"
+                                ]);
+                                if ($validationNim->fails()) {
+                                    return $this->makeJSONResponse($validationNim->errors(), 404);
+                                } else {
+                                    $studentId = DB::connection('pgsql2')
+                                        ->table($this->tbStudent)
+                                        ->where("nim", "=", $nim[0])
+                                        ->select("id as student_id", "email", "name", "school_id")
+                                        ->get();
+
+                                    $participantId = DB::table($this->tbParticipantakbar)
+                                        ->where("student_id", "=", $studentId[0]->student_id)
+                                        ->select("id as participant_id", "webinar_id")
+                                        ->get();
+
+                                    if (count($participantId) > 0) {
+                                        $webinar = DB::table($this->tbWebinarakbar)
+                                            ->where('id', '=', $request->webinar_id)
+                                            ->select('*')
                                             ->get();
 
-                                        $participantId = DB::table($this->tbParticipantakbar)
-                                            ->where("student_id", "=", $studentId[0]->student_id)
-                                            ->select("id as participant_id", "webinar_id")
+                                        $school = DB::table($this->tbSchool)
+                                            ->where('webinar_id', '=', $request->webinar_id)
+                                            ->where('school_id', '=', $studentId[0]->school_id)
+                                            ->select('status')
                                             ->get();
 
-                                        if (count($participantId) > 0) {
-                                            $webinar = DB::table($this->tbWebinarakbar)
-                                                ->where('id', '=', $request->webinar_id)
-                                                ->select('*')
-                                                ->get();
+                                        if ($school[0]->status == "5") {
+                                            $path = $certi->store('certificate_akbar', 'public');
+                                            $data =  array(
+                                                'certificate' => $path,
+                                                'webinar_akbar_id' => $participantId[0]->webinar_id,
+                                                'participant_akbar_id' => $participantId[0]->participant_id,
+                                                'file_name' => $name,
+                                            );
 
-                                            $school = DB::table($this->tbSchool)
-                                                ->where('webinar_id', '=', $request->webinar_id)
-                                                ->where('school_id', '=', $studentId[0]->school_id)
-                                                ->select('status')
-                                                ->get();
+                                            $notif = array(
+                                                'student_id'     => $studentId[0]->student_id,
+                                                'webinar_akbar_id' => $participantId[0]->webinar_id,
+                                                'message_id'    => "Selamat Anda telah mengikuti " . $webinar[0]->event_name . " pada tanggal " . $webinar[0]->event_date . " sertifikat anda telah kami kirimkan ke alamat email anda " . $studentId[0]->email,
+                                                'message_en'    => "Congratulation you have attended " . $webinar[0]->event_name . " on " . $webinar[0]->event_date . " your certificae had been sent to your email" . $studentId[0]->email
+                                            );
 
-                                            if ($school[0]->status == "5") {
-                                                $path = $certi->store('certificate_akbar', 'public');
-                                                $data =  array(
-                                                    'certificate' => $path,
-                                                    'webinar_akbar_id' => $participantId[0]->webinar_id,
-                                                    'participant_akbar_id' => $participantId[0]->participant_id,
-                                                    'file_name' => $name,
-                                                );
-
-                                                $notif = array(
-                                                    'student_id'     => $studentId[0]->student_id,
-                                                    'webinar_akbar_id' => $participantId[0]->webinar_id,
-                                                    'message_id'    => "Selamat Anda telah mengikuti " . $webinar[0]->event_name . " pada tanggal " . $webinar[0]->event_date . " sertifikat anda telah kami kirimkan ke alamat email anda " . $studentId[0]->email,
-                                                    'message_en'    => "Congratulation you have attended " . $webinar[0]->event_name . " on " . $webinar[0]->event_date . " your certificae had been sent to your email" . $studentId[0]->email
-                                                );
-
-                                                try {
-                                                    CertificateAkbarJob::dispatch($webinar, $studentId, $data);
-                                                    DB::table($this->tbCertficate)->insert($data);
-                                                    DB::table($this->tbNotification)->insert($notif);
-                                                } catch (Exception $e) {
-                                                    echo $e;
-                                                }
-                                            } else {
-                                                $message = "cannot save, order status not sucess";
-                                                $code = 400;
-                                                return $this->makeJSONResponse(["message" => $message], $code);
+                                            try {
+                                                CertificateAkbarJob::dispatch($webinar, $studentId, $data);
+                                                DB::table($this->tbCertficate)->insert($data);
+                                                DB::table($this->tbNotification)->insert($notif);
+                                            } catch (Exception $e) {
+                                                echo $e;
                                             }
                                         } else {
-                                            $message = "The student with the nim and name " . $name . " not registered to this webinar";
+                                            $message = "cannot save, order status not sucess";
                                             $code = 400;
                                             return $this->makeJSONResponse(["message" => $message], $code);
                                         }
+                                    } else {
+                                        $message = "The student with the nim and name " . $name . " not registered to this webinar";
+                                        $code = 400;
+                                        return $this->makeJSONResponse(["message" => $message], $code);
                                     }
                                 }
-                                //response
-                                $webinar = DB::table($this->tbWebinarakbar)
-                                    ->where('id', '=', $request->webinar_id)
-                                    ->select('*')
+                            }
+                            //response
+                            $webinar = DB::table($this->tbWebinarakbar)
+                                ->where('id', '=', $request->webinar_id)
+                                ->select('*')
+                                ->get();
+
+                            $detail = DB::select("select * from " . $this->tbWebinarakbar . " as web left join " . $this->tbSchool . " as school on school.webinar_id = web.id where web.id = " . $request->webinar_id);
+
+                            for ($i = 0; $i < count($detail); $i++) {
+                                $temp = DB::connection('pgsql2')->table($this->tbSch)
+                                    ->where('id', '=', $detail[$i]->school_id)
                                     ->get();
 
-                                $detail = DB::select("select * from " . $this->tbWebinarakbar . " as web left join " . $this->tbSchool . " as school on school.webinar_id = web.id where web.id = " . $request->webinar_id);
-
-                                for ($i = 0; $i < count($detail); $i++) {
-                                    $temp = DB::connection('pgsql2')->table($this->tbSch)
-                                        ->where('id', '=', $detail[$i]->school_id)
-                                        ->get();
-
-                                    $schoolId[$i] = $temp[0];
-                                }
-                                $unique = array_values(array_unique($schoolId, SORT_REGULAR));
-                                $response = array(
-                                    "id"   => $webinar[0]->id,
-                                    "event_name" => $webinar[0]->event_name,
-                                    "event_date" => $webinar[0]->event_date,
-                                    "event_time" => $webinar[0]->event_time,
-                                    "event_picture" => url('api/v1/administrator/img/' . $webinar[0]->event_picture),
-                                    "schools"    => $unique,
-                                    "zoom_link" => $webinar[0]->zoom_link,
-                                    "is_certificate" => true,
-                                    "certificate" => "link not found",
-                                );
-                                $code = 200;
-                                return $this->makeJSONResponse($response, $code);
+                                $schoolId[$i] = $temp[0];
                             }
+                            $unique = array_values(array_unique($schoolId, SORT_REGULAR));
+                            $response = array(
+                                "id"   => $webinar[0]->id,
+                                "event_name" => $webinar[0]->event_name,
+                                "event_date" => $webinar[0]->event_date,
+                                "event_time" => $webinar[0]->event_time,
+                                "event_picture" => url('api/v1/administrator/img/' . $webinar[0]->event_picture),
+                                "schools"    => $unique,
+                                "zoom_link" => $webinar[0]->zoom_link,
+                                "is_certificate" => true,
+                                "certificate" => "link not found",
+                            );
+                            $code = 200;
+                            return $this->makeJSONResponse($response, $code);
                         }
+                        // }
                     });
                     if ($data) {
                         return $this->makeJSONResponse($data, 200);
