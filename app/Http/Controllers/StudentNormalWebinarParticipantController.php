@@ -118,10 +118,13 @@ class StudentNormalWebinarParticipantController extends Controller
                         $code = 400;
                     }
                 }
-                return $this->makeJSONResponse(["message" => $message], $code);
+
+                return (object) array(
+                    "message" => $message
+                );
             });
             if ($data) {
-                return $this->makeJSONResponse($data->original, 200);
+                return $this->makeJSONResponse($data, 200);
             } else {
                 return $this->makeJSONResponse(["message" => "transaction failed!"], 400);
             }

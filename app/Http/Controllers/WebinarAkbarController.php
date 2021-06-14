@@ -121,12 +121,12 @@ class WebinarAkbarController extends Controller
                         "certificate"       => "link not found",
                     );
 
-                    return $this->makeJSONResponse($response, 200);
+                    return $response;
                 });
                 if ($data) {
                     return $this->makeJSONResponse($data, 200);
                 } else {
-                    return $this->makeJSONResponse(["message" => "transaction failed!"], 400);
+                    return $this->makeJSONResponse(["message" => "failed!"], 400);
                 }
             } catch (Exception $e) {
                 echo $e;
@@ -223,10 +223,12 @@ class WebinarAkbarController extends Controller
                                 "certificate"       => "link not found"
                             );
 
-                            return $this->makeJSONResponse($response, 200);
+                            return $response;
                         }
                     } else {
-                        return $this->makeJSONResponse(["message" => "The event date must be after today "], 202);
+                        return (object) array(
+                            "message" => "The event date must be after today "
+                        );
                     }
                 }
             });
@@ -355,6 +357,7 @@ class WebinarAkbarController extends Controller
                         "is_certificate"    => false,
                         "certificate"       => "link not found",
                     );
+
                     return array(
                         'response' => $response,
                         'code' => 200
@@ -437,8 +440,11 @@ class WebinarAkbarController extends Controller
                         $code = 202;
                     }
 
-                    return $this->makeJSONResponse(['message' => $message], $code);
+                    return (object) array(
+                        'message' => $message
+                    );
                 });
+
                 if ($data) {
                     return $this->makeJSONResponse($data, 200);
                 } else {
@@ -592,7 +598,7 @@ class WebinarAkbarController extends Controller
                     }
                 }
 
-                $response = (object) array(
+                $response = array(
                     'data' => $data,
                     'pagination' => (object) array(
                         'first_page'    => 1,
@@ -603,8 +609,9 @@ class WebinarAkbarController extends Controller
                     )
                 );
 
-                return $this->makeJSONResponse($response, 200);
+                return $response;
             });
+
             if ($data) {
                 return  $this->makeJSONResponse($data, 200);
             } else {
