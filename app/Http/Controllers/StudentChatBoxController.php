@@ -175,8 +175,9 @@ class StudentChatBoxController extends Controller
                     $current_page = 1;
                     $query_pagination = "";
                     $query_search = "";
+                    $chatting = [];
 
-                    $count_chat = DB::select("select count(room_chat_id) from " . $this->tbChat . " group by room_chat_id");
+                    $count_chat = DB::select("select count(chat.room_chat_id) from " . $this->tbChat . " as chat left join " . $this->tbRoom . " as room on chat.room_chat_id = room.id where room.student_id = " . $request->student_id . " group by room_chat_id");
 
                     $total_page = ceil($count_chat[0]->count / 10);
 
@@ -191,6 +192,7 @@ class StudentChatBoxController extends Controller
                     $query_pagination = " limit 10 offset " . $start_item;
 
                     if ($request->search != null) {
+
                         $search_length = preg_replace('/\s+/', '', $request->search);
                         if (strlen($search_length) > 0) {
                             $search = strtolower($request->search);
@@ -198,11 +200,11 @@ class StudentChatBoxController extends Controller
                         }
                     }
 
-                    $chatting = DB::select("select chat.room_chat_id, chat.id as chat_id, chat.sender, room.student_id, room.school_id, chat.chat, chat.image, chat.send_time from " . $this->tbChat . " as chat left join " . $this->tbRoom . " as room on chat.room_chat_id = room.id where room.student_id = " . $request->student_id . $query_search . " order by chat.id desc" . $query_pagination);
+                    $chatting = DB::select("select chat.id as chat_id, chat.room_chat_id, chat.room_broadcast_id, chat.chat, chat.image, chat.link, chat.type, chat.send_time, chat.sender, room.student_id, room.school_id from " . $this->tbChat . " as chat left join " . $this->tbRoom . " as room on chat.room_chat_id = room.id where room.student_id = " . $request->student_id . $query_search . " order by chat.id desc" . $query_pagination);
                 } catch (Exception $e) {
                     echo $e;
                 }
-                if ($chatting > 0) {
+                if (count($chatting) > 0) {
                     $dbSchool = DB::connection('pgsql2')->table($this->tbSchool)
                         ->where("id", "=", $chatting[0]->school_id)
                         ->get();
@@ -211,7 +213,7 @@ class StudentChatBoxController extends Controller
 
                     $room = (object) array(
                         "room_chat_id"  => $chatting[0]->room_chat_id,
-                        "student_id"    => $chatting[0]->student_id,
+                        "student_id"    => $request->student_id,
                         "school_id"     => $chatting[0]->school_id,
 
                     );
@@ -219,9 +221,13 @@ class StudentChatBoxController extends Controller
                         $chat[$i] = (object) array(
                             "chat_id"       => $chatting[$i]->chat_id,
                             "sender"        => $chatting[$i]->sender,
+                            "room_broadcast_id" => $chatting[$i]->room_broadcast_id,
                             "chat"          => $chatting[$i]->chat,
-                            "image"         => url('api/v1/administrator/img/' . $chatting[$i]->image),
+                            "image"         => env("WEBINAR_URL") . $chatting[$i]->image,
+                            "link"          => $chatting[$i]->link,
+                            "type"          => $chatting[$i]->type,
                             "send_time"     => $chatting[$i]->send_time,
+                            "sender"        => $chatting[$i]->sender
                         );
                     }
                     $response = array_values(
@@ -238,7 +244,23 @@ class StudentChatBoxController extends Controller
                             )
                         )
                     );
-                    return $this->makeJSONResponse($response, 200);
+                    return $response;
+                } else {
+                    $response = array_values(
+                        array(
+                            "school" => (object) $chatting,
+                            "room" => (object) $chatting,
+                            "chat_data" => (object) $chatting,
+                            "pagination" => (object) array(
+                                "first_page" => 1,
+                                "last_page" => $total_page,
+                                "current_page" => $current_page,
+                                "current_data" => count($chatting),
+                                "total_data" => $count_chat[0]->count
+                            )
+                        )
+                    );
+                    return $response;
                 }
             });
             if ($data) {

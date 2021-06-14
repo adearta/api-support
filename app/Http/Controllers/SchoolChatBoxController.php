@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Exception;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Contracts\Service\Attribute\Required;
 
 class SchoolChatBoxController extends Controller
 {
@@ -35,7 +36,7 @@ class SchoolChatBoxController extends Controller
     {
         $validation = Validator::make($request->all(), [
             'school_id' => 'required|numeric|exists:pgsql2.' . $this->tbSchool . ',id',
-            'student_id' => 'required|numeric|exist:pgsql2.' . $this->tbStudent . ',id',
+            'student_id' => 'required|numeric|exists:pgsql2.' . $this->tbStudent . ',id',
             'chat' => 'required|string',
             'image' => 'mimes:jpg,jpeg,pdf,png|max:2000',
             'datetime' => 'date_format:Y-m-d H:i:s'
@@ -43,7 +44,7 @@ class SchoolChatBoxController extends Controller
         if ($validation->fails()) {
             return $this->makeJSONResponse($validation->errors(), 400);
         } else {
-            $data = DB::table(function () use ($request) {
+            $data = DB::transaction(function () use ($request) {
                 date_default_timezone_set("Asia/Jakarta");
                 $datetime = date("Y-m-d h:i:sa");
                 //make chat room
@@ -121,19 +122,19 @@ class SchoolChatBoxController extends Controller
                         "chat" => $chatResponse,
                     ));
                 }
-                return $this->makeJSONResponse($response, 200);
+                return $response;
             });
             if ($data) {
-                $this->makeJSONResponse($$data, 200);
+                return $this->makeJSONResponse($data, 200);
             } else {
-                $this->makeJSONResponse(["message" => "transaction failed!"], 400);
+                return $this->makeJSONResponse(["message" => "transaction failed!"], 400);
             }
         }
     }
     public function deleteChat($chat_id)
     {
         $validation = Validator::make(["chat_id" => $chat_id], [
-            "chat_id" => 'numeric|exists:' . $this->tbChat . ',id'
+            "chat_id" => 'required|numeric|exists:' . $this->tbChat . ',id'
         ]);
         if ($validation->fails()) {
             return $this->makeJSONResponse($validation->errors(), 400);
@@ -169,6 +170,9 @@ class SchoolChatBoxController extends Controller
         } else {
             try {
                 $data = DB::transaction(function () use ($request) {
+                    $room = [];
+                    $countcht = 0;
+                    $student = [];
                     if ($request->search != null) {
                         $search_length = preg_replace('/\s+/', '', $request->search);
                         if (strlen($search_length) > 0) {
@@ -176,6 +180,7 @@ class SchoolChatBoxController extends Controller
                             $studentname = DB::connection('pgsql2')->table($this->tbStudent)
                                 ->select('*')
                                 ->where("name", "like", "%{$search}%")
+                                ->where('school_id', '=', $request->school_id)
                                 ->get();
                             $studentRoom = DB::table($this->tbRoom)
                                 ->where('school_id', '=', $request->school_id)
@@ -194,29 +199,40 @@ class SchoolChatBoxController extends Controller
                             ->select('*')
                             ->get();
 
-                        $chat = DB::table($this->tbChat)
-                            ->where('room_chat_id', '=', $studentRoom[0]->id)
-                            ->get();
 
-                        $countcht = (count($chat) - 1);
-                        if ($countcht > 0) {
-                            $countcht = $chat[$countcht];
-                        } else {
-                            $countcht = (object)$chat;
-                        }
                         //
                         for ($j = 0; $j < count($studentRoom); $j++) {
+                            $chat = DB::table($this->tbChat)
+                                ->where('room_chat_id', '=', $studentRoom[0]->id)
+                                ->get();
+
+                            $countcht = (count($chat) - 1);
+                            if ($countcht > 0) {
+                                $countcht = $chat[$countcht];
+                            } else {
+                                $countcht = (object)$chat;
+                            }
                             $response[$i] = array_values(array(
                                 'room'          => $studentRoom[$i],
                                 'chat'          => $countcht,
                                 'student'       => $student[0],
+                                // 'count'         => count($studentRoom)
                             ));
                         }
+                        return $response;
+                        // }
+                        // else {
+                        //     $response = array_values(array(
+                        //         'room'          => [],
+                        //         'chat'          => [],
+                        //         'student'       => [],
+                        //     ));
+                        //     return $response;
+                        // }
                     }
-                    if (empty($studentRoom)) {
-                        return $this->makeJSONResponse(["message" => "no chat found !"], 200);
-                    }
-                    return $this->makeJSONResponse($response, 200);
+                    // if (empty($studentRoom)) {
+                    //     return $this->makeJSONResponse(["message" => "no chat found !"], 200);
+                    // }
                 });
                 if ($data) {
                     return $this->makeJSONResponse($data, 200);
@@ -230,13 +246,19 @@ class SchoolChatBoxController extends Controller
     }
     public function deleteRoom($room_chat_id)
     {
-        $delete = ChatRoomModel::findOrfail($room_chat_id);
-        if ($delete) {
-            $delete->delete();
-            return $this->makeJSONResponse(["message" => "successfully delete room chat!"], 200);
+        $validation = Validator::make(["room_chat_id" => $room_chat_id], [
+            'room_chat_id' => 'required|numeric|exists:' . $this->tbRoom . ',id'
+        ]);
+        if ($validation->fails()) {
+            return $this->makeJSONResponse($validation->errors(), 400);
+        } else {
+            $delete = ChatRoomModel::findOrfail($room_chat_id);
+            if ($delete) {
+                $delete->delete();
+                return $this->makeJSONResponse(["message" => "successfully delete room chat!"], 200);
+            }
         }
     }
-    //kurang bikin handling kalau 
     public function listChat(Request $request)
     {
         $validation = Validator::make($request->all(), [
@@ -279,46 +301,64 @@ class SchoolChatBoxController extends Controller
                         $query_search = "";
                     }
 
-                    $chatting = DB::select("select chat.room_chat_id, chat.id as chat_id, chat.sender, room.student_id, room.school_id, chat.chat, chat.image, chat.link, chat.type, chat.broadcast_type, chat.send_time from " . $this->tbChat . " as chat left join " . $this->tbRoom . " as room on chat.room_chat_id = room.id where room.id = " . $request->room_chat_id . $query_search . "order by chat.id desc" . $query_pagination);
-                    $dbStudent = DB::connection('pgsql2')->table($this->tbStudent)
-                        ->where("id", "=", $chatting[0]->student_id)
-                        ->get();
+                    $chatting = DB::select("select chat.room_chat_id, chat.id as chat_id, chat.sender, room.student_id, room.school_id, chat.chat, chat.image, chat.link, chat.type, chat.room_broadcast_id, chat.send_time from " . $this->tbChat . " as chat left join " . $this->tbRoom . " as room on chat.room_chat_id = room.id where room.id = " . $request->room_chat_id . $query_search . "order by chat.id desc" . $query_pagination);
+                    if (count($chatting) > 0) {
+                        $dbStudent = DB::connection('pgsql2')->table($this->tbStudent)
+                            ->where("id", "=", $chatting[0]->student_id)
+                            ->get();
 
-                    $studentdata = (object) $dbStudent;
+                        $studentdata = (object) $dbStudent;
 
-                    $room = (object) array(
-                        "room_chat_id"  => $chatting[0]->room_chat_id,
-                        "student_id"    => $chatting[0]->student_id,
-                        "school_id"     => $chatting[0]->school_id,
+                        $room = (object) array(
+                            "room_chat_id"  => $chatting[0]->room_chat_id,
+                            "student_id"    => $chatting[0]->student_id,
+                            "school_id"     => $chatting[0]->school_id,
 
-                    );
-                    for ($i = 0; $i < count($chatting); $i++) {
-                        $chat[$i] = (object) array(
-                            "chat_id"       => $chatting[$i]->chat_id,
-                            "sender"        => $chatting[$i]->sender,
-                            "chat"          => $chatting[$i]->chat,
-                            "image"         => env("WEBINAR_URL") . $chatting[$i]->image,
-                            "link"          => $chatting[$i]->link,
-                            "type"          => $chatting[$i]->type,
-                            "broacast_type" => $chatting[$i]->broadcast_type,
-                            "send_time"     => $chatting[$i]->send_time,
                         );
-                    }
-                    $response = array_values(
-                        array(
-                            "student" => $studentdata[0],
-                            "room" => $room,
-                            "chat_data" => $chat,
-                            "pagination" => (object) array(
-                                "first_page" => 1,
-                                "last_page" => $total_page,
-                                "current_page" => $current_page,
-                                "current_data" => count($chatting),
-                                "total_data" => $count_chat[0]->count
+                        for ($i = 0; $i < count($chatting); $i++) {
+                            $chat[$i] = (object) array(
+                                "chat_id"       => $chatting[$i]->chat_id,
+                                "sender"        => $chatting[$i]->sender,
+                                "chat"          => $chatting[$i]->chat,
+                                "image"         => env("WEBINAR_URL") . $chatting[$i]->image,
+                                "link"          => $chatting[$i]->link,
+                                "type"          => $chatting[$i]->type,
+                                "broacast_id"   => $chatting[$i]->room_broadcast_id,
+                                "send_time"     => $chatting[$i]->send_time,
+                            );
+                        }
+                        $response = array_values(
+                            array(
+                                "student" => $studentdata[0],
+                                "room" => $room,
+                                "chat_data" => $chat,
+                                "pagination" => (object) array(
+                                    "first_page" => 1,
+                                    "last_page" => $total_page,
+                                    "current_page" => $current_page,
+                                    "current_data" => count($chatting),
+                                    "total_data" => $count_chat[0]->count
+                                )
                             )
-                        )
-                    );
-                    return $this->makeJSONResponse($response, 200);
+                        );
+                        return $response;
+                    } else {
+                        $response = array_values(
+                            array(
+                                "school" => (object) $chatting,
+                                "room" => (object) $chatting,
+                                "chat_data" => (object) $chatting,
+                                "pagination" => (object) array(
+                                    "first_page" => 1,
+                                    "last_page" => $total_page,
+                                    "current_page" => $current_page,
+                                    "current_data" => count($chatting),
+                                    "total_data" => $count_chat[0]->count
+                                )
+                            )
+                        );
+                        return $response;
+                    }
                 });
                 if ($data) {
                     return $this->makeJSONResponse($data, 200);
@@ -331,24 +371,4 @@ class SchoolChatBoxController extends Controller
             }
         }
     }
-    // public function detailChat($room_chat_id)
-    // {
-    //     $validation = Validator::make(['room_chat_id' => $room_chat_id], ['room_chat_id' => 'required|numeric']);
-    //     if ($validation->fails()) {
-    //         return $this->makeJSONResponse($validation->errors(), 400);
-    //     } else {
-    //         try {
-    //             $detail =  DB::table($this->tbRoom, 'room')
-    //                 ->leftJoin($this->tbChat . " as chat ", "room.id", "=", "chat.room_chat_id")
-    //                 ->where('chat.room_chat_id', '=', $room_chat_id)
-    //                 ->get();
-    //             if (empty($detail)) {
-    //                 return $this->makeJSONResponse(["message" => "no chat history, start a chat!"], 200);
-    //             }
-    //         } catch (Exception $e) {
-    //             echo $e;
-    //         }
-    //         return $this->makeJSONResponse(["chat" => $detail], 200);
-    //     }
-    // }
 }
