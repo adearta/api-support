@@ -5,12 +5,12 @@
   <pre><div id="result-json">JSON result will appear here after payment:<br></div></pre>
 
   <!-- TODO: Remove ".sandbox" from script src URL for production environment. Also input your client key in "data-client-key" -->
-  <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="SB-Mid-client-1Dl2Ea5brSoFsLUt">
+  <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="">
   </script>
   <script type="text/javascript">
     document.getElementById('pay-button').onclick = function(){
         // SnapToken acquired from previous step
-        snap.pay('0a599689-549e-4f79-bc44-331ba74add58', {
+        snap.pay('copy paste your order token here', {
           // Optional
           onSuccess: function(result){
             /* You may add your own js here, this is just example */ document.getElementById('result-json').innerHTML += JSON.stringify(result, null, 2);

@@ -111,9 +111,11 @@ class WebinarNormalController extends Controller
                             "certificate"       => "link not found",
                         );
 
-                        return $this->makeJSONResponse($responsea, 200);
+                        return $responsea;
                     } else {
-                        return $this->makeJSONResponse(['message' => 'Data not found'], 202);
+                        return (object) array(
+                            'message' => 'Data not found'
+                        );
                     }
                 });
                 if ($data) {
@@ -183,13 +185,15 @@ class WebinarNormalController extends Controller
                             'student'       => $student
                         );
 
-                        return $this->makeJSONResponse($response, 200);
+                        return $response;
                     } else {
-                        return $this->makeJSONResponse(['message' => 'Data not found'], 202);
+                        return (object) array(
+                            'message' => 'Data not found'
+                        );
                     }
                 });
                 if ($data) {
-                    return $this->makeJSONResponse($data->original, 200);
+                    return $this->makeJSONResponse($data, 200);
                 } else {
                     return $this->makeJSONResponse(["message" => "transaction failed!"], 400);
                 }
@@ -264,15 +268,18 @@ class WebinarNormalController extends Controller
                                 'event_end'     => $request->event_end,
                                 'price'         => $currency,
                             );
-                            return $this->makeJSONResponse($response, 200);
+
+                            return $response;
                         }
                     } else {
-                        return $this->makeJSONResponse(['message' => 'the event must be after today!'], 202);
+                        return (object) array(
+                            'message' => 'the event must be after today!'
+                        );
                     }
                 }
             });
             if ($data) {
-                return $this->makeJSONResponse($data->original, 200);
+                return $this->makeJSONResponse($data, 200);
             } else {
                 return $this->makeJSONResponse(["message" => "transaction failed!"], 400);
             }
@@ -398,76 +405,73 @@ class WebinarNormalController extends Controller
                 $query_pagination = "";
                 $query_search = "";
                 $start_item = 0;
+                $webinar = [];
 
                 $webinar_count = DB::select('select count(id) from ' . $this->tbWebinar);
                 $total_page = ceil($webinar_count[0]->count / 10);
 
-                if ($request->page == null || $request->page <= 1) {
-                    $current_page = 1;
-                } else {
-                    $start_item = 0;
-                    $current_page = $request->page;
-
-                    if ($current_page > $total_page) {
-                        $current_page = $total_page;
-                    }
+                if ($request->page != null && $request->page > 1) {
+                    $current_page = intval($request->page);
 
                     if ($current_page > 1) {
                         $start_item = ($current_page - 1) * 10;
                     }
                 }
-                $query_pagination = " limit 10 offset " . $start_item;
 
-                if ($request->search != null) {
-                    $searchLength = preg_replace('/\s+/', '', $request->search);
-                    if (strlen($searchLength) > 0) {
-                        $search = strtolower($request->search);
-                        $query_search = " where lower(event_name) like '%" . $search . "%'";
+                if ($current_page <= $total_page) {
+                    $query_pagination = " limit 10 offset " . $start_item;
+
+                    if ($request->search != null) {
+                        $searchLength = preg_replace('/\s+/', '', $request->search);
+                        if (strlen($searchLength) > 0) {
+                            $search = strtolower($request->search);
+                            $query_search = " where lower(event_name) like '%" . $search . "%'";
+                        }
                     }
-                }
 
-                $webinar = DB::select('select * from ' . $this->tbWebinar . $query_search . " order by id desc" . $query_pagination);
+                    $webinar = DB::select('select * from ' . $this->tbWebinar . $query_search . " order by id desc" . $query_pagination);
 
-                for ($i = 0; $i < count($webinar); $i++) {
-                    $currency = "Rp " . number_format($webinar[$i]->price, 2, ',', '.');
+                    for ($i = 0; $i < count($webinar); $i++) {
+                        $currency = "Rp " . number_format($webinar[$i]->price, 2, ',', '.');
 
-                    $participant = DB::table($this->tbParticipant, 'participant')
-                        ->leftJoin($this->tbOrder . ' as order', 'participant.id', '=', 'order.participant_id')
-                        ->where('order.webinar_id', '=', $webinar[$i]->id)
-                        ->where('order.status', '=', 'success')
-                        ->select('participant.student_id')
-                        ->get();
-
-                    $listSchool = [];
-                    $participantSchoolArray = [];
-                    for ($j = 0; $j < count($participant); $j++) {
-                        $participantSchool = DB::connection('pgsql2')->table($this->tbStudent, 'student')
-                            ->leftJoin($this->tbSchool . ' as school', 'student.school_id', '=', 'school.id')
-                            ->where('student.id', '=', $participant[$j]->student_id)
-                            ->select('student.school_id')
-                            ->get();
-                        $participantSchoolArray[$j] = $participantSchool[0];
-                        $school = DB::connection('pgsql2')->table($this->tbSchool)
-                            ->where('id', '=', $participantSchoolArray[$j]->school_id)
+                        $participant = DB::table($this->tbParticipant, 'participant')
+                            ->leftJoin($this->tbOrder . ' as order', 'participant.id', '=', 'order.participant_id')
+                            ->where('order.webinar_id', '=', $webinar[$i]->id)
+                            ->where('order.status', '=', 'success')
+                            ->select('participant.student_id')
                             ->get();
 
-                        $listSchool[$j] = $school[0];
-                    }
-                    $unique = array_values(array_unique($listSchool, SORT_REGULAR));
+                        $listSchool = [];
+                        $participantSchoolArray = [];
+                        for ($j = 0; $j < count($participant); $j++) {
+                            $participantSchool = DB::connection('pgsql2')->table($this->tbStudent, 'student')
+                                ->leftJoin($this->tbSchool . ' as school', 'student.school_id', '=', 'school.id')
+                                ->where('student.id', '=', $participant[$j]->student_id)
+                                ->select('student.school_id')
+                                ->get();
+                            $participantSchoolArray[$j] = $participantSchool[0];
+                            $school = DB::connection('pgsql2')->table($this->tbSchool)
+                                ->where('id', '=', $participantSchoolArray[$j]->school_id)
+                                ->get();
 
-                    $data[$i] = (object) array(
-                        'id'                => $webinar[$i]->id,
-                        'event_name'        => $webinar[$i]->event_name,
-                        'event_date'        => $webinar[$i]->event_date,
-                        'event_start'       => $webinar[$i]->event_start,
-                        'event_end'         => $webinar[$i]->event_end,
-                        'event_picture'     => url('api/v1/administrator/img/' . $webinar[$i]->event_picture),
-                        'schools'           => $unique,
-                        'event_link'        => $webinar[$i]->event_link,
-                        'price'             => $currency,
-                        'is_certificate'    => false,
-                        'certificate'       => 'link not found'
-                    );
+                            $listSchool[$j] = $school[0];
+                        }
+                        $unique = array_values(array_unique($listSchool, SORT_REGULAR));
+
+                        $data[$i] = (object) array(
+                            'id'                => $webinar[$i]->id,
+                            'event_name'        => $webinar[$i]->event_name,
+                            'event_date'        => $webinar[$i]->event_date,
+                            'event_start'       => $webinar[$i]->event_start,
+                            'event_end'         => $webinar[$i]->event_end,
+                            'event_picture'     => url('api/v1/administrator/img/' . $webinar[$i]->event_picture),
+                            'schools'           => $unique,
+                            'event_link'        => $webinar[$i]->event_link,
+                            'price'             => $currency,
+                            'is_certificate'    => false,
+                            'certificate'       => 'link not found'
+                        );
+                    }
                 }
 
                 $response = (object) array(
