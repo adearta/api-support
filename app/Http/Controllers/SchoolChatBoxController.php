@@ -36,7 +36,7 @@ class SchoolChatBoxController extends Controller
         $validation = Validator::make($request->all(), [
             'school_id' => 'required|numeric|exists:pgsql2.' . $this->tbSchool . ',id',
             'student_id' => 'required|numeric|exist:pgsql2.' . $this->tbStudent . ',id',
-            'chat' => 'required',
+            'chat' => 'required|string',
             'image' => 'mimes:jpg,jpeg,pdf,png|max:2000',
             'datetime' => 'date_format:Y-m-d H:i:s'
         ]);
@@ -132,14 +132,21 @@ class SchoolChatBoxController extends Controller
     }
     public function deleteChat($chat_id)
     {
-        $delete = ChatModel::findOrfail($chat_id);
-        if ($delete) {
-            if (Storage::disk('public')->exists($delete->image)) {
-                Storage::disk('public')->delete($delete->image);
-                $delete->delete();
+        $validation = Validator::make(["chat_id" => $chat_id], [
+            "chat_id" => 'numeric|exists:' . $this->tbChat . ',id'
+        ]);
+        if ($validation->fails()) {
+            return $this->makeJSONResponse($validation->errors(), 400);
+        } else {
+            $delete = ChatModel::findOrfail($chat_id);
+            if ($delete) {
+                if (Storage::disk('public')->exists($delete->image)) {
+                    Storage::disk('public')->delete($delete->image);
+                    $delete->delete();
+                }
             }
+            return $this->makeJSONResponse(['message' => 'chat deleted'], 200);
         }
-        return $this->makeJSONResponse(['message' => 'chat deleted'], 200);
     }
     public function listRoom(Request $request)
     {

@@ -30,9 +30,6 @@ Route::group(['prefix' => 'administrator'], function () {
 });
 
 //api for change the order status and triggered by midtrans
-Route::post('/student-chat/inbox', [StudentChatBoxController::class, 'createChatStudent']);
-Route::get('/student-chat/school', [StudentChatBoxController::class, 'listOfChat']);
-Route::delete('/student-chat/delete-chat/{chat_id}', [StudentChatBoxController::class, 'deleteChat']);
-Route::get('/student_chat/school/detail', [StudentChatBoxController::class, 'detailSchool']);
+
 
 //school chat
