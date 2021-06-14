@@ -7,7 +7,7 @@
     <h5>Link to the student page</h5>
 
     <img style="width: 200px; height: 200px;"
-        src="{{ $message->embed("https://independensi.com/wp-content/uploads/2018/03/180330-Pancasila-820x510.jpg") }}">
+        src="{{ $message->embed(env("WEBINAR_URL") . $webinar[0]->event_picture) }}">
 
     <br>
 
