@@ -9,7 +9,7 @@
     <h5>Berikut merupakan sertifikat kelulusan anda</h5>
 
     <img style="width: 200px; height: 200px;"
-        src="{{ $message->embed("https://berenyisoft.eu/wp-content/uploads/2020/04/BSys-Smile.jpg") }}">
+        src="{{ $message->embed(env("WEBINAR_URL") . $webinar[0]->event_picture) }}">
 
     <br>
 

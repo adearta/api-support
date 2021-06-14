@@ -98,7 +98,7 @@ class SchoolChatBoxController extends Controller
                         'room_chat_id'  => $chattable[0]->room_chat_id,
                         'chat'          => $chattable[0]->chat,
                         'type'          => "chat",
-                        'image'         => url('api/v1/administrator/img/' . $chattable[0]->image),
+                        'image'         => env("WEBINAR_URL") . $chattable[0]->image,
                         'sender'        => "student",
                         'send_time'     => $chattable[0]->send_time
                     );
@@ -113,7 +113,7 @@ class SchoolChatBoxController extends Controller
                         'room_chat_id'  => $chattable[$arr_length - 1]->room_chat_id,
                         'chat'          => $chattable[$arr_length - 1]->chat,
                         'type'          => "chat",
-                        'image'         => url('api/v1/administrator/img/' . $chattable[$arr_length - 1]->image),
+                        'image'         =>  env("WEBINAR_URL") . $chattable[$arr_length - 1]->image,
                         'sender'        => "student",
                         'send_time'     => $chattable[$arr_length - 1]->send_time
                     );
@@ -297,7 +297,7 @@ class SchoolChatBoxController extends Controller
                             "chat_id"       => $chatting[$i]->chat_id,
                             "sender"        => $chatting[$i]->sender,
                             "chat"          => $chatting[$i]->chat,
-                            "image"         => url('api/v1/administrator/img/' . $chatting[$i]->image),
+                            "image"         => env("WEBINAR_URL") . $chatting[$i]->image,
                             "link"          => $chatting[$i]->link,
                             "type"          => $chatting[$i]->type,
                             "broacast_type" => $chatting[$i]->broadcast_type,

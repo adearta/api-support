@@ -69,7 +69,7 @@ class WebinarAkbarController extends Controller
                             'event_name' => $web->event_name,
                             'event_date' => $web->event_date,
                             'event_time' => $web->event_time,
-                            'event_picture' => url('api/v1/administrator/img/' . $web->event_picture),
+                            'event_picture' => env("WEBINAR_URL") . $web->event_picture,
                             'zoom_link' => $web->zoom_link,
                             'quota' => $web->quota,
                             'registered' => $web->registered,
@@ -114,7 +114,7 @@ class WebinarAkbarController extends Controller
                         "event_name"        => $detail[0]->event_name,
                         "event_date"        => $detail[0]->event_date,
                         "event_time"        => $detail[0]->event_time,
-                        "event_picture"     => url('api/v1/administrator/img/' . $detail[0]->event_picture),
+                        "event_picture"     => env("WEBINAR_URL") . $detail[0]->event_picture,
                         "schools"           => $school,
                         "zoom_link"         => $detail[0]->zoom_link,
                         "is_certificate"    => false,
@@ -216,7 +216,7 @@ class WebinarAkbarController extends Controller
                                 "event_name"        => $respon[0]->event_name,
                                 "event_date"        => $respon[0]->event_date,
                                 "event_time"        => $respon[0]->event_time,
-                                "event_picture"     => url('api/v1/administrator/img/' . $respon[0]->event_picture),
+                                "event_picture"     => env("WEBINAR_URL") . $respon[0]->event_picture,
                                 "schools"           => $schoolAll,
                                 "zoom_link"         => $respon[0]->zoom_link,
                                 "is_certificate"    => false,
@@ -351,7 +351,7 @@ class WebinarAkbarController extends Controller
                         "event_name"        => $request->event_name,
                         "event_date"        => $request->event_date,
                         "event_time"        => $request->event_time,
-                        "event_picture"     => url('api/v1/administrator/img/' . $detail[0]->event_picture),
+                        "event_picture"     => env("WEBINAR_URL") . $detail[0]->event_picture,
                         "schools"           => $schoolId,
                         "zoom_link"         => $request->zoom_link,
                         "is_certificate"    => false,
@@ -421,7 +421,7 @@ class WebinarAkbarController extends Controller
                                 'event_name'        => $webinar[0]->event_name,
                                 'event_date'        => $webinar[0]->event_date,
                                 'event_time'        => $webinar[0]->event_time,
-                                'event_picture'     => url('api/v1/administrator/img/' . $webinar[0]->event_picture)
+                                'event_picture'     => env("WEBINAR_URL") . $webinar[0]->event_picture
                             );
 
                             EmailInvitationSchoolJob::dispatch($webinarEmail, $school);
@@ -589,7 +589,7 @@ class WebinarAkbarController extends Controller
                             'event_name'        => $webinar[$i]->event_name,
                             'event_date'        => $webinar[$i]->event_date,
                             'event_time'        => $webinar[$i]->event_time,
-                            'event_picture'     => url('api/v1/administrator/img/' . $webinar[$i]->event_picture),
+                            'event_picture'     => env("WEBINAR_URL") . $webinar[$i]->event_picture,
                             'schools'           => $listSchool,
                             'zoom_link'         => $webinar[$i]->zoom_link,
                             'is_certificate'    => false,

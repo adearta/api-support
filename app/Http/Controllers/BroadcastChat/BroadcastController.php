@@ -144,7 +144,7 @@ class BroadcastController extends Controller
                 $broadcast = DB::select('select distinct on (broadcast.room_broadcast_id) room.id, broadcast.id as chat_id, broadcast.chat, broadcast.image, broadcast.link, room.year from ' . $this->tbRoomBroadcast . ' as room left join ' . $this->tbChat . ' as broadcast on room.id = broadcast.room_broadcast_id where room.id = ' . $broadcast_id);
                 $response_path = null;
                 if ($broadcast[0]->image != null) {
-                    $response_path = url('api/v1/administrator/img/' . $broadcast[0]->image);
+                    $response_path = env("WEBINAR_URL") . $broadcast[0]->image;
                 }
 
                 $broadcastResponse = (object) array(
@@ -221,7 +221,7 @@ class BroadcastController extends Controller
                 for ($i = 0; $i < count($room); $i++) {
                     $response_path = null;
                     if ($room[$i]->image != null) {
-                        $response_path = url('api/v1/administrator/img/' . $room[$i]->image);
+                        $response_path = env("WEBINAR_URL") . $room[$i]->image;
                     }
 
                     $broadcast = DB::table($this->tbChat)
