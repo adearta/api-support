@@ -200,6 +200,7 @@ class StudentChatBoxController extends Controller
                 } catch (Exception $e) {
                     echo $e;
                 }
+                // if ($chatting > 0) {
                 $dbSchool = DB::connection('pgsql2')->table($this->tbSchool)
                     ->where("id", "=", $chatting[0]->school_id)
                     ->get();
@@ -221,6 +222,7 @@ class StudentChatBoxController extends Controller
                         "send_time"     => $chatting[$i]->send_time,
                     );
                 }
+
                 $response = array_values(
                     array(
                         "school" => $schooldata[0],
@@ -235,7 +237,10 @@ class StudentChatBoxController extends Controller
                         )
                     )
                 );
-                return $this->makeJSONResponse($response, 200);
+                return count($chatting);
+                // } else {
+                // $response = "no data!";
+                // }
             });
             if ($data) {
                 return $this->makeJSONResponse($data, 200);
