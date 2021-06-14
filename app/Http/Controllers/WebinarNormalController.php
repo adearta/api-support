@@ -287,10 +287,11 @@ class WebinarNormalController extends Controller
             }
         }
     }
-    public function editWebinar(Request $request, $webinar_id)
+    public function editWebinar(Request $request)
     {
         //validasi 
         $validation = Validator::make($request->all(), [
+            'webinar_id'    => 'required|numeric|exists:' . $this->tbWebinar . ',id',
             'event_name'    => 'string',
             'event_date'    => 'date_format:Y-m-d',
             'event_link'    => 'url',
@@ -304,12 +305,12 @@ class WebinarNormalController extends Controller
         } else {
             //find webinar id
             $webinar = DB::table($this->tbWebinar)
-                ->where('id', '=', $webinar_id)
+                ->where('id', '=', $request->webinar_id)
                 ->select('id as webinar_id', 'event_picture as path')
                 ->get();
             //set modified
             if (!empty($webinar)) {
-                $data = DB::transaction(function () use ($request, $webinar, $webinar_id) {
+                $data = DB::transaction(function () use ($request, $webinar) {
                     $path = $webinar[0]->path;
                     if ($file = $request->file('event_picture')) {
                         $path = $file->store('webinar_internal', 'public');
@@ -327,16 +328,16 @@ class WebinarNormalController extends Controller
                         'event_picture' => $path
                     );
                     DB::table($this->tbWebinar)
-                        ->where('id', '=', $webinar_id)
+                        ->where('id', '=', $request->webinar_id)
                         ->update($edited);
 
                     $tableUpdated = DB::table($this->tbWebinar)
-                        ->where('id', '=', $webinar_id)
+                        ->where('id', '=', $request->webinar_id)
                         ->select('*')
                         ->get();
                     $currency = "Rp " . number_format($request->price, 2, ',', '.');
                     $response = array(
-                        "id"            => $webinar_id,
+                        "id"            => $request->webinar_id,
                         "event_name"    => $request->event_name,
                         "event_date"    => $request->event_date,
                         "event_picture" => env("WEBINAR_URL") . $tableUpdated[0]->event_picture,
