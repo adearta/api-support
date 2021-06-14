@@ -485,7 +485,7 @@ class WebinarNormalController extends Controller
                     )
                 );
 
-                return $this->makeJSONResponse($response, 200);
+                return $response;
             });
             if ($data) {
                 return $this->makeJSONResponse($data, 200);
