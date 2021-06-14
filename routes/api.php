@@ -5,8 +5,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Payment\WebinarPaymentController;
-use App\Http\Controllers\SchoolChatBoxController;
-use App\Http\Controllers\StudentChatBoxController;
+
 
 /*
 |--------------------------------------------------------------------------

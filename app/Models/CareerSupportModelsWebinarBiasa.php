@@ -26,4 +26,9 @@ class CareerSupportModelsWebinarBiasa extends Model
         'created',
         'modified'
     ];
+    public function getImageAttribute($value)
+    {
+
+        return env("WEBINAR_URL") . $this->attributes['event_picture'];
+    }
 }

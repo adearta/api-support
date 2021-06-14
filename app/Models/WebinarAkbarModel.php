@@ -26,4 +26,9 @@ class WebinarAkbarModel extends Model
         'event_time',
         'event_picture',
     ];
+    public function getImageAkbarAttributes()
+    {
+        if ($this->attributes['event_picture']) return null;
+        return env("PYTHON_URL") . "/webinar_akbar/" . $this->attributes['event_picture'];
+    }
 }

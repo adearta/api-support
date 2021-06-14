@@ -143,7 +143,8 @@ class WebinarNormalController extends Controller
                     $webinar = DB::table($this->tbWebinar)
                         ->where('id', '=', $webinar_id)
                         ->get();
-
+                    $img = CareerSupportModelsWebinarBiasa::find($webinar_id);
+                    // echo $img;
                     $registered = DB::table($this->tbWebinar, 'webinar')
                         ->leftJoin($this->tbParticipant . ' as participant', 'webinar.id', '=', 'participant.webinar_id')
                         ->leftJoin($this->tbOrder . ' as pesan', 'participant.id', '=', 'pesan.participant_id')
@@ -180,7 +181,7 @@ class WebinarNormalController extends Controller
                             "event_start"   => $webinar[0]->event_start,
                             "event_end"     => $webinar[0]->event_end,
                             ///career-support/webinar_internal/
-                            "event_picture" => url('/career-support/webinar_internal/' . $webinar[0]->event_picture),
+                            "event_picture" => $img->Image,
                             "registered"    => count($registered),
                             'quota'         => 500,
                             'student'       => $student
