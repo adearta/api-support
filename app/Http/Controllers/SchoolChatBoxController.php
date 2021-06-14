@@ -279,7 +279,7 @@ class SchoolChatBoxController extends Controller
                         $query_search = "";
                     }
 
-                    $chatting = DB::select("select chat.room_chat_id, chat.id as chat_id, chat.sender, room.student_id, room.school_id, chat.chat, chat.image, chat.send_time from " . $this->tbChat . " as chat left join " . $this->tbRoom . " as room on chat.room_chat_id = room.id where room.id = " . $request->room_chat_id . $query_search . "order by chat.id desc" . $query_pagination);
+                    $chatting = DB::select("select chat.room_chat_id, chat.id as chat_id, chat.sender, room.student_id, room.school_id, chat.chat, chat.image, chat.link, chat.type, chat.broadcast_type, chat.send_time from " . $this->tbChat . " as chat left join " . $this->tbRoom . " as room on chat.room_chat_id = room.id where room.id = " . $request->room_chat_id . $query_search . "order by chat.id desc" . $query_pagination);
                     $dbStudent = DB::connection('pgsql2')->table($this->tbStudent)
                         ->where("id", "=", $chatting[0]->student_id)
                         ->get();
@@ -298,6 +298,9 @@ class SchoolChatBoxController extends Controller
                             "sender"        => $chatting[$i]->sender,
                             "chat"          => $chatting[$i]->chat,
                             "image"         => url('api/v1/administrator/img/' . $chatting[$i]->image),
+                            "link"          => $chatting[$i]->link,
+                            "type"          => $chatting[$i]->type,
+                            "broacast_type" => $chatting[$i]->broadcast_type,
                             "send_time"     => $chatting[$i]->send_time,
                         );
                     }

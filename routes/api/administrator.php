@@ -10,6 +10,8 @@ use App\Http\Controllers\WebinarNormalController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Payment\WebinarPaymentController;
 use App\Http\Controllers\WebinarOrderController;
+use App\Http\Controllers\SchoolChatBoxController;
+use App\Http\Controllers\StudentChatBoxController;
 
 Route::group(['prefix' => 'webinar-akbar'], function () {
     Route::middleware('admin')->group(function () {
@@ -59,7 +61,7 @@ Route::group(['prefix' => 'broadcast'], function () {
 Route::group(['prefix' => 'school-chat'], function () {
     Route::middleware('admin')->group(function () {
         Route::post('/room/inbox', [SchoolChatBoxController::class, 'createChat']);
-        Route::get('/room/student', [SchoolChatBoxController::class, 'listChat']);
+        Route::get('/room/student-list', [SchoolChatBoxController::class, 'listChat']);
         Route::delete('/delete-chat/{chat_id}', [SchoolChatBoxController::class, 'deleteChat']);
         Route::get('/room', [SchoolChatBoxController::class, 'listRoom']);
         Route::delete('/room/delete/{room_chat_id}', [SchoolChatBoxController::class, 'deleteRoom']);
