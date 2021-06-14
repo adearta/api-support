@@ -35,7 +35,7 @@ class StudentChatBoxController extends Controller
     public function createChatStudent(Request $request)
     {
         $validation = Validator::make($request->all(), [
-            'student_id' => "required|numeric|exists:pgsql2" . $this->tbStudent . ',id',
+            'student_id' => 'required|numeric',
             'chat' => 'required|string',
             'image' => 'mimes:jpg,jpeg,pdf,png|max:2000',
             // 'link' => 'url'
@@ -43,7 +43,7 @@ class StudentChatBoxController extends Controller
         if ($validation->fails()) {
             return $this->makeJSONResponse($validation->errors(), 400);
         } else {
-            $data = DB::table(function () use ($request) {
+            $data = DB::transaction(function () use ($request) {
                 //make chat
                 date_default_timezone_set("Asia/Jakarta");
                 $datetime = date("Y-m-d h:i:sa");
@@ -101,7 +101,7 @@ class StudentChatBoxController extends Controller
                         'room_chat_id'  => $chattable[0]->room_chat_id,
                         'chat'          => $chattable[0]->chat,
                         'type'          => "chat",
-                        'image'         => env("WEBINAR_URL") . $chattable[0]->image,
+                        'image'         => url('api/v1/administrator/img/' . $chattable[0]->image),
                         'sender'        => "student",
                         'send_time'     => $chattable[0]->send_time
                     );
@@ -109,6 +109,7 @@ class StudentChatBoxController extends Controller
                         "room" => $roomResponse,
                         "chat" => $chatResponse,
                     ));
+                    return $response;
                 } else {
                     $lastRoom = DB::table($this->tbRoom)
                         ->where('student_id', '=', $request->student_id)
@@ -141,16 +142,17 @@ class StudentChatBoxController extends Controller
                         'room_chat_id'  => $chattable[$arr_length - 1]->room_chat_id,
                         'chat'          => $chattable[$arr_length - 1]->chat,
                         'type'          => "chat",
-                        'image'         => env("WEBINAR_URL") . $chattable[$arr_length - 1]->image,
+                        'image'         => url('api/v1/administrator/img/' . $chattable[$arr_length - 1]->image),
                         'sender'        => "student",
                         'send_time'     => $chattable[$arr_length - 1]->send_time
                     );
                     $response = array_values(array(
                         "chat" => $chatResponse,
                     ));
+                    return $response;
                 }
-                return $this->makeJSONResponse($response, 200);
             });
+
             if ($data) {
                 return $this->makeJSONResponse($data, 200);
             } else {
@@ -200,47 +202,44 @@ class StudentChatBoxController extends Controller
                 } catch (Exception $e) {
                     echo $e;
                 }
-                // if ($chatting > 0) {
-                $dbSchool = DB::connection('pgsql2')->table($this->tbSchool)
-                    ->where("id", "=", $chatting[0]->school_id)
-                    ->get();
+                if ($chatting > 0) {
+                    $dbSchool = DB::connection('pgsql2')->table($this->tbSchool)
+                        ->where("id", "=", $chatting[0]->school_id)
+                        ->get();
 
-                $schooldata = (object) $dbSchool;
+                    $schooldata = (object) $dbSchool;
 
-                $room = (object) array(
-                    "room_chat_id"  => $chatting[0]->room_chat_id,
-                    "student_id"    => $chatting[0]->student_id,
-                    "school_id"     => $chatting[0]->school_id,
+                    $room = (object) array(
+                        "room_chat_id"  => $chatting[0]->room_chat_id,
+                        "student_id"    => $chatting[0]->student_id,
+                        "school_id"     => $chatting[0]->school_id,
 
-                );
-                for ($i = 0; $i < count($chatting); $i++) {
-                    $chat[$i] = (object) array(
-                        "chat_id"       => $chatting[$i]->chat_id,
-                        "sender"        => $chatting[$i]->sender,
-                        "chat"          => $chatting[$i]->chat,
-                        "image"         => env("WEBINAR_URL") . $chatting[$i]->image,
-                        "send_time"     => $chatting[$i]->send_time,
                     );
-                }
-
-                $response = array_values(
-                    array(
-                        "school" => $schooldata[0],
-                        "room" => $room,
-                        "chat_data" => $chat,
-                        "pagination" => (object) array(
-                            "first_page" => 1,
-                            "last_page" => $total_page,
-                            "current_page" => $current_page,
-                            "current_data" => count($chatting),
-                            "total_data" => $count_chat[0]->count
+                    for ($i = 0; $i < count($chatting); $i++) {
+                        $chat[$i] = (object) array(
+                            "chat_id"       => $chatting[$i]->chat_id,
+                            "sender"        => $chatting[$i]->sender,
+                            "chat"          => $chatting[$i]->chat,
+                            "image"         => url('api/v1/administrator/img/' . $chatting[$i]->image),
+                            "send_time"     => $chatting[$i]->send_time,
+                        );
+                    }
+                    $response = array_values(
+                        array(
+                            "school" => $schooldata[0],
+                            "room" => $room,
+                            "chat_data" => $chat,
+                            "pagination" => (object) array(
+                                "first_page" => 1,
+                                "last_page" => $total_page,
+                                "current_page" => $current_page,
+                                "current_data" => count($chatting),
+                                "total_data" => $count_chat[0]->count
+                            )
                         )
-                    )
-                );
-                return count($chatting);
-                // } else {
-                // $response = "no data!";
-                // }
+                    );
+                    return $this->makeJSONResponse($response, 200);
+                }
             });
             if ($data) {
                 return $this->makeJSONResponse($data, 200);
