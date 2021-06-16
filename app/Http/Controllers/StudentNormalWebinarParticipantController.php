@@ -46,7 +46,7 @@ class StudentNormalWebinarParticipantController extends Controller
             $data = DB::transaction(function () use ($request) {
                 $message = " ";
                 $code = " ";
-                $profilePercentage = DB::connection('pgsql2')->select('select percent.percent, std.id as student_id from ' . $this->tbPercentage . " as percent left join " . $this->tbStudent . " as std on percent.user_id = std.creator_id where percent.user_id = " . $request->student_id);
+                $profilePercentage = DB::connection('pgsql2')->select('select percent.percent, std.id as student_id from ' . $this->tbPercentage . " as percent left join " . $this->tbStudent . " as std on percent.user_id = std.user_id where percent.id = " . $request->student_id);
                 $registered = DB::select("select count(pesan.webinar_id) as registered from " . $this->tbOrder . " as pesan left join " . $this->tbWebinar . " as web on web.id = pesan.webinar_id where pesan.status != 'order' and pesan.status != 'expire'");
                 // check if the student have the percent of profile or percent of profile is under 60
                 if (empty($profilePercentage) || $profilePercentage[0]->percent < 60) {

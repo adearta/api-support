@@ -110,7 +110,7 @@ class WebinarAkbarController extends Controller
                     }
 
                     $response = array(
-                        "event_id"          => $webinar_id,
+                        "id"          => $webinar_id,
                         "event_name"        => $detail[0]->event_name,
                         "event_date"        => $detail[0]->event_date,
                         "event_time"        => $detail[0]->event_time,

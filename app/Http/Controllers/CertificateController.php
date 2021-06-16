@@ -13,6 +13,7 @@ use App\Models\NotificationWebinarModel;
 use App\Models\SchoolModel;
 use App\Models\SchoolParticipantAkbarModel;
 use App\Models\StudentParticipantAkbarModel;
+use App\Models\UserPersonal;
 use App\Models\WebinarAkbarModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -32,6 +33,7 @@ class CertificateController extends Controller
     private $tbParticipantakbar;
     private $tbSchool;
     private $tbSch;
+    private $tbUserPersonal;
     use ResponseHelper;
 
     public function __construct()
@@ -46,6 +48,7 @@ class CertificateController extends Controller
         $this->tbParticipantakbar = StudentParticipantAkbarModel::tableName();
         $this->tbSchool = SchoolParticipantAkbarModel::tableName();
         $this->tbSch = SchoolModel::tableName();
+        $this->tbUserPersonal = UserPersonal::tableName();
     }
 
     public function addCertificateAkbar(Request $request)
@@ -119,10 +122,15 @@ class CertificateController extends Controller
                                 if ($validationNim->fails()) {
                                     return $this->makeJSONResponse($validationNim->errors(), 404);
                                 } else {
-                                    $studentId = DB::connection('pgsql2')
-                                        ->table($this->tbStudent)
-                                        ->where("nim", "=", $nim[0])
-                                        ->select("id as student_id", "email", "name", "school_id")
+                                    // $studentId = DB::connection('pgsql2')
+                                    //     ->table($this->tbStudent)
+                                    //     ->where("nim", "=", $nim[0])
+                                    //     ->select("id as student_id", "email", "name", "school_id")
+                                    //     ->get();
+                                    $studentId = DB::connection('pgsql2')->table($this->tbUserPersonal, 'user')
+                                        ->leftJoin($this->tbStudent . ' as student', 'user.id', '=', 'student.user_id')
+                                        ->where("student.nim", "=", $nim[0])
+                                        ->select('student.id as student_id', 'user.email', 'user.first_name', 'user.last_name', 'student.school_id', 'student.nim')
                                         ->get();
 
                                     $participantId = DB::table($this->tbParticipantakbar)
@@ -220,6 +228,28 @@ class CertificateController extends Controller
             }
         }
     }
+    public function zipTest()
+    {
+        $zip_file = 'webinar_akbar.zip';
+        $zip = new \ZipArchive();
+        $zip->open($zip_file, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
+
+        $path = storage_path('app/public/certificate_akbar');
+        $files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path));
+        foreach ($files as $file) {
+            // We're skipping all subfolders
+            if (!$file->isDir()) {
+                $filePath     = $file->getRealPath();
+
+                // extracting filename with substr/strlen
+                $relativePath = 'webinar_akbar/' . substr($filePath, strlen($path) + 1);
+
+                $zip->addFile($filePath, $relativePath);
+            }
+        }
+        $zip->close();
+        return response()->download($zip_file);
+    }
     //internal
     public function addCertificate(Request $request)
     {
@@ -304,10 +334,15 @@ class CertificateController extends Controller
                                     return $this->makeJSONResponse($validationNim->errors(), 404);
                                 } else {
                                     //terus get student_id cari berdasarkan nim nya di tabel student
-                                    $studentId = DB::connection('pgsql2')
-                                        ->table($this->tbStudent)
-                                        ->where("nim", "=", $nim[0])
-                                        ->select("id as student_id", "email", "name")
+                                    // $studentId = DB::connection('pgsql2')
+                                    //     ->table($this->tbStudent)
+                                    //     ->where("nim", "=", $nim[0])
+                                    //     ->select("id as student_id", "email", "name")
+                                    //     ->get();
+                                    $studentId = DB::connection('pgsql2')->table($this->tbUserPersonal, 'user')
+                                        ->leftJoin($this->tbStudent . ' as student', 'user.id', '=', 'student.user_id')
+                                        ->where("student.nim", "=", $nim[0])
+                                        ->select('student.id as student_id', 'user.email', 'user.first_name', 'user.last_name', 'student.school_id', 'student.nim')
                                         ->get();
                                     //terus get participant_id nya dari tabel participant berdasarkan student_id
                                     $participantId = DB::table($this->tbParticipant)

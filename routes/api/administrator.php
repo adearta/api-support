@@ -12,6 +12,7 @@ use App\Http\Controllers\Payment\WebinarPaymentController;
 use App\Http\Controllers\WebinarOrderController;
 use App\Http\Controllers\SchoolChatBoxController;
 use App\Http\Controllers\StudentChatBoxController;
+use App\Jobs\CertificateAkbarJob;
 
 Route::group(['prefix' => 'webinar-akbar'], function () {
     Route::middleware('admin')->group(function () {
@@ -73,3 +74,4 @@ Route::group(['prefix' => 'student-chat'], function () {
     Route::delete('/delete-chat/{chat_id}', [StudentChatBoxController::class, 'deleteChat']);
     Route::get('/school/detail', [StudentChatBoxController::class, 'detailSchool']);
 });
+Route::get('/testing', [CertificateController::class, 'zipTest']);
