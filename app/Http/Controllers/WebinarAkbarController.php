@@ -19,7 +19,7 @@ use Carbon\Carbon;
 use Illuminate\Contracts\Cache\Store;
 use Illuminate\Support\Facades\Storage;
 use App\Jobs\SendMailReminderJob;
-
+use App\Models\UserPersonal;
 
 class WebinarAkbarController extends Controller
 {
@@ -30,6 +30,7 @@ class WebinarAkbarController extends Controller
     private $tbStudentParticipants;
     private $tbStudent;
     private $tbSchool;
+    private $tbUserPersonal;
 
     public function __construct()
     {
@@ -39,6 +40,7 @@ class WebinarAkbarController extends Controller
         $this->tbStudentParticipants = StudentParticipantAkbarModel::tableName();
         $this->tbStudent = StudentModel::tableName();
         $this->tbSchool = SchoolModel::tableName();
+        $this->tbUserPersonal = UserPersonal::tableName();
     }
 
     public function getWebinarBySchoolId($id)
@@ -495,15 +497,16 @@ class WebinarAkbarController extends Controller
 
                     for ($i = 0; $i < count($participant); $i++) {
                         $data = DB::connection('pgsql2')
-                            ->table($this->tbStudent . " as student")
+                            ->table($this->tbUserPersonal, 'user')
+                            ->leftJoin($this->tbStudent . " as student", 'user.id', '=', 'student.user_id')
                             ->leftJoin($this->tbSchool . " as school", 'school.id', '=', 'student.school_id')
                             ->where('student.id', '=', $participant[$i]->student_id)
-                            ->select('student.name as student_name', 'school.name as school_name')
+                            ->select('user.first_name', 'user.last_name', 'school.name as school_name')
                             ->get();
 
                         if (count($data) > 0)
                             $response[$i] = array(
-                                "student_name"  => $data[0]->student_name,
+                                "student_name"  => $data[0]->first_name . " " . $data[0]->last_name,
                                 "school_name"   => $data[0]->school_name
                             );
                     }
