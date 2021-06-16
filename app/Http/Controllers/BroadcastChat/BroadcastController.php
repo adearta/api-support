@@ -52,7 +52,7 @@ class BroadcastController extends Controller
         $validation = Validator::make($request->all(), [
             'school_id'         => 'required|numeric|exists:pgsql2.' . $this->tbSchool . ',id',
             'broadcast_type'    => 'required|numeric',
-            'year'              => 'numeric',
+            'year'              => 'numeric|exists:pgsql2.' . $this->tbUserEducation . ',start_year',
             'chat'              => 'required|string',
             'image'             => 'mimes:jpg,jpeg,png|max:2000',
             'link'              => 'string',
@@ -172,8 +172,9 @@ class BroadcastController extends Controller
     {
         /*
         Param:
-        1. Page -> default(0 or null)
-        2. Search -> default(null) -> search by webinar event name
+        1. School id
+        2. Page -> default(0 or null)
+        3. Search -> default(null) -> search by broadcast message
         */
         $validation = Validator::make($request->all(), [
             'school_id' => 'required|numeric|exists:pgsql2.' . $this->tbSchool . ',id',
@@ -196,61 +197,191 @@ class BroadcastController extends Controller
                 if ($request->page != null && $request->page > 1) {
                     $current_page = $request->page;
 
-                    if ($current_page > $total_page) {
-                        $current_page = $total_page;
+                    if ($current_page > 1) {
+                        $start_item = ($current_page - 1) * 10;
                     }
+                }
+
+                if ($current_page <= $total_page) {
+                    $query_pagination = " limit 10 offset " . $start_item;
+
+                    if ($request->search != null) {
+                        $searchLength = preg_replace('/\s+/', '', $request->search);
+                        if (strlen($searchLength) > 0) {
+                            $search = strtolower($request->search);
+                            $query_search = " and lower(chat) like '%" . $search . "%'";
+                        }
+                    }
+
+                    $join = 'left join ' . $this->tbChat . ' as broadcast on room.id = broadcast.room_broadcast_id';
+                    $room = DB::select('select distinct on (broadcast.room_broadcast_id) room.id, room.broadcast_type, broadcast.id as chat_id, broadcast.chat, broadcast.image, broadcast.link, room.year from ' . $this->tbRoomBroadcast . ' as room ' . $join . ' where room.school_id = ' . $request->school_id . $query_search . " order by broadcast.room_broadcast_id desc" . $query_pagination);
+
+                    for ($i = 0; $i < count($room); $i++) {
+                        $response_path = null;
+                        if ($room[$i]->image != null) {
+                            $response_path = env("WEBINAR_URL") . $room[$i]->image;
+                        }
+
+                        $broadcast = DB::table($this->tbChat)
+                            ->selectRaw('count(id)')
+                            ->where('room_broadcast_id', '=', $room[$i]->id)
+                            ->get();
+
+                        $data[$i] = (object) array(
+                            'room_broadcast_id' => $room[0]->id,
+                            'chat_id'           => $room[0]->chat_id,
+                            'chat'              => $room[0]->chat,
+                            'image'             => $response_path,
+                            'link'              => $room[0]->link,
+                            'year'              => $room[0]->year,
+                            'broadcast_type'    => $room[0]->broadcast_type,
+                            'total_student'     => $broadcast[0]->count
+                        );
+                    }
+                }
+
+                $response = (object)array(
+                    'data'   => $data,
+                    'pagination' => (object) array(
+                        'first_page'    => 1,
+                        'last_page'     => $total_page,
+                        'current_page'  => $current_page,
+                        'current_data'  => count($data), // total data based on filter search and page
+                        'total_data'    => $room_count[0]->count
+                    )
+                );
+                return $response;
+            });
+
+            if ($status) {
+                return $this->makeJSONResponse($status, 200);
+            } else {
+                return $this->makeJSONResponse('failed', 400);
+            }
+        }
+    }
+
+    public function delete($room_id)
+    {
+        $validation = Validator::make(['room_id' => $room_id], [
+            'room_id' => 'required|numeric|exists:' . $this->tbRoomBroadcast . ',id'
+        ]);
+        if ($validation->fails()) {
+            return $this->makeJSONResponse($validation->errors(), 400);
+        } else {
+            $data = DB::transaction(function () use ($room_id) {
+                $broadcast = DB::select('select distinct on (room_broadcast_id) image from ' . $this->tbChat . ' where room_broadcast_id = ' . $room_id);
+
+                if ($broadcast[0]->image != null) {
+                    if (Storage::disk('public')->exists($broadcast[0]->image)) {
+                        Storage::disk('public')->delete($broadcast[0]->image);
+                    }
+                }
+
+                DB::table($this->tbRoomBroadcast)
+                    ->where('id', '=', $room_id)
+                    ->delete();
+
+                return true;
+            });
+
+            if ($data) {
+                return $this->makeJSONResponse(['message => successfully delete the broadcast'], 200);
+            } else {
+                return $this->makeJSONResponse(['message => failed'], 400);
+            }
+        }
+    }
+
+    public function detail(Request $request)
+    {
+        /*
+        Param:
+        1. Room id
+        2. Page -> default(0 or null)
+        */
+        $validation = Validator::make($request->all(), [
+            'room_id'   => 'required|numeric|exists:' . $this->tbRoomBroadcast . ',id',
+            'page'      => 'numeric',
+        ]);
+
+        if ($validation->fails()) {
+            return $this->makeJSONResponse($validation->errors(), 400);
+        } else {
+            $data = DB::transaction(function () use ($request) {
+                $current_page = 1;
+                $student = [];
+                $start_item = 0;
+
+                $broadcast = DB::table($this->tbChat, 'chat')
+                    ->leftJoin($this->tbRoomBroadcast . ' as broadcast', 'chat.room_broadcast_id', '=', 'broadcast.id')
+                    ->leftJoin($this->tbRoomChat . ' as room', 'chat.room_id', '=', 'room.id')
+                    ->where('chat.room_broadcast_id', '=', $request->room_id)
+                    ->select('broadcast.id', 'broadcast.school_id', 'broadcast.broadcast_type', 'broadcast.year', 'room.student_id', 'chat.id as chat_id', 'chat.chat', 'chat.image', 'chat.link')
+                    ->limit(1)
+                    ->get();
+
+                $total_page = ceil(count($broadcast) / 10);
+
+                if ($request->page != null && $request->page > 1) {
+                    $current_page = $request->page;
 
                     if ($current_page > 1) {
                         $start_item = ($current_page - 1) * 10;
                     }
                 }
 
-                $query_pagination = " limit 10 offset " . $start_item;
-
-                if ($request->search != null) {
-                    $searchLength = preg_replace('/\s+/', '', $request->search);
-                    if (strlen($searchLength) > 0) {
-                        $search = strtolower($request->search);
-                        $query_search = " and lower(chat) like '%" . $search . "%'";
-                    }
-                }
-
-                $join = 'left join ' . $this->tbChat . ' as broadcast on room.id = broadcast.room_broadcast_id';
-                $room = DB::select('select distinct on (broadcast.room_broadcast_id) room.id, broadcast.id as chat_id, broadcast.chat, broadcast.image, broadcast.link, room.year from ' . $this->tbRoomBroadcast . ' as room ' . $join . ' where room.school_id = ' . $request->school_id . $query_search . " order by broadcast.room_broadcast_id desc" . $query_pagination);
-
-                for ($i = 0; $i < count($room); $i++) {
-                    $response_path = null;
-                    if ($room[$i]->image != null) {
-                        $response_path = env("WEBINAR_URL") . $room[$i]->image;
-                    }
-
-                    $broadcast = DB::table($this->tbChat)
-                        ->selectRaw('count(id)')
-                        ->where('room_broadcast_id', '=', $room[$i]->id)
+                if ($current_page <= $total_page) {
+                    $broadcastStudent = DB::table($this->tbChat, 'chat')
+                        ->leftJoin($this->tbRoomChat . ' as room', 'chat.room_id', '=', 'room.id')
+                        ->where('chat.room_broadcast_id', '=', $request->room_id)
+                        ->orderBy('room.id', 'asc')
+                        ->offset($start_item)
+                        ->limit(10)
+                        ->select('room.student_id')
                         ->get();
 
-                    $data[$i] = (object) array(
-                        'room_broadcast_id' => $room[0]->id,
-                        'chat_id'           => $room[0]->chat_id,
-                        'chat'              => $room[0]->chat,
-                        'image'             => $response_path,
-                        'link'              => $room[0]->link,
-                        'year'              => $room[0]->year,
-                        'total_student'     => $broadcast[0]->count
-                    );
+                    for ($i = 0; $i < count($broadcastStudent); $i++) {
+                        $getStudent = DB::connection('pgsql2')->table($this->tbStudent)
+                            ->where('id', '=', $broadcastStudent[$i]->student_id)
+                            ->get();
+
+                        $student[$i] = $getStudent[0];
+                    }
                 }
 
-                $response = (object)array(
-                    'status' => true,
-                    'data'   => $data
+                $listStudent = (object) array(
+                    'data'       => $student,
+                    'pagination' => (object) array(
+                        'first_page'    => 1,
+                        'last_page'     => $total_page,
+                        'current_page'  => $current_page,
+                        'current_data'  => count($student), // total data based on filter search and page
+                        'total_data'    => count($broadcast)
+                    )
                 );
-                return $response;
+
+                $response_path = null;
+                if ($broadcast[0]->image != null) {
+                    $response_path = $broadcast[0]->image;
+                }
+
+                return (object) array(
+                    'room_broadcast_id' => $broadcast[0]->id,
+                    'chat_id'           => $broadcast[0]->chat_id,
+                    'chat'              => $broadcast[0]->chat,
+                    'image'             => $response_path,
+                    'link'              => $broadcast[0]->link,
+                    'year'              => $broadcast[0]->year,
+                    'broadcast_type'    => $broadcast[0]->broadcast_type,
+                    'student'           => $listStudent
+                );
             });
 
-            if ($status) {
-                return $this->makeJSONResponse($status->data, 200);
+            if ($data) {
+                return $this->makeJSONResponse($data, 200);
             } else {
-                return $this->makeJSONResponse('failed', 400);
+                return $this->makeJSONResponse(['message => failed'], 400);
             }
         }
     }
