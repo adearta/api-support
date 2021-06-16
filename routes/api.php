@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Payment\WebinarPaymentController;
 use App\Http\Controllers\CertificateController;
-
+use App\Http\Controllers\SchoolParticipantAkbarController;
 
 /*
 |--------------------------------------------------------------------------
@@ -28,9 +28,6 @@ Route::group(['prefix' => 'administrator'], function () {
 	Route::post('/payment/status', [WebinarPaymentController::class, 'updateStatus']);
 	Route::get('/img/{folder}/{img}', [AssetController::class, 'img']);
 });
-
-//api for change the order status and triggered by midtrans
-
 
 //school chat
 Route::get('/testing', [CertificateController::class, 'zipTest']);

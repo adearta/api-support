@@ -174,9 +174,9 @@ class CertificateController extends Controller
                                                 echo $e;
                                             }
                                         } else {
-                                            $message = "cannot save, order status not sucess";
+                                            $message = "cannot save, student not finished webinar";
                                             $code = 400;
-                                            return $this->makeJSONResponse(["message" => $message], $code);
+                                            return response(["message" => $message], $code);
                                         }
                                     } else {
                                         $message = "The student with the nim and name " . $name . " not registered to this webinar";
@@ -210,10 +210,10 @@ class CertificateController extends Controller
                                 "schools"    => $unique,
                                 "zoom_link" => $webinar[0]->zoom_link,
                                 "is_certificate" => true,
-                                "certificate" => "link not found",
+                                "certificate" => $studentId[0]->email,
                             );
-                            $code = 200;
-                            return $this->makeJSONResponse($response, $code);
+
+                            return $response;
                         }
                         // }
                     });

@@ -313,9 +313,8 @@ class SchoolParticipantAkbarController extends Controller
                 ->where('student.id', '=', $student_id)
                 ->select('student.id', 'student.phone', 'student.nim', 'student.address', 'student.date_of_birth', 'student.gender', 'student.marital_status', 'student.religion', 'student.employment_status', 'student.description', 'student.avatar', 'student.domicile_id', 'student.user_id as student_user_id', 'student.school_id', 'user.first_name', 'user.last_name', 'user.email')
                 ->get();
-            EmailInvitationJob::dispatch($webinar, $student);
 
-            return $this->makeJSONResponse(['message' => "email terkirim"], 200);
+            EmailInvitationJob::dispatch($webinar, $student);
         } catch (Exception $e) {
             echo $e;
         }
