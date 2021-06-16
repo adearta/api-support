@@ -179,15 +179,23 @@ class StudentChatBoxController extends Controller
                     // $total_page = 0;
 
                     $count_chat = DB::select("select count(chat.room_chat_id) from " . $this->tbChat . " as chat left join " . $this->tbRoom . " as room on chat.room_chat_id = room.id where room.student_id = " . $request->student_id . " group by room_chat_id");
-
-                    $total_page = ceil($count_chat[0]->count / 10);
+                    if (empty($count_chat[0])) {
+                        $count_chat = 0;
+                        $total_page = ceil($count_chat / 10);
+                    } else {
+                        $count_chat = $count_chat;
+                        $total_page = ceil($count_chat[0]->count / 10);
+                    }
+                    // var_dump($count_chat);
                     // echo "masuk";
+                    // var_dump($total_page);
                     $start_item = 0;
                     $current_page = intval($request->page);
                     if ($current_page > 1) {
                         $start_item = ($current_page - 1) * 10;
                     }
                     $query_pagination = " limit 10 offset " . $start_item;
+
                     if ($current_page <= $total_page) {
                         if ($request->search != null) {
 
@@ -195,54 +203,53 @@ class StudentChatBoxController extends Controller
                             if (strlen($search_length) > 0) {
                                 $search = strtolower($request->search);
                                 $query_search = " and lower(chat.chat) like '%" . $search . "%'";
-                            }
-                        }
 
+                                $chatting = DB::select("select chat.id as chat_id, chat.room_chat_id, chat.room_broadcast_id, chat.chat, chat.image, chat.link, chat.type, chat.send_time, chat.sender, room.student_id, room.school_id from " . $this->tbChat . " as chat left join " . $this->tbRoom . " as room on chat.room_chat_id = room.id where room.student_id = " . $request->student_id . $query_search . " order by chat.id desc" . $query_pagination);
+                                // var_dump($chatting);
+                                if (count($chatting) > 0) {
+                                    $dbSchool = DB::connection('pgsql2')->table($this->tbSchool)
+                                        ->where("id", "=", $chatting[0]->school_id)
+                                        ->get();
 
-                        $chatting = DB::select("select chat.id as chat_id, chat.room_chat_id, chat.room_broadcast_id, chat.chat, chat.image, chat.link, chat.type, chat.send_time, chat.sender, room.student_id, room.school_id from " . $this->tbChat . " as chat left join " . $this->tbRoom . " as room on chat.room_chat_id = room.id where room.student_id = " . $request->student_id . $query_search . " order by chat.id desc" . $query_pagination);
-                        // var_dump($chatting);
-                        if (count($chatting) > 0) {
-                            $dbSchool = DB::connection('pgsql2')->table($this->tbSchool)
-                                ->where("id", "=", $chatting[0]->school_id)
-                                ->get();
+                                    $schooldata = (object) $dbSchool;
 
-                            $schooldata = (object) $dbSchool;
+                                    $room = (object) array(
+                                        "room_chat_id"  => $chatting[0]->room_chat_id,
+                                        "student_id"    => $request->student_id,
+                                        "school_id"     => $chatting[0]->school_id,
 
-                            $room = (object) array(
-                                "room_chat_id"  => $chatting[0]->room_chat_id,
-                                "student_id"    => $request->student_id,
-                                "school_id"     => $chatting[0]->school_id,
-
-                            );
-                            for ($i = 0; $i < count($chatting); $i++) {
-                                $chat[$i] = (object) array(
-                                    "chat_id"       => $chatting[$i]->chat_id,
-                                    "sender"        => $chatting[$i]->sender,
-                                    "room_broadcast_id" => $chatting[$i]->room_broadcast_id,
-                                    "chat"          => $chatting[$i]->chat,
-                                    "image"         => env("WEBINAR_URL") . $chatting[$i]->image,
-                                    "link"          => $chatting[$i]->link,
-                                    "type"          => $chatting[$i]->type,
-                                    "send_time"     => $chatting[$i]->send_time,
-                                    "sender"        => $chatting[$i]->sender
+                                    );
+                                    for ($i = 0; $i < count($chatting); $i++) {
+                                        $chat[$i] = (object) array(
+                                            "chat_id"       => $chatting[$i]->chat_id,
+                                            "sender"        => $chatting[$i]->sender,
+                                            "room_broadcast_id" => $chatting[$i]->room_broadcast_id,
+                                            "chat"          => $chatting[$i]->chat,
+                                            "image"         => env("WEBINAR_URL") . $chatting[$i]->image,
+                                            "link"          => $chatting[$i]->link,
+                                            "type"          => $chatting[$i]->type,
+                                            "send_time"     => $chatting[$i]->send_time,
+                                            "sender"        => $chatting[$i]->sender
+                                        );
+                                    }
+                                }
+                                $response = array_values(
+                                    array(
+                                        "school" => $schooldata[0],
+                                        "room" => $room,
+                                        "chat_data" => $chat,
+                                        "pagination" => (object) array(
+                                            "first_page" => 1,
+                                            "last_page" => $total_page,
+                                            "current_page" => $current_page,
+                                            "current_data" => count($chatting),
+                                            "total_data" => $count_chat[0]->count
+                                        )
+                                    )
                                 );
+                                return $response;
                             }
                         }
-                        $response = array_values(
-                            array(
-                                "school" => $schooldata[0],
-                                "room" => $room,
-                                "chat_data" => $chat,
-                                "pagination" => (object) array(
-                                    "first_page" => 1,
-                                    "last_page" => $total_page,
-                                    "current_page" => $current_page,
-                                    "current_data" => count($chatting),
-                                    "total_data" => $count_chat[0]->count
-                                )
-                            )
-                        );
-                        return $response;
                     } else {
                         $response = array_values(
                             array(
@@ -254,7 +261,7 @@ class StudentChatBoxController extends Controller
                                     "last_page" => $total_page,
                                     "current_page" => $current_page,
                                     "current_data" => count($chatting),
-                                    "total_data" => $count_chat[0]->count
+                                    "total_data" => $count_chat
                                 )
                             )
                         );

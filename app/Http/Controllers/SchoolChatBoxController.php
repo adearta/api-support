@@ -194,7 +194,6 @@ class SchoolChatBoxController extends Controller
                                 ->where('student.school_id', '=', $school[0]->id)
                                 ->where("user.first_name", "like", "%{$search}%")
                                 ->orWhere("user.last_name", "like", "%{$search}%")
-                                // ->select('student.id', 'student.phone', 'student.nim', 'student.address', 'student.date_of_birth', 'student.gender', 'student.marital_status', 'student.religion', 'student.employment_status', 'student.description', 'student.avatar', 'student.domicile_id', 'student.user_id as student_user_id', 'student.school_id', 'student.template', 'student.portofolio', 'student.verification_status', 'student.school_name', 'student.is_active', 'student.is_selected', 'student.facebookURL', 'student.googleURL', 'student.linkedinURL', 'student.pinterestURL', 'student.twitterURL', 'user.id as user_id', 'user.first_name', 'user.last_name', 'user.email')
                                 ->select('student.id', 'student.phone', 'student.nim', 'student.address', 'student.date_of_birth', 'student.gender', 'student.marital_status', 'student.religion', 'student.employment_status', 'student.description', 'student.avatar', 'student.domicile_id', 'student.user_id as student_user_id', 'student.school_id', 'user.first_name', 'user.last_name')
                                 ->get();
 
@@ -297,9 +296,6 @@ class SchoolChatBoxController extends Controller
                             $search = strtolower($request->search);
                             $query_search = " and lower(chat.chat) like '%" . $search . "%' ";
                         }
-                    } else {
-                        //show all
-                        $query_search = "";
                     }
 
                     $chatting = DB::select("select chat.room_chat_id, chat.id as chat_id, chat.sender, room.student_id, room.school_id, chat.chat, chat.image, chat.link, chat.type, chat.room_broadcast_id, chat.send_time from " . $this->tbChat . " as chat left join " . $this->tbRoom . " as room on chat.room_chat_id = room.id where room.id = " . $request->room_chat_id . $query_search . "order by chat.id desc" . $query_pagination);
