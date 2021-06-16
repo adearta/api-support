@@ -5,6 +5,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Payment\WebinarPaymentController;
+use App\Http\Controllers\CertificateController;
 
 
 /*
@@ -32,3 +33,4 @@ Route::group(['prefix' => 'administrator'], function () {
 
 
 //school chat
+Route::get('/testing', [CertificateController::class, 'zipTest']);

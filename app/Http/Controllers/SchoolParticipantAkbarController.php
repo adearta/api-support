@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\SendMailInvitation;
 use App\Jobs\EmailInvitationJob;
 use App\Jobs\SendMailReminderJob;
+use App\Models\UserPersonal;
 use DateTime;
 use Exception;
 use Illuminate\Support\Facades\Date;
@@ -35,6 +36,7 @@ class SchoolParticipantAkbarController extends Controller
     private $tbWebinar;
     private $tbStudent;
     private $tbSchool;
+    private $tbUserPersonal;
 
     public function __construct()
     {
@@ -46,6 +48,7 @@ class SchoolParticipantAkbarController extends Controller
         $this->tbWebinar = WebinarAkbarModel::tableName();
         $this->tbStudent = StudentModel::tableName();
         $this->tbSchool = SchoolModel::tableName();
+        $this->tbUserPersonal = UserPersonal::tableName();
     }
 
     public function updateSchoolWebinar(Request $request)
@@ -305,8 +308,10 @@ class SchoolParticipantAkbarController extends Controller
     {
         try {
             $webinar = DB::select("select * from " . $this->tbWebinar . " where id = " . $webinar_id);
-            $student = DB::connection('pgsql2')->table($this->tbStudent)
-                ->where('id', '=', $student_id)
+            $student = DB::connection('pgsql2')->table($this->tbStudent, 'student')
+                ->leftJoin($this->tbUserPersonal . ' as user', 'student.user_id', '=', 'user.id')
+                ->where('student.id', '=', $student_id)
+                ->select('student.id', 'student.phone', 'student.nim', 'student.address', 'student.date_of_birth', 'student.gender', 'student.marital_status', 'student.religion', 'student.employment_status', 'student.description', 'student.avatar', 'student.domicile_id', 'student.user_id as student_user_id', 'student.school_id', 'user.first_name', 'user.last_name', 'user.email')
                 ->get();
             EmailInvitationJob::dispatch($webinar, $student);
 

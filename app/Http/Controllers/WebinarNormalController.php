@@ -12,6 +12,7 @@ use App\Models\CareerSupportModelsNormalStudentParticipants;
 use App\Models\CareerSupportModelsOrdersWebinar;
 use App\Models\NotificationWebinarModel;
 use App\Models\SchoolModel;
+use App\Models\UserPersonal;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
@@ -25,6 +26,7 @@ class WebinarNormalController extends Controller
     private $tbStudent;
     private $tbOrder;
     private $tbSchool;
+    private $tbUserPersonal;
 
 
     public function __construct()
@@ -35,6 +37,7 @@ class WebinarNormalController extends Controller
         $this->tbStudent = StudentModel::tableName();
         $this->tbOrder = CareerSupportModelsOrdersWebinar::tableName();
         $this->tbSchool = SchoolModel::tableName();
+        $this->tbUserPersonal = UserPersonal::tableName();
     }
 
 
@@ -143,7 +146,7 @@ class WebinarNormalController extends Controller
                     $webinar = DB::table($this->tbWebinar)
                         ->where('id', '=', $webinar_id)
                         ->get();
-                    $img = CareerSupportModelsWebinarBiasa::find($webinar_id);
+                    // $img = CareerSupportModelsWebinarBiasa::find($webinar_id);
                     // echo $img;
                     $registered = DB::table($this->tbWebinar, 'webinar')
                         ->leftJoin($this->tbParticipant . ' as participant', 'webinar.id', '=', 'participant.webinar_id')
@@ -156,18 +159,19 @@ class WebinarNormalController extends Controller
 
                     if (count($webinar) > 0) {
                         $student = array();
-
+                        //perlu ditambah nama
                         if (count($registered) > 0) {
                             for ($i = 0; $i < count($registered); $i++) {
-                                $temp = DB::connection('pgsql2')->table($this->tbStudent, 'student')
-                                    ->leftJoin($this->tbSchool . ' as school', 'student.school_id', '=', 'school.id')
+                                $temp = DB::connection('pgsql2')->table($this->tbUserPersonal, 'user')
+                                    ->leftJoin($this->tbStudent . ' as student', 'user.id', '=', 'student.user_id')
+                                    // ->leftJoin($this->tbSchool . ' as school', 'student.school_id', '=', 'school.id')
                                     ->where('student.id', '=', $registered[$i]->student_id)
-                                    ->select('student.name as student_name', 'school.name as school_name')
+                                    ->select('student.school_name', 'user.first_name', 'user.last_name')
                                     ->get();
 
                                 $student[$i] = array(
                                     "student_id"  => $registered[$i]->student_id,
-                                    "student_name" => $temp[0]->student_name,
+                                    "student_name" => $temp[0]->first_name . " " . $temp[0]->last_name,
                                     "school_name" => $temp[0]->school_name,
                                     "participant_status" => $registered[$i]->status
                                 );
@@ -175,12 +179,11 @@ class WebinarNormalController extends Controller
                         }
 
                         $response = array(
-                            "event_id"      => $webinar_id,
+                            "id"      => $webinar_id,
                             "event_name"    => $webinar[0]->event_name,
                             "event_date"    => $webinar[0]->event_date,
                             "event_start"   => $webinar[0]->event_start,
                             "event_end"     => $webinar[0]->event_end,
-                            ///career-support/webinar_internal/
                             "event_picture" => env("WEBINAR_URL") . $webinar[0]->event_picture,
                             "registered"    => count($registered),
                             'quota'         => 500,
@@ -214,7 +217,7 @@ class WebinarNormalController extends Controller
             'event_link'    => 'required|url',
             'event_start'   => 'required|date_format:H:i:s',
             'event_end'     => 'required|date_format:H:i:s|after:event_start',
-            // 'price' => 'numeric|required',
+            'price'         => 'numeric',
         ]);
         if ($validation->fails()) {
             return $this->makeJSONResponse($validation->errors(), 202);
@@ -242,13 +245,13 @@ class WebinarNormalController extends Controller
                             try {
                                 $path = $file->store('webinar_internal', 'public');
                                 $webinar = array(
-                                    'event_name' => $request->event_name,
-                                    'event_link' => $request->event_link,
-                                    'event_date' => $request->event_date,
+                                    'event_name'    => $request->event_name,
+                                    'event_link'    => $request->event_link,
+                                    'event_date'    => $request->event_date,
                                     'event_picture' => $path,
-                                    'event_start' => $request->event_start,
-                                    'event_end' => $request->event_end,
-                                    'price' => $request->price,
+                                    'event_start'   => $request->event_start,
+                                    'event_end'     => $request->event_end,
+                                    'price'         => $request->price,
                                     // 'is_deleted'=>true
                                 );
                                 $save =  DB::table($this->tbWebinar)->insertGetId($webinar);
