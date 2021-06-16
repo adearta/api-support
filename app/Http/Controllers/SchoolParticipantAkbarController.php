@@ -157,7 +157,7 @@ class SchoolParticipantAkbarController extends Controller
                             if ($validation->fails()) {
                                 return $this->makeJSONResponse($validation->errors(), 400);
                             } else {
-                                if ($schParticipantValidation[0]->status == 3) {
+                                if ($schParticipantValidation[0]->status >= 1) {
                                     $schoolParticipant = DB::select('select schedule, id from ' . $this->tbSchoolParticipant . " where school_id = " . $request->school_id . " and webinar_id = " . $request->webinar_id);
 
                                     if ($schoolParticipant[0]->schedule >= date("Y-m-d")) {
@@ -167,12 +167,12 @@ class SchoolParticipantAkbarController extends Controller
                                             ->where('webinar_id', '=', $request->webinar_id)
                                             ->get();
                                         //tabel usereducation 
-                                        $student = DB::connection('pgsql2')->table($this->tbUserEdu)
-                                            ->where('school_id', '=', $request->school_id)
-                                            //batch diganti start_year (angkatan)
-                                            ->where('start_year', '=', $request->start_year)
-                                            //is_verified diganti verified
-                                            ->where('verified', '=', true)
+                                        $student = DB::connection('pgsql2')->table($this->tbUserEdu, 'edu')
+                                            ->leftJoin($this->tbStudent . ' as student', 'edu.nim', '=', 'student.nim')
+                                            ->where('edu.school_id', '=', $request->school_id)
+                                            ->where('edu.start_year', '=', $request->start_year)
+                                            ->where('edu.verified', '=', true)
+                                            ->where('student.id', '!=', null)
                                             ->get();
 
                                         $registered = 0;

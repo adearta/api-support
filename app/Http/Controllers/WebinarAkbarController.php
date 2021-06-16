@@ -311,6 +311,7 @@ class WebinarAkbarController extends Controller
                     foreach ($request->school_id as $temp) {
                         $data = DB::table($this->tbSchoolParticipants)
                             ->where('school_id', '=', $temp)
+                            ->where('webinar_id', '=', $request->webinar_id)
                             ->get();
 
                         if (count($data) == 0) {
