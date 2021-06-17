@@ -66,6 +66,12 @@ class WebinarAkbarController extends Controller
                             ->where('id', '=', $web->school_id)
                             ->get();
 
+                        $path_zip = null;
+
+                        if ($web->is_certificate) {
+                            $path_zip = env("WEBINAR_URL") . $web->certificate;
+                        }
+
                         $data[$index] = (object) array(
                             'webinar_id' => $web->webinar_id,
                             'event_name' => $web->event_name,
@@ -76,6 +82,8 @@ class WebinarAkbarController extends Controller
                             'quota' => $web->quota,
                             'registered' => $web->registered,
                             'school_status' => $web->status,
+                            'is_certificate' => $web->is_certificate,
+                            'certificate'   => $path_zip,
                             'school' => $school[0]
                         );
 
@@ -111,6 +119,12 @@ class WebinarAkbarController extends Controller
                         $school[$i] = $temp[0];
                     }
 
+                    $path_zip = null;
+
+                    if ($detail[0]->is_certificate) {
+                        $path_zip = env("WEBINAR_URL") . $detail[0]->certificate;
+                    }
+
                     $response = array(
                         "id"          => $webinar_id,
                         "event_name"        => $detail[0]->event_name,
@@ -119,8 +133,8 @@ class WebinarAkbarController extends Controller
                         "event_picture"     => env("WEBINAR_URL") . $detail[0]->event_picture,
                         "schools"           => $school,
                         "zoom_link"         => $detail[0]->zoom_link,
-                        "is_certificate"    => false,
-                        "certificate"       => "link not found",
+                        "is_certificate"    => $detail[0]->is_certificate,
+                        "certificate"       => $path_zip,
                     );
 
                     return $response;
@@ -221,8 +235,8 @@ class WebinarAkbarController extends Controller
                                 "event_picture"     => env("WEBINAR_URL") . $respon[0]->event_picture,
                                 "schools"           => $schoolAll,
                                 "zoom_link"         => $respon[0]->zoom_link,
-                                "is_certificate"    => false,
-                                "certificate"       => "link not found"
+                                "is_certificate"    => $respon[0]->is_certificate,
+                                "certificate"       => $respon[0]->certificate
                             );
 
                             return $response;
@@ -349,6 +363,11 @@ class WebinarAkbarController extends Controller
                         $schoolId[$i] = $temp[0];
                     }
 
+                    $path_zip = null;
+
+                    if ($detail[0]->is_certificate) {
+                        $path_zip = env("WEBINAR_URL") . $detail[0]->cartificate;
+                    }
                     $response = array(
                         "id"                => $request->webinar_id,
                         "event_name"        => $request->event_name,
@@ -357,8 +376,8 @@ class WebinarAkbarController extends Controller
                         "event_picture"     => env("WEBINAR_URL") . $detail[0]->event_picture,
                         "schools"           => $schoolId,
                         "zoom_link"         => $request->zoom_link,
-                        "is_certificate"    => false,
-                        "certificate"       => "link not found",
+                        "is_certificate"    => $detail[0]->is_certificate,
+                        "certificate"       => $path_zip,
                     );
 
                     return array(
@@ -588,6 +607,12 @@ class WebinarAkbarController extends Controller
                             $listSchool[$j] = $school[0];
                         }
 
+                        $path_zip = null;
+
+                        if ($webinar[$i]->is_certificate) {
+                            $path_zip = env("WEBINAR_URL") . $webinar[$i]->certificate;
+                        }
+
                         $data[$i] = (object) array(
                             'id'                => $webinar[$i]->id,
                             'event_name'        => $webinar[$i]->event_name,
@@ -596,8 +621,8 @@ class WebinarAkbarController extends Controller
                             'event_picture'     => env("WEBINAR_URL") . $webinar[$i]->event_picture,
                             'schools'           => $listSchool,
                             'zoom_link'         => $webinar[$i]->zoom_link,
-                            'is_certificate'    => false,
-                            'certificate'       => 'link not found'
+                            'is_certificate'    => $webinar[$i]->is_certificate,
+                            'certificate'       => $path_zip
                         );
                     }
                 }

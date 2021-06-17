@@ -20,6 +20,10 @@ use Illuminate\Support\Facades\Validator;
 use App\Traits\ResponseHelper;
 use Exception;
 use Illuminate\Support\Facades\DB;
+use ZipArchive;
+use RecursiveIteratorIterator;
+use RecursiveDirectoryIterator;
+use Illuminate\Support\Facades\Storage;
 
 class CertificateController extends Controller
 {
@@ -151,7 +155,7 @@ class CertificateController extends Controller
                                             ->get();
 
                                         if ($school[0]->status == "5") {
-                                            $path = $certi->store('certificate_akbar/webinar_' . $request->webinar_id, 'public');
+                                            $path = $certi->storeAs('certificate_akbar/webinar_' . $request->webinar_id, $name, 'public');
                                             $data =  array(
                                                 'certificate' => $path,
                                                 'webinar_akbar_id' => $participantId[0]->webinar_id,
@@ -191,6 +195,13 @@ class CertificateController extends Controller
                                     }
                                 }
                             }
+                            DB::table($this->tbWebinarakbar)
+                                ->where('id', '=', $request->webinar_id)
+                                ->update(array(
+                                    'is_certificate' => true,
+                                    'certificate'    => $this->makeZip('certificate_akbar/webinar_' . $request->webinar_id . '/webinar_' . $request->webinar_id . '.zip', 'certificate_akbar/webinar_' . $request->webinar_id)
+                                ));
+
                             //response
                             $webinar = DB::table($this->tbWebinarakbar)
                                 ->where('id', '=', $request->webinar_id)
@@ -215,8 +226,8 @@ class CertificateController extends Controller
                                 "event_picture" => env("WEBINAR_URL") . $webinar[0]->event_picture,
                                 "schools"    => $unique,
                                 "zoom_link" => $webinar[0]->zoom_link,
-                                "is_certificate" => true,
-                                "certificate" => $studentId[0]->email,
+                                "is_certificate" => $webinar[0]->is_certificate,
+                                "certificate" => env("WEBINAR_URL") . $webinar[0]->certificate,
                             );
 
                             return (object) array(
@@ -238,32 +249,37 @@ class CertificateController extends Controller
         }
     }
 
-    public function zipTest()
+    public function makeZip($zip_path, $target_path)
     {
-        $zip_file = 'webinar_akbar.zip';
-        $zip = new \ZipArchive();
-        $zip->open($zip_file, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
+        if (Storage::disk('public')->exists($zip_path)) {
+            Storage::disk('public')->delete($zip_path);
+        }
 
-        $path = storage_path('app/public/certificate_akbar');
-        $files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path));
+        $zip_file = storage_path('app/public/' . $zip_path);
+
+        $zip = new ZipArchive();
+        $zip->open($zip_file, ZipArchive::CREATE | ZipArchive::OVERWRITE);
+
+        $path = storage_path('app/public/' . $target_path);
+        $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path));
+
         foreach ($files as $file) {
             // We're skipping all subfolders
             if (!$file->isDir()) {
                 $filePath     = $file->getRealPath();
 
                 // extracting filename with substr/strlen
-                $relativePath = 'webinar_akbar/' . substr($filePath, strlen($path) + 1);
+                $relativePath = substr($filePath, strlen($path) + 1);
 
                 $zip->addFile($filePath, $relativePath);
             }
         }
         $zip->close();
-        return response()->download($zip_file);
+        return $zip_path;
     }
     //internal
     public function addCertificate(Request $request)
     {
-
         $validation = Validator::make($request->all(), [
             'webinar_id'    => 'required|numeric|exists:' . $this->tbWebinar . ',id',
             'certificate.*' => 'required|mimes:jpg,jpeg,png|max:2000',

@@ -29,5 +29,4 @@ Route::group(['prefix' => 'administrator'], function () {
 	Route::get('/img/{folder}/{img}', [AssetController::class, 'img']);
 });
 
-//school chat
 Route::get('/testing', [CertificateController::class, 'zipTest']);

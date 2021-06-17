@@ -26,6 +26,8 @@ class CareerSupportModelsWebinarakbar extends Migration
             $table->date('event_date');
             $table->time('event_time');
             $table->string('event_picture');
+            $table->boolean('is_certificate')->default(false);
+            $table->string('certificate')->nullable();
         });
     }
 
