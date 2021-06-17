@@ -174,14 +174,14 @@ class CertificateController extends Controller
                                                 echo $e;
                                             }
                                         } else {
-                                            $message = "cannot save, order status not sucess";
-                                            $code = 400;
-                                            return $this->makeJSONResponse(["message" => $message], $code);
+                                            return $response = (object) array(
+                                                'message' => "cannot save, order status not sucess school_id"
+                                            );
                                         }
                                     } else {
-                                        $message = "The student with the nim and name " . $name . " not registered to this webinar";
-                                        $code = 400;
-                                        return $this->makeJSONResponse(["message" => $message], $code);
+                                        return $response = (object) array(
+                                            'message' => "The student with the nim and name " . $name . " not registered to this webinar"
+                                        );
                                     }
                                 }
                             }
@@ -201,7 +201,7 @@ class CertificateController extends Controller
                                 $schoolId[$i] = $temp[0];
                             }
                             $unique = array_values(array_unique($schoolId, SORT_REGULAR));
-                            $response = array(
+                            $response = (object) array(
                                 "id"   => $webinar[0]->id,
                                 "event_name" => $webinar[0]->event_name,
                                 "event_date" => $webinar[0]->event_date,
@@ -212,8 +212,8 @@ class CertificateController extends Controller
                                 "is_certificate" => true,
                                 "certificate" => "link not found",
                             );
-                            $code = 200;
-                            return $this->makeJSONResponse($response, $code);
+
+                            return $response;
                         }
                         // }
                     });

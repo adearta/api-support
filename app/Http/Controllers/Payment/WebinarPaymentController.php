@@ -10,6 +10,7 @@ use App\Models\CareerSupportModelsOrdersWebinar;
 use App\Models\CareerSupportModelsWebinarBiasa;
 use App\Models\NotificationWebinarModel;
 use App\Models\StudentModel;
+use App\Models\UserPersonal;
 use CareerSupportModelsOrders as GlobalCareerSupportModelsOrders;
 use Illuminate\Support\Facades\DB;
 use Veritrans_Config;
@@ -28,6 +29,7 @@ class WebinarPaymentController extends Controller
     private $tbWebinar;
     private $tbNotif;
     private $tbParticipant;
+    private $tbUser;
 
     public function __construct()
     {
@@ -41,6 +43,7 @@ class WebinarPaymentController extends Controller
         $this->tbWebinar = CareerSupportModelsWebinarBiasa::tableName();
         $this->tbNotif = NotificationWebinarModel::tableName();
         $this->tbParticipant = CareerSupportModelsNormalStudentParticipants::tableName();
+        $this->tbUser = UserPersonal::tableName();
     }
 
     //function for handle transaction checkout
@@ -67,8 +70,9 @@ class WebinarPaymentController extends Controller
                 //check the status of order
                 if ($orderWebinar[0]->status == "order" || $orderWebinar[0]->status == "expire") {
                     $student = DB::connection('pgsql2')
-                        ->table($this->tbStudent)
-                        ->where('id', '=', $orderWebinar[0]->student_id)
+                        ->table($this->tbStudent, 'student')
+                        ->leftJoin($this->tbUser . ' as user', 'student.user_id', '=', 'user.id')
+                        ->where('student.id', '=', $orderWebinar[0]->student_id)
                         ->get();
 
                     //generate order_id
@@ -88,9 +92,10 @@ class WebinarPaymentController extends Controller
                     ]);
 
                     $customer_detail = array(
-                        'first_name' => $student[0]->name,
-                        'email' => $student[0]->email,
-                        'phone' => $student[0]->phone
+                        'first_name'    => $student[0]->first_name,
+                        'last_name'     => $student[0]->last_name,
+                        'email'         => $student[0]->email,
+                        'phone'         => $student[0]->phone
                     );
 
                     $params = array(
