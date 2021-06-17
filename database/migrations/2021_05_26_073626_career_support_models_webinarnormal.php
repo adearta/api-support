@@ -28,6 +28,8 @@ class CareerSupportModelsWebinarnormal extends Migration
             $table->boolean('is_deleted')->default(false);
             $table->timestamp('created')->useCurrent();
             $table->timestamp('modified')->nullable()->useCurrentOnUpdate();
+            $table->boolean('is_certificate')->default(false);
+            $table->string('certificate')->nullable();
         });
     }
 

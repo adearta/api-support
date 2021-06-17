@@ -74,10 +74,10 @@ class SchoolChatBoxController extends Controller
                 DB::table($this->tbChat)->insert(array(
                     'room_chat_id'  => $chatRoom,
                     'chat'          => $request->chat,
-                    'type'          => "chat",
                     'image'         => $path,
+                    'send_time'     => $datetime,
                     'sender'        => "school",
-                    'send_time'     => $datetime
+
                 ));
                 DB::table($this->tbNotif)->insert(array(
                     'student_id'    => $request->student_id,
@@ -88,7 +88,7 @@ class SchoolChatBoxController extends Controller
                 $chattable = DB::table($this->tbChat, 'chat')
                     ->leftJoin($this->tbRoom . " as room", 'chat.room_chat_id', '=', 'room.id')
                     ->where('room.id', '=', $chatRoom)
-                    ->select('room.id as room_id', 'room.student_id', 'room.school_id', 'chat.room_chat_id', 'chat.id as chat_id', 'chat.sender', 'chat.chat', 'chat.image', 'chat.send_time')
+                    ->select('room.id as room_id', 'room.student_id', 'room.school_id', 'chat.room_chat_id', 'chat.id as chat_id', 'chat.sender', 'chat.chat', 'chat.image', 'chat.send_time', 'chat.is_readed')
                     ->get();
                 if ($count < 1) {
 
@@ -101,10 +101,10 @@ class SchoolChatBoxController extends Controller
                         'chat_id'       => $chattable[0]->chat_id,
                         'room_chat_id'  => $chattable[0]->room_chat_id,
                         'chat'          => $chattable[0]->chat,
-                        'type'          => "chat",
                         'image'         => env("WEBINAR_URL") . $chattable[0]->image,
+                        'send_time'     => $chattable[0]->send_time,
                         'sender'        => $chattable[0]->sender,
-                        'send_time'     => $chattable[0]->send_time
+                        'is_readed'     => $chattable[0]->is_readed
                     );
                     $response = array_values(array(
                         "room" => $roomResponse,
@@ -116,10 +116,10 @@ class SchoolChatBoxController extends Controller
                         'chat_id'       => $chattable[$arr_length - 1]->chat_id,
                         'room_chat_id'  => $chattable[$arr_length - 1]->room_chat_id,
                         'chat'          => $chattable[$arr_length - 1]->chat,
-                        'type'          => "chat",
                         'image'         =>  env("WEBINAR_URL") . $chattable[$arr_length - 1]->image,
                         'sender'        => $chattable[$arr_length - 1]->sender,
-                        'send_time'     => $chattable[$arr_length - 1]->send_time
+                        'send_time'     => $chattable[$arr_length - 1]->send_time,
+                        'is_readed'     => $chattable[$arr_length - 1]->is_readed
                     );
                     $response = array_values(array(
                         "chat" => $chatResponse,
@@ -197,7 +197,7 @@ class SchoolChatBoxController extends Controller
                                 ->select('student.id', 'student.phone', 'student.nim', 'student.address', 'student.date_of_birth', 'student.gender', 'student.marital_status', 'student.religion', 'student.employment_status', 'student.description', 'student.avatar', 'student.domicile_id', 'student.user_id as student_user_id', 'student.school_id', 'user.first_name', 'user.last_name')
                                 ->get();
 
-                            echo count($student);
+                            // echo count($student);
                             for ($i = 0; $i < count($student); $i++) {
                                 $room = DB::table($this->tbRoom)
                                     ->where('school_id', '=', $student[$i]->school_id)
@@ -298,7 +298,7 @@ class SchoolChatBoxController extends Controller
                         }
                     }
 
-                    $chatting = DB::select("select chat.room_chat_id, chat.id as chat_id, chat.sender, room.student_id, room.school_id, chat.chat, chat.image, chat.link, chat.type, chat.room_broadcast_id, chat.send_time from " . $this->tbChat . " as chat left join " . $this->tbRoom . " as room on chat.room_chat_id = room.id where room.id = " . $request->room_chat_id . $query_search . "order by chat.id desc" . $query_pagination);
+                    $chatting = DB::select("select chat.room_chat_id, chat.id as chat_id, chat.sender, room.student_id, room.school_id, chat.chat, chat.image, chat.is_readed, chat.send_time, chat.sender from " . $this->tbChat . " as chat left join " . $this->tbRoom . " as room on chat.room_chat_id = room.id where room.id = " . $request->room_chat_id . $query_search . "order by chat.id desc" . $query_pagination);
                     if (count($chatting) > 0) {
                         $dbStudent = DB::connection('pgsql2')->table($this->tbStudent)
                             ->where("id", "=", $chatting[0]->student_id)
@@ -315,13 +315,11 @@ class SchoolChatBoxController extends Controller
                         for ($i = 0; $i < count($chatting); $i++) {
                             $chat[$i] = (object) array(
                                 "chat_id"       => $chatting[$i]->chat_id,
-                                "sender"        => $chatting[$i]->sender,
                                 "chat"          => $chatting[$i]->chat,
                                 "image"         => env("WEBINAR_URL") . $chatting[$i]->image,
-                                "link"          => $chatting[$i]->link,
-                                "type"          => $chatting[$i]->type,
-                                "broacast_id"   => $chatting[$i]->room_broadcast_id,
                                 "send_time"     => $chatting[$i]->send_time,
+                                "sender"        => $chatting[$i]->sender,
+                                "is_readed"     => $chatting[$i]->is_readed
                             );
                         }
                         $response = array_values(

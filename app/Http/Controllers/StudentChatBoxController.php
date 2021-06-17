@@ -73,10 +73,9 @@ class StudentChatBoxController extends Controller
                     DB::table($this->tbChat)->insert(array(
                         'room_chat_id'  => $room,
                         'chat'          => $request->chat,
-                        'type'          => "chat",
                         'image'         => $path,
+                        'send_time'     => $datetime,
                         'sender'        => "student",
-                        'send_time'     => $datetime
                     ));
                     //insert to tb notif to inform the school
                     DB::table($this->tbNotif)->insert(array(
@@ -88,7 +87,7 @@ class StudentChatBoxController extends Controller
                     $chattable = DB::table($this->tbChat, 'chat')
                         ->leftJoin($this->tbRoom . " as room", 'chat.room_chat_id', '=', 'room.id')
                         ->where('room.id', '=', $room)
-                        ->select('room.id as room_id', 'room.student_id', 'room.school_id', 'chat.room_chat_id', 'chat.id as chat_id', 'chat.sender', 'chat.chat', 'chat.image', 'chat.send_time')
+                        ->select('room.id as room_id', 'room.student_id', 'room.school_id', 'chat.room_chat_id', 'chat.id as chat_id', 'chat.sender', 'chat.chat', 'chat.image', 'chat.send_time', 'chat.is_readed')
                         ->get();
 
                     $roomResponse = array(
@@ -100,10 +99,10 @@ class StudentChatBoxController extends Controller
                         'chat_id'       => $chattable[0]->chat_id,
                         'room_chat_id'  => $chattable[0]->room_chat_id,
                         'chat'          => $chattable[0]->chat,
-                        'type'          => "chat",
                         'image'         => url('api/v1/administrator/img/' . $chattable[0]->image),
+                        'send_time'     => $chattable[0]->send_time,
                         'sender'        => "student",
-                        'send_time'     => $chattable[0]->send_time
+                        'is_readed'     => $chattable[0]->is_readed
                     );
                     $response = array_values(array(
                         "room" => $roomResponse,
@@ -119,7 +118,6 @@ class StudentChatBoxController extends Controller
                     DB::table($this->tbChat)->insert(array(
                         'room_chat_id'  => $lastRoom[0]->id,
                         'chat'          => $request->chat,
-                        'type'          => 'chat',
                         'image'         => $path,
                         'sender'        => "student",
                         'send_time'     => $datetime
@@ -134,17 +132,18 @@ class StudentChatBoxController extends Controller
                     $chattable = DB::table($this->tbChat, 'chat')
                         ->leftJoin($this->tbRoom . " as room", 'chat.room_chat_id', '=', 'room.id')
                         ->where('room.id', '=', $lastRoom[0]->id)
-                        ->select('room.id as room_id', 'room.student_id', 'room.school_id', 'chat.room_chat_id', 'chat.id as chat_id', 'chat.sender', 'chat.chat', 'chat.image', 'chat.send_time')
+                        ->select('room.id as room_id', 'room.student_id', 'room.school_id', 'chat.room_chat_id', 'chat.id as chat_id', 'chat.sender', 'chat.chat', 'chat.image', 'chat.send_time', 'chat.is_readed')
                         ->get();
                     $arr_length = count($chattable);
                     $chatResponse = array(
                         'chat_id'       => $chattable[$arr_length - 1]->chat_id,
                         'room_chat_id'  => $chattable[$arr_length - 1]->room_chat_id,
                         'chat'          => $chattable[$arr_length - 1]->chat,
-                        'type'          => "chat",
                         'image'         => url('api/v1/administrator/img/' . $chattable[$arr_length - 1]->image),
+                        'send_time'     => $chattable[$arr_length - 1]->send_time,
                         'sender'        => "student",
-                        'send_time'     => $chattable[$arr_length - 1]->send_time
+                        "is_readed"     => $chattable[$arr_length - 1]->is_readed
+
                     );
                     $response = array_values(array(
                         "chat" => $chatResponse,
@@ -204,7 +203,7 @@ class StudentChatBoxController extends Controller
                                 $search = strtolower($request->search);
                                 $query_search = " and lower(chat.chat) like '%" . $search . "%'";
 
-                                $chatting = DB::select("select chat.id as chat_id, chat.room_chat_id, chat.room_broadcast_id, chat.chat, chat.image, chat.link, chat.type, chat.send_time, chat.sender, room.student_id, room.school_id from " . $this->tbChat . " as chat left join " . $this->tbRoom . " as room on chat.room_chat_id = room.id where room.student_id = " . $request->student_id . $query_search . " order by chat.id desc" . $query_pagination);
+                                $chatting = DB::select("select chat.id as chat_id, chat.room_chat_id, chat.chat, chat.image, chat.send_time, chat.sender, chat.is_readed, room.student_id, room.school_id from " . $this->tbChat . " as chat left join " . $this->tbRoom . " as room on chat.room_chat_id = room.id where room.student_id = " . $request->student_id . $query_search . " order by chat.id desc" . $query_pagination);
                                 // var_dump($chatting);
                                 if (count($chatting) > 0) {
                                     $dbSchool = DB::connection('pgsql2')->table($this->tbSchool)
@@ -222,14 +221,11 @@ class StudentChatBoxController extends Controller
                                     for ($i = 0; $i < count($chatting); $i++) {
                                         $chat[$i] = (object) array(
                                             "chat_id"       => $chatting[$i]->chat_id,
-                                            "sender"        => $chatting[$i]->sender,
-                                            "room_broadcast_id" => $chatting[$i]->room_broadcast_id,
                                             "chat"          => $chatting[$i]->chat,
                                             "image"         => env("WEBINAR_URL") . $chatting[$i]->image,
-                                            "link"          => $chatting[$i]->link,
-                                            "type"          => $chatting[$i]->type,
                                             "send_time"     => $chatting[$i]->send_time,
-                                            "sender"        => $chatting[$i]->sender
+                                            "sender"        => $chatting[$i]->sender,
+                                            "is_readed"     => $chatting[$i]->is_readed
                                         );
                                     }
                                 }

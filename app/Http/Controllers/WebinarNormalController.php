@@ -99,7 +99,11 @@ class WebinarNormalController extends Controller
                     }
 
                     $unique = array_values(array_unique($dataStudent, SORT_REGULAR));
+                    $path_zip = null;
 
+                    if ($webinar[0]->is_certificate) {
+                        $path_zip = env("WEBINAR_URL") . $webinar[0]->certificate;
+                    }
                     if (count($webinar) > 0) {
                         $responsea = array(
                             "id"                => $webinar_id,
@@ -111,7 +115,7 @@ class WebinarNormalController extends Controller
                             "schools"           => $unique,
                             "event_link"        => $webinar[0]->event_link,
                             "is_certificate"    => false,
-                            "certificate"       => "link not found",
+                            "certificate"       => $path_zip,
                         );
 
                         return $responsea;
@@ -177,7 +181,11 @@ class WebinarNormalController extends Controller
                                 );
                             }
                         }
+                        $path_zip = null;
 
+                        if ($webinar[0]->is_certificate) {
+                            $path_zip = env("WEBINAR_URL") . $webinar[0]->certificate;
+                        }
                         $response = array(
                             "id"      => $webinar_id,
                             "event_name"    => $webinar[0]->event_name,
@@ -187,7 +195,9 @@ class WebinarNormalController extends Controller
                             "event_picture" => env("WEBINAR_URL") . $webinar[0]->event_picture,
                             "registered"    => count($registered),
                             'quota'         => 500,
-                            'student'       => $student
+                            'student'       => $student,
+                            'is_certificate' => $webinar[0]->is_certificate,
+                            'certificate'   => $path_zip
                         );
 
                         return $response;
@@ -263,6 +273,11 @@ class WebinarNormalController extends Controller
                                 ->select('*')
                                 ->get();
                             $currency = "Rp " . number_format($request->price, 2, ',', '.');
+                            $path_zip = null;
+
+                            if ($webinar[0]->is_certificate) {
+                                $path_zip = env("WEBINAR_URL") . $webinar[0]->certificate;
+                            }
                             $response = array(
                                 "id"            => $thisWebinar[0]->id,
                                 "event_name"    => $request->event_name,
@@ -272,6 +287,8 @@ class WebinarNormalController extends Controller
                                 'event_start'   => $request->event_start,
                                 'event_end'     => $request->event_end,
                                 'price'         => $currency,
+                                "is_certificate"    => false,
+                                "certificate"       => $path_zip,
                             );
 
                             return $response;
@@ -309,7 +326,7 @@ class WebinarNormalController extends Controller
             //find webinar id
             $webinar = DB::table($this->tbWebinar)
                 ->where('id', '=', $request->webinar_id)
-                ->select('id as webinar_id', 'event_picture as path')
+                ->select('id as webinar_id', 'event_picture as path', 'event_name', 'event_date', 'event_link', 'event_start', 'event_end', 'is_certificate', 'certificate')
                 ->get();
             //set modified
             if (!empty($webinar)) {
@@ -339,6 +356,11 @@ class WebinarNormalController extends Controller
                         ->select('*')
                         ->get();
                     $currency = "Rp " . number_format($request->price, 2, ',', '.');
+                    $path_zip = null;
+
+                    if ($webinar[0]->is_certificate) {
+                        $path_zip = env("WEBINAR_URL") . $webinar[0]->certificate;
+                    }
                     $response = array(
                         "id"            => $request->webinar_id,
                         "event_name"    => $request->event_name,
@@ -348,6 +370,8 @@ class WebinarNormalController extends Controller
                         'event_start'   => $request->event_start,
                         'event_end'     => $request->event_end,
                         'price'         => $currency,
+                        "is_certificate"    => $webinar[0]->is_certificate,
+                        "certificate"       => $path_zip,
                     );
                     return array(
                         'response' => $response,
@@ -377,6 +401,7 @@ class WebinarNormalController extends Controller
             if (!empty($delete)) {
                 if (Storage::disk('public')->exists($delete->event_picture)) {
                     Storage::disk('public')->delete($delete->event_picture);
+                    Storage::disk('public')->delete($delete->certificate);
                     $delete->delete();
 
                     $message = "sucessfully delete webinar!";
@@ -463,7 +488,11 @@ class WebinarNormalController extends Controller
                             $listSchool[$j] = $school[0];
                         }
                         $unique = array_values(array_unique($listSchool, SORT_REGULAR));
+                        $path_zip = null;
 
+                        if ($webinar[0]->is_certificate) {
+                            $path_zip = env("WEBINAR_URL") . $webinar[0]->certificate;
+                        }
                         $data[$i] = (object) array(
                             'id'                => $webinar[$i]->id,
                             'event_name'        => $webinar[$i]->event_name,
@@ -474,8 +503,8 @@ class WebinarNormalController extends Controller
                             'schools'           => $unique,
                             'event_link'        => $webinar[$i]->event_link,
                             'price'             => $currency,
-                            'is_certificate'    => false,
-                            'certificate'       => 'link not found'
+                            "is_certificate"    => $webinar[$i]->is_certificate,
+                            "certificate"       => $path_zip,
                         );
                     }
                 }

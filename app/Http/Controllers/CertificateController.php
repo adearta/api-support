@@ -126,11 +126,6 @@ class CertificateController extends Controller
                                 if ($validationNim->fails()) {
                                     return $this->makeJSONResponse($validationNim->errors(), 404);
                                 } else {
-                                    // $studentId = DB::connection('pgsql2')
-                                    //     ->table($this->tbStudent)
-                                    //     ->where("nim", "=", $nim[0])
-                                    //     ->select("id as student_id", "email", "name", "school_id")
-                                    //     ->get();
                                     $studentId = DB::connection('pgsql2')->table($this->tbUserPersonal, 'user')
                                         ->leftJoin($this->tbStudent . ' as student', 'user.id', '=', 'student.user_id')
                                         ->where("student.nim", "=", $nim[0])
@@ -153,9 +148,10 @@ class CertificateController extends Controller
                                             ->where('school_id', '=', $studentId[0]->school_id)
                                             ->select('status')
                                             ->get();
-
+                                        //update dari gung adi
+                                        $event = str_replace(" ", "_", $webinar[0]->event_name);
                                         if ($school[0]->status == "5") {
-                                            $path = $certi->storeAs('certificate_akbar/webinar_' . $request->webinar_id, $name, 'public');
+                                            $path = $certi->storeAs('certificate_akbar/webinar_' . $event, $name, 'public');
                                             $data =  array(
                                                 'certificate' => $path,
                                                 'webinar_akbar_id' => $participantId[0]->webinar_id,
@@ -195,11 +191,16 @@ class CertificateController extends Controller
                                     }
                                 }
                             }
+                            $webinar = DB::table($this->tbWebinarakbar)
+                                ->where('id', '=', $request->webinar_id)
+                                ->select('*')
+                                ->get();
+                            $event = str_replace(" ", "_", $webinar[0]->event_name);
                             DB::table($this->tbWebinarakbar)
                                 ->where('id', '=', $request->webinar_id)
                                 ->update(array(
                                     'is_certificate' => true,
-                                    'certificate'    => $this->makeZip('certificate_akbar/webinar_' . $request->webinar_id . '/webinar_' . $request->webinar_id . '.zip', 'certificate_akbar/webinar_' . $request->webinar_id)
+                                    'certificate'    => $this->makeZip('certificate_akbar/webinar_' . $event . '/webinar_' . $event . '.zip', 'certificate_akbar/webinar_' . $event)
                                 ));
 
                             //response
@@ -226,6 +227,7 @@ class CertificateController extends Controller
                                 "event_picture" => env("WEBINAR_URL") . $webinar[0]->event_picture,
                                 "schools"    => $unique,
                                 "zoom_link" => $webinar[0]->zoom_link,
+                                //update dari gung adi
                                 "is_certificate" => $webinar[0]->is_certificate,
                                 "certificate" => env("WEBINAR_URL") . $webinar[0]->certificate,
                             );
@@ -275,6 +277,7 @@ class CertificateController extends Controller
             }
         }
         $zip->close();
+        //update dari gung adi
         return $zip_path;
     }
     //internal
@@ -291,6 +294,7 @@ class CertificateController extends Controller
             $invalidNim = [];
             $indexNim = 0;
             foreach ($request->certificate as $certi) {
+                $name = $certi->getClientOriginalName();
                 $nim = explode("_", $certi->getClientOriginalName());
                 $getStudent = DB::connection('pgsql2')->table($this->tbStudent)
                     ->where('nim', '=', $nim[0])
@@ -360,11 +364,6 @@ class CertificateController extends Controller
                                     return $this->makeJSONResponse($validationNim->errors(), 404);
                                 } else {
                                     //terus get student_id cari berdasarkan nim nya di tabel student
-                                    // $studentId = DB::connection('pgsql2')
-                                    //     ->table($this->tbStudent)
-                                    //     ->where("nim", "=", $nim[0])
-                                    //     ->select("id as student_id", "email", "name")
-                                    //     ->get();
                                     $studentId = DB::connection('pgsql2')->table($this->tbUserPersonal, 'user')
                                         ->leftJoin($this->tbStudent . ' as student', 'user.id', '=', 'student.user_id')
                                         ->where("student.nim", "=", $nim[0])
@@ -376,52 +375,75 @@ class CertificateController extends Controller
                                         ->select("id as participant_id", "webinar_id")
                                         ->get();
 
-                                    $orderStatus = DB::table($this->tbOrder)
-                                        ->where("participant_id", "=", $participantId[0]->participant_id)
-                                        ->select("status")
-                                        ->get();
-                                    $webinar = DB::table($this->tbWebinar)
-                                        ->where('id', '=', $request->webinar_id)
-                                        ->select('*')
-                                        ->get();
+                                    if (count($participantId) > 0) {
+                                        $orderStatus = DB::table($this->tbOrder)
+                                            ->where("participant_id", "=", $participantId[0]->participant_id)
+                                            ->select("status")
+                                            ->get();
+                                        $webinar = DB::table($this->tbWebinar)
+                                            ->where('id', '=', $request->webinar_id)
+                                            ->select('*')
+                                            ->get();
 
+                                        $event = str_replace(" ", "_", $webinar[0]->event_name);
+                                        if ($orderStatus[0]->status == "success") {
+                                            $path = $certi->storeAs('certificate_internal/webinar_' . $event, $name, 'public');
+                                            $data =  array(
+                                                'certificate' => $path,
+                                                'webinar_id' => $participantId[0]->webinar_id,
+                                                'participant_id' => $participantId[0]->participant_id,
+                                                'file_name' => $name,
+                                            );
 
-                                    if ($orderStatus[0]->status == "success") {
-                                        $path = $certi->store('certificate_internal', 'public');
-                                        $data =  array(
-                                            'certificate' => $path,
-                                            'webinar_id' => $participantId[0]->webinar_id,
-                                            'participant_id' => $participantId[0]->participant_id,
-                                            'file_name' => $name,
-                                        );
+                                            $notif = array(
+                                                'student_id'     => $studentId[0]->student_id,
+                                                'webinar_normal_id' => $participantId[0]->webinar_id,
+                                                'message_id'    => "Selamat Anda telah mengikuti " . $webinar[0]->event_name . " pada tanggal " . $webinar[0]->event_date . " dan pada jam " . $webinar[0]->event_start . " sertifikat anda telah kami kirimkan ke alamat email anda " . $studentId[0]->email,
+                                                'message_en'    => "Congratulation you have attended " . $webinar[0]->event_name . " on " . $webinar[0]->event_date . " and at " . $webinar[0]->event_start . " your certificae had been sent to your email" . $studentId[0]->email
+                                            );
 
-                                        $notif = array(
-                                            'student_id'     => $studentId[0]->student_id,
-                                            'webinar_normal_id' => $participantId[0]->webinar_id,
-                                            'message_id'    => "Selamat Anda telah mengikuti " . $webinar[0]->event_name . " pada tanggal " . $webinar[0]->event_date . " dan pada jam " . $webinar[0]->event_start . " sertifikat anda telah kami kirimkan ke alamat email anda " . $studentId[0]->email,
-                                            'message_en'    => "Congratulation you have attended " . $webinar[0]->event_name . " on " . $webinar[0]->event_date . " and at " . $webinar[0]->event_start . " your certificae had been sent to your email" . $studentId[0]->email
-                                        );
-
-                                        try {
-                                            CertificateJob::dispatch($webinar, $studentId, $data);
-                                            DB::table($this->tbCertficate)->insert($data);
-                                            DB::table($this->tbNotification)->insert($notif);
-                                        } catch (Exception $e) {
-                                            echo $e;
+                                            try {
+                                                CertificateJob::dispatch($webinar, $studentId, $data);
+                                                DB::table($this->tbCertficate)->insert($data);
+                                                DB::table($this->tbNotification)->insert($notif);
+                                            } catch (Exception $e) {
+                                                echo $e;
+                                            }
+                                        } else {
+                                            return $response = (object) array(
+                                                'code'    => 400,
+                                                'data'    => (object) array(
+                                                    'message' => "cannot save, order status not sucess school_id"
+                                                )
+                                            );
                                         }
                                     } else {
-                                        $message = "cannot save, order status not sucess";
-                                        $code = 400;
-                                        return $this->makeJSONResponse(["message" => $message], $code);
+                                        return $response = (object) array(
+                                            'code'    => 400,
+                                            'data'    => (object) array(
+                                                'message' => "The student with the nim and name " . $name . " not registered to this webinar"
+                                            )
+                                        );
                                     }
                                 }
                             }
+                            $webinarNow = DB::table($this->tbWebinar)
+                                ->where('id', '=', $request->webinar_id)
+                                ->select('*')
+                                ->get();
+                            $event = str_replace(" ", "_", $webinarNow[0]->event_name);
+
+                            DB::table($this->tbWebinar)
+                                ->where('id', '=', $request->webinar_id)
+                                ->update(array(
+                                    'is_certificate' => true,
+                                    'certificate'    => $this->makeZip('certificate_internal/webinar_' . $event . '/webinar_' . $event . '.zip', 'certificate_internal/webinar_' . $event)
+                                ));
                             //response
                             $webinar = DB::table($this->tbWebinar)
                                 ->where('id', '=', $request->webinar_id)
                                 ->select('*')
                                 ->get();
-
                             // $detail = DB::select("select * from " . $this->tbWebinar . " as web left join " . $this->tbParticipant . " as school on school.webinar_id = web.id where web.id = " . $request->webinar_id);
 
                             $participant = DB::table($this->tbParticipant, 'participant')
@@ -459,8 +481,8 @@ class CertificateController extends Controller
                                 "event_picture" => env("WEBINAR_URL") . $webinar[0]->event_picture,
                                 "schools"    => $unique,
                                 "event_link" => $webinar[0]->event_link,
-                                "is_certificate" => true,
-                                "certificate" => count($certificateAll),
+                                "is_certificate" => $webinar[0]->is_certificate,
+                                "certificate" => env("WEBINAR_URL") . $webinar[0]->certificate,
                                 // "array" => $arrayNim
                             );
                             $code = 200;

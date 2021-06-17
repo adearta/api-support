@@ -12,12 +12,11 @@ class ChatModel extends Model
     protected $table = "career_support_models_chat";
     protected $fillable = [
         'room_chat_id',
-        'room_broadcast_id',
         'chat',
         'image',
-        'link',
-        'type',
         'send_time',
+        'sender',
+        'is_readed',
     ];
     protected $hidden = [
         'is_deleted',

@@ -491,6 +491,7 @@ class WebinarAkbarController extends Controller
             if ($delete) {
                 if (Storage::disk('public')->exists($delete->event_picture)) {
                     Storage::disk('public')->delete($delete->event_picture);
+                    Storage::disk('public')->delete($delete->certificate);
                     $delete->delete();
 
                     return $this->makeJSONResponse(['message' => "Sucessfully delete webinar!"], 200);
