@@ -151,7 +151,7 @@ class CertificateController extends Controller
                                             ->get();
 
                                         if ($school[0]->status == "5") {
-                                            $path = $certi->store('certificate_akbar', 'public');
+                                            $path = $certi->store('certificate_akbar/webinar_' . $request->webinar_id, 'public');
                                             $data =  array(
                                                 'certificate' => $path,
                                                 'webinar_akbar_id' => $participantId[0]->webinar_id,
@@ -175,12 +175,18 @@ class CertificateController extends Controller
                                             }
                                         } else {
                                             return $response = (object) array(
-                                                'message' => "cannot save, order status not sucess school_id"
+                                                'code'    => 400,
+                                                'data'    => (object) array(
+                                                    'message' => "cannot save, order status not sucess school_id"
+                                                )
                                             );
                                         }
                                     } else {
                                         return $response = (object) array(
-                                            'message' => "The student with the nim and name " . $name . " not registered to this webinar"
+                                            'code'    => 400,
+                                            'data'    => (object) array(
+                                                'message' => "The student with the nim and name " . $name . " not registered to this webinar"
+                                            )
                                         );
                                     }
                                 }
@@ -210,15 +216,18 @@ class CertificateController extends Controller
                                 "schools"    => $unique,
                                 "zoom_link" => $webinar[0]->zoom_link,
                                 "is_certificate" => true,
-                                "certificate" => "link not found",
+                                "certificate" => $studentId[0]->email,
                             );
 
-                            return $response;
+                            return (object) array(
+                                'code' => 200,
+                                'data' => $response
+                            );
                         }
                         // }
                     });
                     if ($data) {
-                        return $this->makeJSONResponse($data, 200);
+                        return $this->makeJSONResponse($data->data, $data->code);
                     } else {
                         return $this->makeJSONResponse(["message" => "transaction failed!"], 400);
                     }
@@ -228,6 +237,7 @@ class CertificateController extends Controller
             }
         }
     }
+
     public function zipTest()
     {
         $zip_file = 'webinar_akbar.zip';
