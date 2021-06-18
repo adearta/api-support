@@ -110,13 +110,24 @@ class CertificateController extends Controller
                 $message = 'Student with the nim ' . $nimList . ' is not registered to this webinar, please re-upload all of the certificates, and please upload certificate with the correct nim!';
                 return $this->makeJSONResponse(['message' => $message], 400);
             } else {
-                //     //valid student
-                //     return $this->makeJSONResponse(['message' => 'validation success'], 200);
-                // }
                 try {
                     $data = DB::transaction(function () use ($request) {
                         if ($request->hasFile('certificate')) {
+
                             $certificateAll = $request->file('certificate');
+
+                            $webinar = DB::table($this->tbCertficate, 'cert')
+                                ->leftJoin($this->tbWebinarakbar . ' as web', 'cert.webinar_akbar_id', '=', 'web.id')
+                                ->where('cert.webinar_akbar_id', '=', $request->webinar_id)
+                                ->select('web.event_name')
+                                ->get();
+                            if (count($webinar) > 0) {
+                                $name = str_replace(' ', '_', $webinar[0]->event_name);
+                                $path = 'certificate_akbar/webinar_' . $name;
+                                if (Storage::disk('public')->exists($path)) {
+                                    Storage::disk('public')->deleteDirectory($path);
+                                }
+                            }
                             foreach (array_slice($certificateAll, 0, 10) as $certi) {
                                 $name = $certi->getClientOriginalName();
                                 $nim = explode("_", $name);
@@ -168,6 +179,7 @@ class CertificateController extends Controller
 
                                             try {
                                                 CertificateAkbarJob::dispatch($webinar, $studentId, $data);
+                                                // var_dump($data)
                                                 DB::table($this->tbCertficate)->insert($data);
                                                 DB::table($this->tbNotification)->insert($notif);
                                             } catch (Exception $e) {
@@ -177,7 +189,7 @@ class CertificateController extends Controller
                                             return $response = (object) array(
                                                 'code'    => 400,
                                                 'data'    => (object) array(
-                                                    'message' => "cannot save, order status not sucess school_id"
+                                                    'message' => "cannot save, order status school_id not sucess"
                                                 )
                                             );
                                         }
@@ -351,6 +363,18 @@ class CertificateController extends Controller
                     $data = DB::transaction(function () use ($request) {
                         if ($request->hasFile('certificate')) {
                             $certificateAll = $request->file('certificate');
+                            $webinar = DB::table($this->tbCertficate, 'cert')
+                                ->leftJoin($this->tbWebinar . ' as web', 'cert.webinar_id', '=', 'web.id')
+                                ->where('cert.webinar_id', '=', $request->webinar_id)
+                                ->select('web.event_name')
+                                ->get();
+                            if (count($webinar) > 0) {
+                                $name = str_replace(' ', '_', $webinar[0]->event_name);
+                                $path = 'certificate_internal/webinar_' . $name;
+                                if (Storage::disk('public')->exists($path)) {
+                                    Storage::disk('public')->deleteDirectory($path);
+                                }
+                            }
                             foreach (array_slice($certificateAll, 0, 10) as $certi) {
                                 //ambil nama sertifikat dengan format nim nama
                                 $name = $certi->getClientOriginalName();

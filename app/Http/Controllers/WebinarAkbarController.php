@@ -486,12 +486,16 @@ class WebinarAkbarController extends Controller
         if ($validation->fails()) {
             return $this->makeJSONResponse($validation->errors(), 400);
         } else {
+            $webinar = DB::table($this->tbWebinar)
+                ->where('id', '=', $webinar_id)
+                ->get();
             $delete = WebinarAkbarModel::findOrfail($webinar_id);
-
+            $name = str_replace(' ', '_', $webinar[0]->event_name);
+            $path = 'certificate_akbar/webinar_' . $name;
             if ($delete) {
                 if (Storage::disk('public')->exists($delete->event_picture)) {
                     Storage::disk('public')->delete($delete->event_picture);
-                    Storage::disk('public')->delete($delete->certificate);
+                    Storage::disk('public')->deleteDirectory($path);
                     $delete->delete();
 
                     return $this->makeJSONResponse(['message' => "Sucessfully delete webinar!"], 200);
