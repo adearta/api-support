@@ -6,14 +6,18 @@ use App\Traits\ModelHelper;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class BroadcastRoomModel extends Model
+class BroadcastModel extends Model
 {
-    use HasFactory, ModelHelper;
-    protected $table = "career_support_models_roombroadcast";
+    use ModelHelper, HasFactory;
+    protected $table = "career_support_models_broadcast";
     protected $fillable = [
         'school_id',
-        'broadcast_type',
-        'year'
+        'chat',
+        'link',
+        'image',
+        'type',
+        'year',
+        'send_time'
     ];
     protected $hidden = [
         'is_deleted',
