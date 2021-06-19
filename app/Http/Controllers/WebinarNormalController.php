@@ -275,9 +275,9 @@ class WebinarNormalController extends Controller
                             $currency = "Rp " . number_format($request->price, 2, ',', '.');
                             $path_zip = null;
 
-                            if ($webinar[0]->is_certificate) {
-                                $path_zip = env("WEBINAR_URL") . $webinar[0]->certificate;
-                            }
+                            // if ($webinar[0]->is_certificate) {
+                            //     $path_zip = env("WEBINAR_URL") . $webinar[0]->certificate;
+                            // }
                             $response = array(
                                 "id"            => $thisWebinar[0]->id,
                                 "event_name"    => $request->event_name,
@@ -287,8 +287,8 @@ class WebinarNormalController extends Controller
                                 'event_start'   => $request->event_start,
                                 'event_end'     => $request->event_end,
                                 'price'         => $currency,
-                                "is_certificate"    => false,
-                                "certificate"       => $path_zip,
+                                "is_certificate"    => $thisWebinar[0]->is_certificate,
+                                "certificate"       => $thisWebinar[0]->certificate,
                             );
 
                             return $response;

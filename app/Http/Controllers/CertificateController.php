@@ -300,6 +300,7 @@ class CertificateController extends Controller
     {
         $validation = Validator::make($request->all(), [
             'webinar_id'    => 'required|numeric|exists:' . $this->tbWebinar . ',id',
+            'certificate' => 'required',
             'certificate.*' => 'required|mimes:jpg,jpeg,png|max:2000',
         ]);
         if ($validation->fails()) {
