@@ -128,6 +128,7 @@ class CertificateController extends Controller
                                     Storage::disk('public')->deleteDirectory($path);
                                 }
                             }
+
                             foreach (array_slice($certificateAll, 0, 10) as $certi) {
                                 $name = $certi->getClientOriginalName();
                                 $nim = explode("_", $name);
@@ -203,6 +204,7 @@ class CertificateController extends Controller
                                     }
                                 }
                             }
+
                             $webinar = DB::table($this->tbWebinarakbar)
                                 ->where('id', '=', $request->webinar_id)
                                 ->select('*')
