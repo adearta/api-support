@@ -15,7 +15,7 @@ class CareerSupportModelsBroadcast extends Migration
     {
         Schema::create('career_support_models_broadcast', function (Blueprint $table) {
             $table->id();
-            $table->integer('school_id')->nullable();
+            $table->integer('school_id');
             $table->string('chat');
             $table->string('link')->nullable();
             $table->string('image')->nullable();

@@ -58,8 +58,9 @@ class CertificateController extends Controller
     public function addCertificateAkbar(Request $request)
     {
         $validation = Validator::make($request->all(), [
-            'webinar_id' => 'required|numeric|exists:' . $this->tbWebinarakbar . ',id',
-            'certificate.*' => 'required|mimes:jpg,jpeg,png|max:2000',
+            'webinar_id.*' => 'required|numeric|exists:' . $this->tbWebinarakbar . ',id',
+            'certificate' => 'required',
+            'certificate.*' => 'mimes:jpg,jpeg,png|max:2000',
         ]);
 
         if ($validation->fails()) {
