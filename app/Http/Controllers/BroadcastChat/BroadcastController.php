@@ -346,6 +346,7 @@ class BroadcastController extends Controller
                         ->orderBy('personal.id', 'asc')
                         ->offset($start_item)
                         ->limit(10)
+                        ->select('student.*', 'personal.first_name', 'personal.last_name')
                         ->get();
                 }
 
@@ -362,7 +363,7 @@ class BroadcastController extends Controller
 
                 $response_path = null;
                 if ($broadcast->image != null) {
-                    $response_path = $broadcast->image;
+                    $response_path = env("WEBINAR_URL") . $broadcast->image;
                 }
 
                 return (object) array(
