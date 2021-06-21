@@ -323,16 +323,19 @@ class SchoolParticipantAkbarController extends Controller
     public function listSchool(Request $request)
     {
         //param -> search -> nullable -> search by school name;
-        $query_search = "";
+        $search = "";
         if ($request->search != null) {
             $searchLength = preg_replace('/\s+/', '', $request->search);
             if (strlen($searchLength) > 0) {
                 $search = strtolower($request->search);
-                $query_search = " where lower(name) like '%" . $search . "%'";
             }
         }
 
-        $response = DB::connection("pgsql2")->select('select * from ' . $this->tbSchool . $query_search . ' order by id asc');
+        $response = DB::connection('pgsql2')->table($this->tbSchool)
+            ->whereRaw("lower(name) like '%" . $search . "%'")
+            ->orderBy('name', 'asc')
+            ->limit(10)
+            ->get();
         return $this->makeJSONResponse($response, 200);
     }
 }
