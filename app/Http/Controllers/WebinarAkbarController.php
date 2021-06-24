@@ -20,6 +20,7 @@ use Illuminate\Contracts\Cache\Store;
 use Illuminate\Support\Facades\Storage;
 use App\Jobs\SendMailReminderJob;
 use App\Models\UserPersonal;
+use Symfony\Component\VarDumper\VarDumper;
 
 class WebinarAkbarController extends Controller
 {
@@ -96,7 +97,7 @@ class WebinarAkbarController extends Controller
             }
         }
     }
-
+    //bug
     public function detailWebinar($webinar_id)
     {
         $validation = Validator::make(['webinar_id' => $webinar_id], [
@@ -115,7 +116,6 @@ class WebinarAkbarController extends Controller
                         $temp = DB::connection('pgsql2')->table($this->tbSchool)
                             ->where('id', '=', $detail[$i]->school_id)
                             ->get();
-
                         $school[$i] = $temp[0];
                     }
 
@@ -191,21 +191,21 @@ class WebinarAkbarController extends Controller
                                 $schoolAll = [];
                                 $index = 0;
 
-                                foreach ($request->school_id as $s) {
+                                foreach ($request->school_id as $index => $value) {
                                     DB::table($this->tbSchoolParticipants)->insert(array(
                                         'webinar_id'    => $webinarId,
-                                        'school_id'     => $s,
+                                        'school_id'     => $value,
                                     ));
 
                                     DB::table($this->tbNotification)->insert(array(
-                                        'school_id'     => $s,
+                                        'school_id'     => $value,
                                         'webinar_akbar_id' => $webinarId,
                                         'message_id'    => "Anda mendapatkan undangan untuk mengikuti Webinar dengan judul " . $request->event_name . " pada tanggal " . $request->event_date . " dan pada jam " . $request->event_time,
                                         'message_en'    => "You get an invitation to join in a webinar with a title" . $request->event_name . " on " . $request->event_date . " and at " . $request->event_time
                                     ));
 
                                     $school = DB::connection("pgsql2")->table($this->tbSchool)
-                                        ->where('id', '=', $s)
+                                        ->where('id', '=', $value)
                                         ->get();
 
                                     //respon
@@ -305,10 +305,10 @@ class WebinarAkbarController extends Controller
                         ->get();
 
                     //delete school participant //masih gabisa delete
-                    foreach ($cekSchool as $temp) {
+                    foreach ($cekSchool as $temp => $value) {
                         $deleteStatus = true;
                         foreach ($request->school_id as $schoolNew) {
-                            if ($temp->school_id == $schoolNew) {
+                            if ($value->school_id == $schoolNew) {
                                 $deleteStatus = false;
                             }
                         }
@@ -316,15 +316,15 @@ class WebinarAkbarController extends Controller
                         if ($deleteStatus) {
                             DB::table($this->tbSchoolParticipants)
                                 ->where('webinar_id', '=', $request->webinar_id)
-                                ->where('school_id', '=', $temp->school_id)
+                                ->where('school_id', '=', $value->school_id)
                                 ->delete();
                         }
                     }
 
                     //add school participant
-                    foreach ($request->school_id as $temp) {
+                    foreach ($request->school_id as $temp => $value) {
                         $data = DB::table($this->tbSchoolParticipants)
-                            ->where('school_id', '=', $temp)
+                            ->where('school_id', '=', $value)
                             ->where('webinar_id', '=', $request->webinar_id)
                             ->get();
 
@@ -332,19 +332,19 @@ class WebinarAkbarController extends Controller
                             //add school participant
                             DB::table($this->tbSchoolParticipants)->insert(array(
                                 'webinar_id'    => $request->webinar_id,
-                                'school_id'     => $temp,
+                                'school_id'     => $value,
                             ));
 
                             //add notif
                             DB::table($this->tbNotification)->insert(array(
-                                'school_id'     => $temp,
+                                'school_id'     => $value,
                                 'webinar_akbar_id' => $request->webinar_id,
                                 'message_id'    => "Anda mendapatkan undangan untuk mengikuti Webinar dengan judul " . $request->event_name . " pada tanggal " . $request->event_date . " dan pada jam " . $request->event_time,
                                 'message_en'    => "You get an invitation to join in a webinar with a title" . $request->event_name . " on " . $request->event_date . " and at " . $request->event_time
                             ));
 
                             $school = DB::connection("pgsql2")->table($this->tbSchool)
-                                ->where('id', '=', $temp)
+                                ->where('id', '=', $value)
                                 ->select('name', 'email')
                                 ->get();
                             //send email
@@ -552,7 +552,7 @@ class WebinarAkbarController extends Controller
             }
         }
     }
-
+    ///bug
     public function listWebinar(Request $request)
     {
         /*
@@ -597,33 +597,37 @@ class WebinarAkbarController extends Controller
                     }
 
                     $webinar = DB::select('select * from ' . $this->tbWebinar . $query_search . " order by id desc" . $query_pagination);
-
+                    $listParticipant = [];
                     for ($i = 0; $i < count($webinar); $i++) {
                         $participant = DB::table($this->tbSchoolParticipants)
                             ->where('webinar_id', '=', $webinar[$i]->id)
                             ->get();
-
+                        $listParticipant[$i] = $participant[0];
                         $listSchool = [];
-                        for ($j = 0; $j < count($participant); $j++) {
-                            $school = DB::connection('pgsql2')->table($this->tbSchool)
+                        $count = count($participant);
+                        for ($j = 0; $j < $count; $j++) {
+                            // foreach ($listParticipant as $p) {
+                            $schools = DB::connection('pgsql2')->table($this->tbSchool)
                                 ->where('id', '=', $participant[$j]->school_id)
                                 ->get();
-
-                            $listSchool[$j] = $school[0];
+                            $listSchool[$j] = $schools[0];
+                            // }
                         }
-
+                        // }
+                        // for ($s = 0; $s < count($webinar); $s++) {
                         $path_zip = null;
 
                         if ($webinar[$i]->is_certificate) {
                             $path_zip = env("WEBINAR_URL") . $webinar[$i]->certificate;
                         }
-
                         $data[$i] = (object) array(
                             'id'                => $webinar[$i]->id,
                             'event_name'        => $webinar[$i]->event_name,
                             'event_date'        => $webinar[$i]->event_date,
                             'event_time'        => $webinar[$i]->event_time,
                             'event_picture'     => env("WEBINAR_URL") . $webinar[$i]->event_picture,
+                            // 'list-participant'  => count($participant),
+                            // 'part'              => $x,
                             'schools'           => $listSchool,
                             'zoom_link'         => $webinar[$i]->zoom_link,
                             'is_certificate'    => $webinar[$i]->is_certificate,
