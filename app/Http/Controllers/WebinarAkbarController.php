@@ -188,42 +188,61 @@ class WebinarAkbarController extends Controller
                                 );
 
                                 $webinarId = DB::table($this->tbWebinar)->insertGetId($webinar);
-                                $schoolAll = [];
+                                $participantInsert = [];
+                                $notifInsert = [];
+                                $schoolIdArray = "";
                                 $index = 0;
 
-                                foreach ($request->school_id as $index => $value) {
-                                    DB::table($this->tbSchoolParticipants)->insert(array(
+                                foreach ($request->school_id as $s) {
+                                    $participantInsert[$index] = array(
                                         'webinar_id'    => $webinarId,
-                                        'school_id'     => $value,
-                                    ));
+                                        'school_id'     => $s,
+                                    );
 
-                                    DB::table($this->tbNotification)->insert(array(
-                                        'school_id'     => $value,
+                                    $notifInsert[$index] = array(
+                                        'school_id'     => $s,
                                         'webinar_akbar_id' => $webinarId,
                                         'message_id'    => "Anda mendapatkan undangan untuk mengikuti Webinar dengan judul " . $request->event_name . " pada tanggal " . $request->event_date . " dan pada jam " . $request->event_time,
                                         'message_en'    => "You get an invitation to join in a webinar with a title" . $request->event_name . " on " . $request->event_date . " and at " . $request->event_time
-                                    ));
-
-                                    $school = DB::connection("pgsql2")->table($this->tbSchool)
-                                        ->where('id', '=', $value)
-                                        ->get();
-
-                                    //respon
-                                    $respon = DB::table($this->tbWebinar)
-                                        ->where('id', '=', $webinarId)
-                                        ->select('*')
-                                        ->get();
-
-                                    $schoolToEmail[] = (object) array(
-                                        'name' => $school[0]->name,
-                                        'email' => $school[0]->email
                                     );
 
-                                    $schoolAll[$index] = $school[0];
                                     $index++;
+                                }
+
+                                SchoolParticipantAkbarModel::insert($participantInsert);
+                                NotificationWebinarModel::insert($notifInsert);
+
+                                $schoolid = SchoolParticipantAkbarModel::select('school_id')
+                                    ->where('webinar_id', '=', $webinarId)
+                                    ->get();
+
+                                for ($i = 0; $i < count($schoolid); $i++) {
+                                    if ($i == 0) {
+                                        $schoolIdArray .= $schoolid[$i]->school_id;
+                                    } else {
+                                        $schoolIdArray .= ", " . $schoolid[$i]->school_id;
+                                    }
+                                }
+
+                                $schoolAll = DB::connection("pgsql2")->table($this->tbSchool)
+                                    ->whereRaw('id = ANY(ARRAY[' . $schoolIdArray . '])')
+                                    ->orderBy('name', 'asc')
+                                    ->get();
+
+                                foreach ($schoolAll as $sch) {
+                                    $schoolToEmail[0] = (object) array(
+                                        'name' => $sch->name,
+                                        'email' => $sch->email
+                                    );
 
                                     EmailInvitationSchoolJob::dispatch($webinar, $schoolToEmail);
                                 }
+
+                                //respon
+                                $respon = DB::table($this->tbWebinar)
+                                    ->where('id', '=', $webinarId)
+                                    ->select('*')
+                                    ->get();
                             } catch (Exception $e) {
                                 echo $e;
                             }

@@ -7,8 +7,8 @@
     <h5>Link to the student page</h5>
 
     <img style="width: 200px; height: 200px;"
-        src="{{ $message->embed(env("WEBINAR_URL") . $webinar[0]->event_picture) }}">
-        {{-- src="https://images.app.goo.gl/UQDxuKKcZGKt33B99"> --}}
+        src="{{ $message->embed(env("WEBINAR_URL") . $webinar['event_picture']) }}">
+    {{-- src="https://images.app.goo.gl/UQDxuKKcZGKt33B99"> --}}
     <br>
 
     <h5>Terima Kasih</h5>
