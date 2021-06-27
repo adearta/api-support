@@ -134,19 +134,29 @@ class StudentChatBoxController extends Controller
                         ->where('room.id', '=', $lastRoom[0]->id)
                         ->select('room.id as room_id', 'room.student_id', 'room.school_id', 'chat.room_chat_id', 'chat.id as chat_id', 'chat.sender', 'chat.chat', 'chat.image', 'chat.send_time', 'chat.is_readed')
                         ->get();
-                    $arr_length = count($chattable);
-                    $chatResponse = array(
-                        'chat_id'       => $chattable[$arr_length - 1]->chat_id,
-                        'room_chat_id'  => $chattable[$arr_length - 1]->room_chat_id,
-                        'chat'          => $chattable[$arr_length - 1]->chat,
-                        'image'         => url('api/v1/administrator/img/' . $chattable[$arr_length - 1]->image),
-                        'send_time'     => $chattable[$arr_length - 1]->send_time,
-                        'sender'        => "student",
-                        "is_readed"     => $chattable[$arr_length - 1]->is_readed
-
+                    $roomResponse = array(
+                        'room_id'       => $chattable[0]->room_id,
+                        'school_id'     => $chattable[0]->school_id,
+                        'student_id'    => $chattable[0]->student_id
                     );
+                    $chat = DB::table($this->tbChat)
+                        ->where('room_chat_id', '=', $chattable[0]->room_id)
+                        ->get();
+                    for ($i = 0; $i < count($chat); $i++) {
+                        $chatResponse[$i] = array(
+                            'chat_id'       => $chattable[$i]->chat_id,
+                            'room_chat_id'  => $chattable[$i]->room_chat_id,
+                            'chat'          => $chattable[$i]->chat,
+                            'image'         => url('api/v1/administrator/img/' . $chattable[$i]->image),
+                            'send_time'     => $chattable[$i]->send_time,
+                            'sender'        => "student",
+                            'is_readed'     => $chattable[$i]->is_readed
+                        );
+                    }
                     $response = array_values(array(
+                        "room" => $roomResponse,
                         "chat" => $chatResponse,
+                        // 'count' => count($chattable),
                     ));
                     return $response;
                 }
@@ -245,23 +255,23 @@ class StudentChatBoxController extends Controller
                                 );
                                 return $response;
                             }
-                        }
-                    } else {
-                        $response = array_values(
-                            array(
-                                "school" => (object) $chatting,
-                                "room" => (object) $chatting,
-                                "chat_data" => (object) $chatting,
-                                "pagination" => (object) array(
-                                    "first_page" => 1,
-                                    "last_page" => $total_page,
-                                    "current_page" => $current_page,
-                                    "current_data" => count($chatting),
-                                    "total_data" => $count_chat
+                        } else {
+                            $response = array_values(
+                                array(
+                                    "school" => (object) $chatting,
+                                    "room" => (object) $chatting,
+                                    "chat_data" => (object) $chatting,
+                                    "pagination" => (object) array(
+                                        "first_page" => 1,
+                                        "last_page" => $total_page,
+                                        "current_page" => $current_page,
+                                        "current_data" => count($chatting),
+                                        "total_data" => $count_chat
+                                    )
                                 )
-                            )
-                        );
-                        return $response;
+                            );
+                            return $response;
+                        }
                     }
                 });
                 if ($data) {
@@ -310,6 +320,51 @@ class StudentChatBoxController extends Controller
                     return $this->makeJSONResponse($getDetail, 200);
                 }
                 return $this->makeJSONResponse(["message" => "wrong input!"], 200);
+            } catch (Exception $e) {
+                echo $e;
+            }
+        }
+    }
+    public function detailChat($channel_id)
+    {
+        $validation = Validator::make(["channel_id" => $channel_id], [
+            'channel_id' => 'required|numeric|exists:' . $this->tbRoom . ',id'
+        ]);
+        if ($validation->fails()) {
+            return $this->makeJSONResponse($validation->errors(), 400);
+        } else {
+            try {
+                // $data = DB::transaction(function () use ($channel_id) {
+                $detail = DB::table($this->tbChat, 'chat')
+                    ->leftJoin($this->tbRoom . " as room", 'chat.room_chat_id', '=', 'room.id')
+                    ->where('room.id', '=', $channel_id)
+                    ->select('room.id as room_id', 'room.student_id', 'room.school_id', 'chat.room_chat_id', 'chat.id as chat_id', 'chat.sender', 'chat.chat', 'chat.image', 'chat.send_time', 'chat.is_readed')
+                    ->get();
+
+                $responseChannel = array(
+                    'id'            => $detail[0]->room_id,
+                    'student_id'    => $detail[0]->student_id,
+                    'school_id'     => $detail[0]->school_id,
+                );
+                for ($i = 0; $i < count($detail); $i++) {
+                    $responseChat[$i] = array(
+                        'id'            => $detail[$i]->chat_id,
+                        'channel_id'    => $detail[$i]->room_chat_id,
+                        'sender'        => $detail[$i]->sender,
+                        'chat'          => $detail[$i]->chat,
+                        'image'         => env("WEBINAR_URL") . $detail[$i]->image,
+                        'send_time'     => $detail[$i]->send_time,
+                        'is_readed'     => $detail[$i]->is_readed
+                    );
+                }
+                $response = array(
+                    // 'count' => count($detail),
+                    'channel' => $responseChannel,
+                    'chats' => $responseChat
+                    // 'detail' => $detail
+                );
+                $arrayResponse = array_values($response);
+                return  $arrayResponse;
             } catch (Exception $e) {
                 echo $e;
             }

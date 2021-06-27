@@ -11,9 +11,10 @@ Route::group(['prefix' => 'messaging'], function () {
         });
     });
     Route::group(['prefix' => 'personal'], function () {
-        Route::post('/inbox', [StudentChatBoxController::class, 'createChatStudent']);
+        Route::post('/send-chat', [StudentChatBoxController::class, 'createChatStudent']);
         Route::get('/school', [StudentChatBoxController::class, 'listOfChat']);
         Route::delete('/delete-chat/{chat_id}', [StudentChatBoxController::class, 'deleteChat']);
         Route::get('/school/detail', [StudentChatBoxController::class, 'detailSchool']);
+        Route::get('/channel/{channel_id}', [StudentChatBoxController::class, 'detailChat']);
     });
 });

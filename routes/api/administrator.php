@@ -53,9 +53,9 @@ Route::group(['prefix' => 'webinar-internal'], function () {
     });
 });
 
-Route::group(['prefix' => 'student-chat'], function () {
-    Route::post('/inbox', [StudentChatBoxController::class, 'createChatStudent']);
-    Route::get('/school', [StudentChatBoxController::class, 'listOfChat']);
-    Route::delete('/delete-chat/{chat_id}', [StudentChatBoxController::class, 'deleteChat']);
-    Route::get('/school/detail', [StudentChatBoxController::class, 'detailSchool']);
-});
+// Route::group(['prefix' => 'student-chat'], function () {
+//     Route::post('/inbox', [StudentChatBoxController::class, 'createChatStudent']);
+//     Route::get('/school', [StudentChatBoxController::class, 'listOfChat']);
+//     Route::delete('/delete-chat/{chat_id}', [StudentChatBoxController::class, 'deleteChat']);
+//     Route::get('/school/detail', [StudentChatBoxController::class, 'detailSchool']);
+// });
