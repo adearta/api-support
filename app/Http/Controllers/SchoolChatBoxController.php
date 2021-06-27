@@ -189,6 +189,7 @@ class SchoolChatBoxController extends Controller
                         if (strlen($search_length) > 0) {
                             $search = strtolower($request->search);
                             $index = 0;
+                            //salah
                             $student = DB::connection('pgsql2')->table($this->tbUserPersonal, 'user')
                                 ->leftJoin($this->tbStudent . ' as student', 'user.id', '=', 'student.user_id')
                                 ->where('student.school_id', '=', $school[0]->id)
@@ -361,12 +362,18 @@ class SchoolChatBoxController extends Controller
                             $query_search = "like '%" . $search . "%' ";
                         }
                     }
-                    $candidat = DB::connection('pgsql2')->select("select id, phone, nim, address, date_of_birth, gender, marital_status, religion, employment_status, description, avatar, domicile_id, user_id , school_id from " . $this->tbStudent . " where school_id = " . $request->school_id . " and first_name " . $query_search . " or");
-                    $candidate = DB::connection('pgsql2')->table($this->tbStudent)
-                        ->where('school_id', '=', $request->school_id)
-                        ->where('first_name', 'like', '%' . $search . '%')
-                        ->orWhere('last_name', 'like', '%' . $search . '%')
-                        ->get();
+                    $candidate = DB::connection('pgsql2')->select("select student.id as student_id, student.phone, student.nim, student.address, student.date_of_birth, student.gender, student.marital_status, student.religion, student.employment_status, student.description, student.avatar, student.domicile_id, student.user_id, student.school_id, user.first_name, user.last_name from " . $this->tbStudent . " left join " . $this->tbUserPersonal . " as user on student.user_id = user.id where student.school_id = " . $request->school_id . " and (first_name " . $query_search . " or last_name " . $query_search . ")");
+
+                    // $student = DB::connection('pgsql2')->table($this->tbStudent . 'student')
+                    // ->leftJoin($this->tbUserPersonal . ' as personal', 'student.user_id', '=', 'personal.id')
+                    // ->where('student.broadcast_id', '=', $broadcast->id)
+                    // ->whereRaw("lower(concat(personal.first_name,' ',personal.last_name)) like '%" . $search . "%'")
+                    // ->orderBy('personal.id', 'asc')
+                    // ->offset($start_item)
+                    // ->limit(10)
+                    // ->select('student.*', 'personal.first_name', 'personal.last_name')
+                    // ->get();
+
                     foreach ($candidate as $c) {
                         $room = DB::table($this->tbRoom, 'room')
                             ->leftJoin($this->tbChat . ' as chat', 'room.id', '=', 'chat.room_chat_id')
@@ -375,7 +382,7 @@ class SchoolChatBoxController extends Controller
                             ->get();
                     }
                     return array(
-                        $room,
+                        $candidate,
                         // $room
                     );
                     //perbaiki
