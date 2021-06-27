@@ -169,7 +169,8 @@ class BroadcastController extends Controller
         */
         $validation = Validator::make($request->all(), [
             'school_id' => 'required|numeric|exists:pgsql2.' . $this->tbSchool . ',id',
-            'page'      => 'required|numeric',
+            'search'    => 'nullable|string',
+            'page'      => 'nullable|numeric',
         ]);
 
         if ($validation->fails()) {
@@ -186,14 +187,12 @@ class BroadcastController extends Controller
                     ->get();
                 $total_page = ceil($broadcast_count[0]->count / 10);
 
-                if ($request->page != null && $request->page > 0) {
+                if ($request->page != null) {
                     $current_page = $request->page;
 
                     if ($current_page > 1) {
                         $start_item = ($current_page - 1) * 10;
                     }
-                } else {
-                    $current_page = 0;
                 }
 
                 if ($current_page > 0 && $current_page <= $total_page) {
@@ -300,7 +299,7 @@ class BroadcastController extends Controller
         */
         $validation = Validator::make($request->all(), [
             'broadcast_id'      => 'required|numeric|exists:' . $this->tbBroadcast . ',id',
-            'page'              => 'required|numeric',
+            'page'              => 'nullable|numeric',
         ]);
 
         if ($validation->fails()) {
@@ -320,14 +319,12 @@ class BroadcastController extends Controller
 
                 $total_page = ceil(count($notification) / 10);
 
-                if ($request->page != null && $request->page > 0) {
+                if ($request->page != null) {
                     $current_page = $request->page;
 
                     if ($current_page > 1) {
                         $start_item = ($current_page - 1) * 10;
                     }
-                } else {
-                    $current_page = 0;
                 }
 
                 if ($current_page > 0 && $current_page <= $total_page) {
