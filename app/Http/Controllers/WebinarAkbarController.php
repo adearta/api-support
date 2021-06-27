@@ -191,22 +191,19 @@ class WebinarAkbarController extends Controller
                                 $participantInsert = [];
                                 $notifInsert = [];
                                 $schoolIdArray = "";
-                                $index = 0;
 
-                                foreach ($request->school_id as $s) {
-                                    $participantInsert[$index] = array(
+                                for ($i = 0; $i < count($request->school_id); $i++) {
+                                    $participantInsert[$i] = array(
                                         'webinar_id'    => $webinarId,
-                                        'school_id'     => $s,
+                                        'school_id'     => $request->school_id[$i],
                                     );
 
-                                    $notifInsert[$index] = array(
-                                        'school_id'     => $s,
+                                    $notifInsert[$i] = array(
+                                        'school_id'     => $request->school_id[$i],
                                         'webinar_akbar_id' => $webinarId,
                                         'message_id'    => "Anda mendapatkan undangan untuk mengikuti Webinar dengan judul " . $request->event_name . " pada tanggal " . $request->event_date . " dan pada jam " . $request->event_time,
                                         'message_en'    => "You get an invitation to join in a webinar with a title" . $request->event_name . " on " . $request->event_date . " and at " . $request->event_time
                                     );
-
-                                    $index++;
                                 }
 
                                 SchoolParticipantAkbarModel::insert($participantInsert);
