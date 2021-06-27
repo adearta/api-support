@@ -21,6 +21,8 @@ use App\Http\Controllers\SchoolParticipantAkbarController;
 
 //the routes of webinar
 Route::middleware('auth:api')->prefix('administrator')->group(base_path('routes/api/administrator.php'));
+Route::middleware('auth:api')->prefix('school')->group(base_path('routes/api/school.php'));
+Route::middleware('auth:api')->prefix('candidate')->group(base_path('routes/api/candidate.php'));
 
 Route::group(['prefix' => 'administrator'], function () {
 	Route::post('/register', [AuthController::class, 'register']);
