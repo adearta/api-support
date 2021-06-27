@@ -244,18 +244,59 @@ class SchoolChatBoxController extends Controller
         }
     }
 
-    public function deleteRoom($room_chat_id)
+    public function deleteRoom($channel_id)
     {
-        $validation = Validator::make(["room_chat_id" => $room_chat_id], [
+        $validation = Validator::make(["room_chat_id" => $channel_id], [
             'room_chat_id' => 'required|numeric|exists:' . $this->tbRoom . ',id'
         ]);
         if ($validation->fails()) {
             return $this->makeJSONResponse($validation->errors(), 400);
         } else {
-            $delete = ChatRoomModel::findOrfail($room_chat_id);
+            $delete = ChatRoomModel::findOrfail($channel_id);
             if ($delete) {
                 $delete->delete();
                 return $this->makeJSONResponse(["message" => "successfully delete room chat!"], 200);
+            }
+        }
+    }
+    public function detailChat($channel_id)
+    {
+        $validation = Validator::make(["channel_id" => $channel_id], [
+            'channel_id' => "required|numeric",
+        ]);
+        if ($validation->fails()) {
+            $this->makeJSONResponse($validation->errors(), 400);
+        } else {
+            try {
+                // $data = DB::transaction(function () use ($channel_id) {
+                $detail = DB::table($this->tbRoom, 'room')
+                    ->leftJoin($this->tbChat . 'as chat', 'room.id', '=', 'chat.room_chat_id')
+                    ->where('chat.room_chat_id', '=', $channel_id)
+                    ->select('room.id as room_id', 'room.student_id', 'room.school_id', 'chat.room_chat_id', 'chat.id as chat_id', 'chat.sender', 'chat.chat', 'chat.image', 'chat.send_time', 'chat.is_readed')
+                    ->get();
+
+                $responseChannel = array(
+                    'id'            => $detail->room_id,
+                    'student_id'    => $detail->student_id,
+                    'school_id'     => $detail->school_id,
+                );
+                for ($i = 0; $i < count($detail); $i++) {
+                    $responseChat[$i] = array(
+                        'id'            => $detail[$i]->chat_id,
+                        'channel_id'    => $detail[$i]->room_chat_id,
+                        'sender'        => $detail[$i]->sender,
+                        'chat'          => $detail[$i]->chat,
+                        'image'         => $detail[$i]->image,
+                        'send_time'     => $detail[$i]->send_time,
+                        'is_readed'     => $detail[$i]->is_readed
+                    );
+                }
+                return array(
+                    'room' => $responseChannel,
+                    'chats' => $responseChat
+                );
+            } catch (Exception $e) {
+                echo $e;
             }
         }
     }

@@ -53,27 +53,9 @@ Route::group(['prefix' => 'webinar-internal'], function () {
     });
 });
 
-Route::group(['prefix' => 'broadcast'], function () {
-    Route::middleware('admin')->group(function () {
-        Route::post('/create', [BroadcastController::class, 'create']);
-        Route::get('/', [BroadcastController::class, 'list']);
-        Route::get('/detail', [BroadcastController::class, 'detail']);
-        Route::delete('/delete/{broadcast_id}', [BroadcastController::class, 'delete']);
-    });
-});
-Route::group(['prefix' => 'school-chat'], function () {
-    Route::middleware('admin')->group(function () {
-        Route::post('/room/inbox', [SchoolChatBoxController::class, 'createChat']);
-        Route::get('/room/student-list', [SchoolChatBoxController::class, 'listChat']);
-        Route::delete('/delete-chat/{chat_id}', [SchoolChatBoxController::class, 'deleteChat']);
-        Route::get('/room', [SchoolChatBoxController::class, 'listRoom']);
-        Route::delete('/room/delete/{room_chat_id}', [SchoolChatBoxController::class, 'deleteRoom']);
-    });
-});
 Route::group(['prefix' => 'student-chat'], function () {
     Route::post('/inbox', [StudentChatBoxController::class, 'createChatStudent']);
     Route::get('/school', [StudentChatBoxController::class, 'listOfChat']);
     Route::delete('/delete-chat/{chat_id}', [StudentChatBoxController::class, 'deleteChat']);
     Route::get('/school/detail', [StudentChatBoxController::class, 'detailSchool']);
 });
-Route::get('/testing', [CertificateController::class, 'zipTest']);
