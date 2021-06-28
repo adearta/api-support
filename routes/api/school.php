@@ -20,7 +20,7 @@ Route::group(['prefix' => 'messaging'], function () {
             Route::get('/channel/candidates', [SchoolChatBoxController::class, 'listChat']); //
             Route::delete('/delete-chat/{chat_id}', [SchoolChatBoxController::class, 'deleteChat']);
             Route::get('/channel', [SchoolChatBoxController::class, 'listRoom']); //
-            Route::delete('/room/delete/{room_chat_id}', [SchoolChatBoxController::class, 'deleteRoom']);
+            Route::delete('/channel/delete/{room_chat_id}', [SchoolChatBoxController::class, 'deleteRoom']);
             Route::get('/channel/{channel_id}', [SchoolChatBoxController::class, 'detailChat']); //new not tested
         });
     });
