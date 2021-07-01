@@ -143,11 +143,16 @@ class StudentChatBoxController extends Controller
                         ->where('room_chat_id', '=', $chattable[0]->room_id)
                         ->get();
                     for ($i = 0; $i < count($chat); $i++) {
+                        $chatmodel[$i] = ChatModel::find($chat[$i]->id);
+                        $response_path = null;
+                        if ($chatmodel[$i]->image != null) {
+                            $response_path = env("WEBINAR_URL") . $chattable[$i]->image;
+                        }
                         $chatResponse[$i] = array(
                             'chat_id'       => $chattable[$i]->chat_id,
                             'room_chat_id'  => $chattable[$i]->room_chat_id,
                             'chat'          => $chattable[$i]->chat,
-                            'image'         => url('api/v1/administrator/img/' . $chattable[$i]->image),
+                            'image'         => $response_path,
                             'send_time'     => $chattable[$i]->send_time,
                             'sender'        => "student",
                             'is_readed'     => $chattable[$i]->is_readed
