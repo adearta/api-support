@@ -436,4 +436,75 @@ class SchoolChatBoxController extends Controller
             }
         }
     }
+    public function countChat(Request $request)
+    {
+        $validation = Validator::make($request->all(), [
+            'school_id' => 'required|numeric|exists:pgsql2.' . $this->tbSchool . ',id'
+        ]);
+        if ($validation->fails()) {
+            return $this->makeJSONResponse($validation->errors(), 400);
+        } else {
+            $room = DB::table($this->tbRoom)
+                ->where('school_id', '=', $request->school_id)
+                ->select('id')
+                ->get();
+            $arraychat = [];
+            for ($i = 0; $i < count($room); $i++) {
+                $chat = DB::table($this->tbChat)
+                    ->where('room_chat_id', '=', $room[$i]->id)
+                    ->where('is_readed', '=', false)
+                    ->where('sender', '=', 'student')
+                    ->select('id')
+                    ->get();
+                $count = count($chat);
+                $arraychat[$i] = $count;
+            }
+            $total = array_sum($arraychat);
+            $response = array(
+                'count' => $total,
+            );
+            return $this->makeJSONResponse($response, 200);
+        }
+    }
+    public function setReaded(Request $request)
+    {
+        $validation = Validator::make($request->all(), [
+            'school_id' => 'required|numeric|exists:pgsql2.' . $this->tbSchool . ',id'
+        ]);
+        if ($validation->fails()) {
+            return $this->makeJSONResponse($validation->errors(), 400);
+        } else {
+            $room = DB::table($this->tbRoom)
+                ->where('school_id', '=', $request->school_id)
+                ->select('id')
+                ->get();
+            $arraychat = [];
+            $arraycount = [];
+            for ($i = 0; $i < count($room); $i++) {
+                $chat = DB::table($this->tbChat)
+                    ->where('room_chat_id', '=', $room[$i]->id)
+                    ->where('is_readed', '=', false)
+                    ->where('sender', '=', 'student')
+                    ->select('id')
+                    ->get();
+                $count = count($chat);
+                $arraychat[$i] = $chat;
+                $arraycount[$i] = $count;
+                for ($s = 0; $s < count($chat); $s++) {
+                    DB::table($this->tbChat)
+                        ->where('id', '=', $arraychat[$i][$s]->id)
+                        ->update(['is_readed' => true]);
+                }
+            }
+            // for($j = 0; $j<)
+            $total = array_sum($arraychat);
+            // for ($j = 0; $j < count($room); $j++) {
+
+            // }
+            $response = array(
+                'status' => "all message have been readed!",
+            );
+            return $this->makeJSONResponse($response, 200);
+        }
+    }
 }

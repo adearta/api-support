@@ -17,4 +17,6 @@ Route::group(['prefix' => 'messaging'], function () {
         Route::get('/school/detail', [StudentChatBoxController::class, 'detailSchool']);
         Route::get('/channel/{channel_id}', [StudentChatBoxController::class, 'detailChat']);
     });
+    Route::get('/count', [StudentChatBoxController::class, 'countChat']);
+    Route::get('/readed', [StudentChatBoxController::class, 'setReaded']);
 });
