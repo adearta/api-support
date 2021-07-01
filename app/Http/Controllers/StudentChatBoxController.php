@@ -234,10 +234,15 @@ class StudentChatBoxController extends Controller
 
                                     );
                                     for ($i = 0; $i < count($chatting); $i++) {
+                                        $chatmodel[$i] = ChatModel::find($chatting[$i]->chat_id);
+                                        $response_path = null;
+                                        if ($chatmodel[$i]->image != null) {
+                                            $response_path = env("WEBINAR_URL") . $chatmodel[$i]->image;
+                                        }
                                         $chat[$i] = (object) array(
                                             "chat_id"       => $chatting[$i]->chat_id,
                                             "chat"          => $chatting[$i]->chat,
-                                            "image"         => env("WEBINAR_URL") . $chatting[$i]->image,
+                                            "image"         => $response_path,
                                             "send_time"     => $chatting[$i]->send_time,
                                             "sender"        => $chatting[$i]->sender,
                                             "is_readed"     => $chatting[$i]->is_readed
@@ -352,12 +357,17 @@ class StudentChatBoxController extends Controller
                     'school_id'     => $detail[0]->school_id,
                 );
                 for ($i = 0; $i < count($detail); $i++) {
+                    $chatmodel[$i] = ChatModel::find($detail[$i]->chat_id);
+                    $response_path = null;
+                    if ($chatmodel[$i]->image != null) {
+                        $response_path = env("WEBINAR_URL") . $chatmodel[$i]->image;
+                    }
                     $responseChat[$i] = array(
                         'id'            => $detail[$i]->chat_id,
                         'channel_id'    => $detail[$i]->room_chat_id,
                         'sender'        => $detail[$i]->sender,
                         'chat'          => $detail[$i]->chat,
-                        'image'         => env("WEBINAR_URL") . $detail[$i]->image,
+                        'image'         => $response_path,
                         'send_time'     => $detail[$i]->send_time,
                         'is_readed'     => $detail[$i]->is_readed
                     );
