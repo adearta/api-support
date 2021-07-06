@@ -178,6 +178,7 @@ class SchoolChatBoxController extends Controller
                     $school = DB::connection('pgsql2')->table($this->tbSchool)
                         ->where('id', '=', $request->school_id)
                         ->get();
+                    // $schoolobject = (object) $school;
                     if ($request->search != null) {
                         $search_length = preg_replace('/\s+/', '', $request->search);
                         if (strlen($search_length) > 0) {
@@ -216,7 +217,7 @@ class SchoolChatBoxController extends Controller
                                 }
                             }
                             $response = (object) array(
-                                'school'    => $school,
+                                'school'    => $school[0],
                                 'rooms'     => $data
                             );
                             return $response;
@@ -254,7 +255,7 @@ class SchoolChatBoxController extends Controller
                             // }
                         }
                         $response = (object) array(
-                            'school'    => $school,
+                            'school'    => $school[0],
                             'channel'     => $arrayroom
                         );
                         return $response;
