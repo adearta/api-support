@@ -222,6 +222,37 @@ class SchoolChatBoxController extends Controller
                             return $response;
                         }
                     } else {
+                        $index = 0;
+                        $student = DB::connection('pgsql2')->table($this->tbStudent, 'student')
+                            ->leftJoin($this->tbUserPersonal . ' as personal', 'student.user_id', '=', 'personal.id')
+                            ->where('student.school_id', '=', $request->school_id)
+                            // ->whereRaw("lower(concat(personal.first_name,' ',personal.last_name)) like '%" . $search . "%'")
+                            ->orderBy('personal.id', 'asc')
+                            ->limit(10)
+                            ->select('student.id', 'student.phone', 'student.nim', 'student.address', 'student.date_of_birth', 'student.gender', 'student.marital_status', 'student.religion', 'student.employment_status', 'student.description', 'student.avatar', 'student.domicile_id', 'student.user_id', 'student.school_id', 'personal.first_name', 'personal.last_name')
+                            ->get();
+
+                        for ($i = 0; $i < count($student); $i++) {
+                            $room = DB::table($this->tbRoom)
+                                ->where('school_id', '=', $student[$i]->school_id)
+                                ->where('student_id', '=', $student[$i]->id)
+                                ->get();
+
+                            if (count($room) > 0) {
+                                $chat = DB::table($this->tbChat)
+                                    ->where('room_chat_id', '=', $room[0]->id)
+                                    ->orderBy('id', 'desc')
+                                    ->limit(1)
+                                    ->get();
+
+                                $data[$index] = (object) array(
+                                    'room'      => $room[0],
+                                    'chat'      => $chat[0],
+                                    'student'   => $student[$i]
+                                );
+                                $index++;
+                            }
+                        }
                         $response = (object) array(
                             'school'    => $school,
                             'rooms'     => $data
