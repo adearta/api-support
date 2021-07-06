@@ -210,7 +210,7 @@ class SchoolChatBoxController extends Controller
                                     $data[$index] = (object) array(
                                         'room'      => $room[0],
                                         'chat'      => $chat[0],
-                                        'student'   => $student[$i]
+                                        'candidate'   => $student[$i]
                                     );
                                     $index++;
                                 }
