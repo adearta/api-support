@@ -132,6 +132,10 @@ class BroadcastController extends Controller
                 }
 
                 $broadcast = BroadcastModel::find($broadcast_id);
+                $school = DB::connection('pgsql2')->table($this->tbSchool)
+                    ->where('id', $request->school_id)
+                    ->select('name')
+                    ->get();
                 $response_path = null;
                 if ($broadcast->image != null) {
                     $response_path = env("WEBINAR_URL") . $broadcast->image;
@@ -145,6 +149,7 @@ class BroadcastController extends Controller
                     'type'              => $broadcast->type,
                     'year'              => $broadcast->year,
                     'send_time'         => $broadcast->send_time,
+                    'school_name'       => $school[0]->name,
                     'total_student'     => count($student_list)
                 );
 
@@ -212,6 +217,11 @@ class BroadcastController extends Controller
                         ->limit(10)
                         ->get();
 
+                    $school = DB::connection('pgsql2')->table($this->tbSchool)
+                        ->where('id', $request->school_id)
+                        ->select('name')
+                        ->get();
+
                     for ($i = 0; $i < count($broadcast); $i++) {
                         $response_path = null;
                         if ($broadcast[$i]->image != null) {
@@ -231,6 +241,7 @@ class BroadcastController extends Controller
                             'type'              => $broadcast[$i]->type,
                             'year'              => $broadcast[$i]->year,
                             'send_time'         => $broadcast[$i]->send_time,
+                            'school_name'       => $school[0]->name,
                             'total_student'     => $broadcastCount[0]->count
                         );
                     }
@@ -293,7 +304,7 @@ class BroadcastController extends Controller
     {
         /*
         Param:
-        1. Room id
+        1. broadcast id
         2. Page -> default(0 or null)
         3. Search -> by student name
         */
@@ -347,6 +358,11 @@ class BroadcastController extends Controller
                         ->get();
                 }
 
+                $school = DB::connection('pgsql2')->table($this->tbSchool)
+                    ->where('id', $broadcast->school_id)
+                    ->select('name')
+                    ->get();
+
                 $listStudent = (object) array(
                     'data'       => $student,
                     'pagination' => (object) array(
@@ -370,6 +386,7 @@ class BroadcastController extends Controller
                     'link'              => $broadcast->link,
                     'type'              => $broadcast->type,
                     'year'              => $broadcast->year,
+                    'school_name'       => $school[0]->name,
                     'student'           => $listStudent
                 );
             });
