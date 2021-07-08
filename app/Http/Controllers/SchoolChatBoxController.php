@@ -218,18 +218,20 @@ class SchoolChatBoxController extends Controller
                             );
                             $roomchat[$i] = $room[0];
                             $index++;
+                        } else {
+                            $roomchat[$i] = (object)array();
                         }
                     }
-                    $toarray = array_values($roomchat);
-                    $responseNoSearch = (object) array(
-                        'school'    => $school[0],
-                        'rooms'     => $toarray
-                    );
                     $response = (object) array(
                         'school'    => $school[0],
                         'rooms'     => $data
                     );
                     if ($search == "") {
+                        $toarray = array_values($roomchat);
+                        $responseNoSearch = (object) array(
+                            'school'    => $school[0],
+                            'rooms'     => $toarray
+                        );
                         return $responseNoSearch;
                     } else {
                         return $response;
