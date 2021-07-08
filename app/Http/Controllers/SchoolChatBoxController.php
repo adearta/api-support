@@ -222,9 +222,7 @@ class SchoolChatBoxController extends Controller
                             );
                             return $response;
                         }
-                    }
-                    if ($request->search == null) {
-                        // var_dump($request->search);
+                    } else {
                         $index = 0;
                         $student = DB::connection('pgsql2')->table($this->tbStudent, 'student')
                             ->leftJoin($this->tbUserPersonal . ' as personal', 'student.user_id', '=', 'personal.id')
@@ -234,27 +232,29 @@ class SchoolChatBoxController extends Controller
                             ->limit(10)
                             ->select('student.id', 'student.phone', 'student.nim', 'student.address', 'student.date_of_birth', 'student.gender', 'student.marital_status', 'student.religion', 'student.employment_status', 'student.description', 'student.avatar', 'student.domicile_id', 'student.user_id', 'student.school_id', 'personal.first_name', 'personal.last_name')
                             ->get();
-                        $arrayroom = [];
+                        // $arrayroom = [];
                         for ($i = 0; $i < count($student); $i++) {
                             $room = DB::table($this->tbRoom)
                                 ->where('school_id', '=', $student[$i]->school_id)
                                 ->where('student_id', '=', $student[$i]->id)
                                 ->get();
-                            $arrayroom[$i] = $room[0];
-                            // if (count($room) > 0) {
-                            //     $chat = DB::table($this->tbChat)
-                            //         ->where('room_chat_id', '=', $room[0]->id)
-                            //         ->orderBy('id', 'desc')
-                            //         ->limit(1)
-                            //         ->get();
-
-                            //     $data[$index] = (object) array(
-                            //         'room'      => $room[0],
-                            //         'chat'      => $chat[0],
-                            //         'student'   => $student[$i]
-                            //     );
-                            //     $index++;
-                            // }
+                            // var_dump($room);
+                            if (empty($room[$i])) {
+                                $arrayroom = [];
+                            } else {
+                                $arrayroom[$i] = (object) array(
+                                    "id"            => $room[0]->id,
+                                    "school_id"     => $room[0]->school_id,
+                                    "student_id"    => $room[0]->student_id,
+                                    "creator_id"    => $room[0]->creator_id,
+                                    "modifier_id"   => $room[0]->modifier_id,
+                                    "is_deleted"    => $room[0]->is_deleted,
+                                    "created"       => $room[0]->created,
+                                    "modified"      => $room[0]->modified,
+                                    "created_at"    => $room[0]->created_at,
+                                    "updated_at"    => $room[0]->updated_at,
+                                );
+                            }
                         }
                         $response = (object) array(
                             'school'    => $school[0],
