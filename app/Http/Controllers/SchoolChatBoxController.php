@@ -223,7 +223,7 @@ class SchoolChatBoxController extends Controller
                             return $response;
                         }
                     }
-                    if (empty($request->search)) {
+                    if ($request->search == null) {
                         // var_dump($request->search);
                         $index = 0;
                         $student = DB::connection('pgsql2')->table($this->tbStudent, 'student')
