@@ -198,12 +198,12 @@ class SchoolChatBoxController extends Controller
                         ->select('student.id', 'student.phone', 'student.nim', 'student.address', 'student.date_of_birth', 'student.gender', 'student.marital_status', 'student.religion', 'student.employment_status', 'student.description', 'student.avatar', 'student.domicile_id', 'student.user_id', 'student.school_id', 'personal.first_name', 'personal.last_name')
                         ->get();
 
+                    $roomchat = [];
                     for ($i = 0; $i < count($student); $i++) {
                         $room = DB::table($this->tbRoom)
                             ->where('school_id', '=', $student[$i]->school_id)
                             ->where('student_id', '=', $student[$i]->id)
                             ->get();
-
                         if (count($room) > 0) {
                             $chat = DB::table($this->tbChat)
                                 ->where('room_chat_id', '=', $room[0]->id)
@@ -218,16 +218,16 @@ class SchoolChatBoxController extends Controller
                             );
                             $roomchat[$i] = $room[0];
                             $index++;
-                        } else {
-                            $roomchat[$i] = (object)array();
                         }
                     }
+
                     $response = (object) array(
                         'school'    => $school[0],
                         'rooms'     => $data
                     );
                     if ($search == "") {
                         $toarray = array_values($roomchat);
+                        // $filter = array_filter($toarray);
                         $responseNoSearch = (object) array(
                             'school'    => $school[0],
                             'rooms'     => $toarray
