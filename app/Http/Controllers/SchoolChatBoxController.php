@@ -194,7 +194,7 @@ class SchoolChatBoxController extends Controller
                         ->where('student.school_id', '=', $request->school_id)
                         ->whereRaw("lower(concat(personal.first_name,' ',personal.last_name)) like '%" . $search . "%'")
                         ->orderBy('personal.id', 'asc')
-                        // ->limit(10)
+                        ->limit(10)
                         ->select('student.id', 'student.phone', 'student.nim', 'student.address', 'student.date_of_birth', 'student.gender', 'student.marital_status', 'student.religion', 'student.employment_status', 'student.description', 'student.avatar', 'student.domicile_id', 'student.user_id', 'student.school_id', 'personal.first_name', 'personal.last_name')
                         ->get();
 
