@@ -58,7 +58,7 @@ class BroadcastController extends Controller
         ]);
 
         if ($validation->fails()) {
-            return $this->makeJSONResponse($validation->errors(), 400);
+            return $this->makeJSONResponse(["message" => $validation->errors()->first()], 400);
         } else {
             $status = DB::transaction(function () use ($request) {
                 $student_list = null;
@@ -142,22 +142,22 @@ class BroadcastController extends Controller
                 }
 
                 $broadcastResponse = (object) array(
-                    'id'                => $broadcast->id,
+                    'id'                => (int) $broadcast->id,
                     'chat'              => $broadcast->chat,
                     'image'             => $response_path,
                     'link'              => $broadcast->link,
-                    'type'              => $broadcast->type,
-                    'year'              => $broadcast->year,
+                    'type'              => (int) $broadcast->type,
+                    'year'              => (int) $broadcast->year,
                     'send_time'         => $broadcast->send_time,
                     'school_name'       => $school[0]->name,
-                    'total_student'     => count($student_list)
+                    'total_student'     => (int) count($student_list)
                 );
 
                 return $broadcastResponse;
             });
 
             if ($status) {
-                return $this->makeJSONResponse($status, 200);
+                return $this->makeJSONResponse($status, 201);
             } else {
                 return $this->makeJSONResponse(['message' => 'failed'], 400);
             }
@@ -179,7 +179,7 @@ class BroadcastController extends Controller
         ]);
 
         if ($validation->fails()) {
-            return $this->makeJSONResponse($validation->errors(), 400);
+            return $this->makeJSONResponse(["message" => $validation->errors()->first()], 400);
         } else {
             $status = DB::transaction(function () use ($request) {
                 $current_page = 1;
@@ -234,15 +234,15 @@ class BroadcastController extends Controller
                             ->get();
 
                         $data[$i] = (object) array(
-                            'id'                => $broadcast[$i]->id,
+                            'id'                => (int) $broadcast[$i]->id,
                             'chat'              => $broadcast[$i]->chat,
                             'image'             => $response_path,
                             'link'              => $broadcast[$i]->link,
-                            'type'              => $broadcast[$i]->type,
-                            'year'              => $broadcast[$i]->year,
+                            'type'              => (int) $broadcast[$i]->type,
+                            'year'              => (int) $broadcast[$i]->year,
                             'send_time'         => $broadcast[$i]->send_time,
                             'school_name'       => $school[0]->name,
-                            'total_student'     => $broadcastCount[0]->count
+                            'total_student'     => (int) $broadcastCount[0]->count
                         );
                     }
                 }
@@ -250,11 +250,11 @@ class BroadcastController extends Controller
                 $response = (object)array(
                     'data'   => $data,
                     'pagination' => (object) array(
-                        'first_page'    => 1,
-                        'last_page'     => $total_page,
-                        'current_page'  => $current_page,
-                        'current_data'  => count($data), // total data based on filter search and page
-                        'total_data'    => $broadcast_count[0]->count
+                        'first_page'    => (int) 1,
+                        'last_page'     => (int) $total_page,
+                        'current_page'  => (int) $current_page,
+                        'current_data'  => (int) count($data), // total data based on filter search and page
+                        'total_data'    => (int) $broadcast_count[0]->count
                     )
                 );
                 return $response;
@@ -263,7 +263,7 @@ class BroadcastController extends Controller
             if ($status) {
                 return $this->makeJSONResponse($status, 200);
             } else {
-                return $this->makeJSONResponse('failed', 400);
+                return $this->makeJSONResponse(['message' => 'failed'], 400);
             }
         }
     }
@@ -274,7 +274,7 @@ class BroadcastController extends Controller
             'broadcast_id' => 'required|numeric|exists:' . $this->tbBroadcast . ',id'
         ]);
         if ($validation->fails()) {
-            return $this->makeJSONResponse($validation->errors(), 400);
+            return $this->makeJSONResponse(['message' => $validation->errors()->first()], 400);
         } else {
             $data = DB::transaction(function () use ($broadcast_id) {
                 $broadcast = BroadcastModel::find($broadcast_id);
@@ -293,14 +293,64 @@ class BroadcastController extends Controller
             });
 
             if ($data) {
-                return $this->makeJSONResponse(['message => successfully delete the broadcast'], 200);
+                return $this->makeJSONResponse(['message' => 'Delete broadcast successfully'], 200);
             } else {
-                return $this->makeJSONResponse(['message => failed'], 400);
+                return $this->makeJSONResponse(['message' => 'Delete broadcast failed'], 400);
             }
         }
     }
 
     public function detail(Request $request)
+    {
+        /*
+        Param:
+        1. broadcast id
+        */
+        $validation = Validator::make($request->all(), [
+            'broadcast_id'      => 'required|numeric|exists:' . $this->tbBroadcast . ',id',
+        ]);
+
+        if ($validation->fails()) {
+            return $this->makeJSONResponse(["message" => $validation->errors()->first()], 400);
+        } else {
+            $data = DB::transaction(function () use ($request) {
+                $broadcast = BroadcastModel::find($request->broadcast_id);
+                $notification = DB::connection('pgsql2')->table($this->tbNotification)
+                    ->where('broadcast_id', '=', $request->broadcast_id)
+                    ->select('id')
+                    ->get();
+
+                $school = DB::connection('pgsql2')->table($this->tbSchool)
+                    ->where('id', $broadcast->school_id)
+                    ->select('name')
+                    ->get();
+                $response_path = null;
+                if ($broadcast->image != null) {
+                    $response_path = env("WEBINAR_URL") . $broadcast->image;
+                }
+
+                return (object) array(
+                    'id'                => (int) $broadcast->id,
+                    'chat'              => $broadcast->chat,
+                    'image'             => $response_path,
+                    'link'              => $broadcast->link,
+                    'type'              => (int) $broadcast->type,
+                    'year'              => (int) $broadcast->year,
+                    'send_time'         => $broadcast->send_time,
+                    'school_name'       => $school[0]->name,
+                    'total_student'     => (int) count($notification)
+                );
+            });
+
+            if ($data) {
+                return $this->makeJSONResponse($data, 200);
+            } else {
+                return $this->makeJSONResponse(['message' => 'failed'], 400);
+            }
+        }
+    }
+
+    public function oldDetail(Request $request)
     {
         /*
         Param:
@@ -394,7 +444,7 @@ class BroadcastController extends Controller
             if ($data) {
                 return $this->makeJSONResponse($data, 200);
             } else {
-                return $this->makeJSONResponse(['message => failed'], 400);
+                return $this->makeJSONResponse(['message' => 'failed'], 400);
             }
         }
     }
