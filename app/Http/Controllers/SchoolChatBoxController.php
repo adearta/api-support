@@ -45,7 +45,7 @@ class SchoolChatBoxController extends Controller
             'datetime' => 'date_format:Y-m-d H:i:s'
         ]);
         if ($validation->fails()) {
-            return $this->makeJSONResponse($validation->errors(), 400);
+            return $this->makeJSONResponse(['message' => $validation->errors()->first()], 400);
         } else {
             $data = DB::transaction(function () use ($request) {
                 date_default_timezone_set("Asia/Jakarta");
@@ -89,17 +89,28 @@ class SchoolChatBoxController extends Controller
                     'message_id'    => "Anda mendapatkan chat baru dari Admin",
                     'message_en'    => "You've got a new chat from Admin"
                 ));
+
                 $chattable = DB::table($this->tbChat, 'chat')
                     ->leftJoin($this->tbRoom . " as room", 'chat.room_chat_id', '=', 'room.id')
+                    // ->leftJoin($this->tbStudent . " as std", "std.user_id", "=", "room.student_id")
                     ->where('room.id', '=', $chatRoom)
-                    ->select('room.id as room_id', 'room.student_id', 'room.school_id', 'chat.room_chat_id', 'chat.id as chat_id', 'chat.sender', 'chat.chat', 'chat.image', 'chat.send_time', 'chat.is_readed')
+                    ->select('room.id as room_id', 'room.student_id', 'room.school_id', 'chat.room_chat_id', 'chat.id as chat_id', 'chat.sender', 'chat.chat', 'chat.image', 'chat.send_time', 'chat.is_readed', 'room.updated_at', 'room.updated_at')
                     ->get();
                 // if ($count < 1) {
-
+                $student = DB::connection('pgsql2')->table($this->tbStudent, "std")
+                    ->leftJoin($this->tbUserPersonal . " as user", 'std.user_id', '=', 'user.id')
+                    ->where('std.user_id', '=', $chattable[0]->student_id)
+                    ->select('std.phone', 'std.avatar', 'user.first_name', 'user.last_name')
+                    ->get();
                 $roomResponse = array(
-                    'room_id'       => $chattable[0]->room_id,
+                    // id, school_id, student_id, student_phone, student_photo & updated_at
+                    'id'            => $chattable[0]->room_id,
                     'school_id'     => $chattable[0]->school_id,
-                    'student_id'    => $chattable[0]->student_id
+                    'student_id'    => $chattable[0]->student_id,
+                    'student_phone' => $student[0]->phone,
+                    "student_name"  => $student[0]->first_name . " " . $student[0]->last_name,
+                    'student_photo' => env("WEBINAR_URL") . $student[0]->avatar,
+                    'updated_at'    => $chattable[0]->updated_at,
                 );
                 $chat = DB::table($this->tbChat)
                     ->where('room_chat_id', '=', $chattable[0]->room_id)
@@ -112,8 +123,8 @@ class SchoolChatBoxController extends Controller
                         $response_path = env("WEBINAR_URL") . $chatmodel[$i]->image;
                     }
                     $chatResponse[$i] = array(
-                        'chat_id'       => $chat[$i]->id,
-                        'room_chat_id'  => $chat[$i]->room_chat_id,
+                        'id'       => $chat[$i]->id,
+                        'channel_id'  => $chat[$i]->room_chat_id,
                         'chat'          => $chat[$i]->chat,
                         'image'         => $response_path,
                         'send_time'     => $chat[$i]->send_time,
@@ -121,14 +132,13 @@ class SchoolChatBoxController extends Controller
                         'is_readed'     => $chat[$i]->is_readed
                     );
                 }
-                $response = array_values(array(
-                    "room" => $roomResponse,
-                    "chat" => $chatResponse,
-                ));
-                return $response;
+                return (object) array(
+                    "channel" => $roomResponse,
+                    "list_chat" => $chatResponse,
+                );
             });
             if ($data) {
-                return $this->makeJSONResponse($data, 200);
+                return $this->makeJSONResponse($data, 201);
             } else {
                 return $this->makeJSONResponse(["message" => "transaction failed!"], 400);
             }
@@ -140,7 +150,7 @@ class SchoolChatBoxController extends Controller
             "chat_id" => 'required|numeric|exists:' . $this->tbChat . ',id'
         ]);
         if ($validation->fails()) {
-            return $this->makeJSONResponse($validation->errors(), 400);
+            return $this->makeJSONResponse(['message' => $validation->errors()->first()], 200);
         } else {
             $delete = ChatModel::findOrfail($chat_id);
             if ($delete) {
@@ -158,9 +168,9 @@ class SchoolChatBoxController extends Controller
          * list-of-room and search by student name
          * response
          *  
-         * room
-         * student
-         * last-chat
+         * school_id
+         * search
+         * 
          * 
          */
         $validation = Validator::make($request->all(), [
@@ -169,73 +179,139 @@ class SchoolChatBoxController extends Controller
 
         ]);
         if ($validation->fails()) {
-            return $this->makeJSONResponse($validation->errors(), 400);
+            return $this->makeJSONResponse(['message' => $validation->errors()->first()], 400);
         } else {
             try {
                 $data = DB::transaction(function () use ($request) {
-
+                    $current_page = 1;
                     $data = [];
+                    $start_item = 0;
+
+
                     $school = DB::connection('pgsql2')->table($this->tbSchool)
                         ->where('id', '=', $request->school_id)
                         ->get();
-                    // $schoolobject = (object) $school;
-                    $search = "";
-                    if ($request->search != null) {
-                        $search_length = preg_replace('/\s+/', '', $request->search);
-                        if (strlen($search_length) > 0) {
-                            $search = strtolower($request->search);
-                        }
-                    }
-                    $index = 0;
-                    //salah
-                    // var_dump($search);
-                    $student = DB::connection('pgsql2')->table($this->tbStudent, 'student')
-                        ->leftJoin($this->tbUserPersonal . ' as personal', 'student.user_id', '=', 'personal.id')
-                        ->where('student.school_id', '=', $request->school_id)
-                        ->whereRaw("lower(concat(personal.first_name,' ',personal.last_name)) like '%" . $search . "%'")
-                        ->orderBy('personal.id', 'asc')
-                        ->limit(10)
-                        ->select('student.*', 'personal.first_name', 'personal.last_name')
+
+                    $room_count = DB::table($this->tbRoom)
+                        ->selectRaw('count(id)')
+                        ->where('school_id', '=', $request->school_id)
                         ->get();
 
-                    $roomchat = [];
-                    for ($i = 0; $i < count($student); $i++) {
-                        $room = DB::table($this->tbRoom)
-                            ->where('school_id', '=', $request->school_id)
-                            ->where('student_id', '=', $student[$i]->id)
-                            ->get();
-                        if (count($room) > 0) {
-                            $chat = DB::table($this->tbChat)
-                                ->where('room_chat_id', '=', $room[0]->id)
-                                ->orderBy('id', 'desc')
-                                ->limit(1)
-                                ->get();
+                    $total_page = ceil($room_count[0]->count / 10);
 
-                            $data[$index] = (object) array(
-                                'room'      => $room[0],
-                                'chat'      => $chat[0],
-                                'candidate'   => $student[$i]
-                            );
-                            $roomchat[$i] = $room[0];
-                            $index++;
+                    if ($request->page != null) {
+                        $current_page = $request->page;
+
+                        if ($current_page > 1) {
+                            $start_item = ($current_page - 1) * 10;
                         }
                     }
 
-                    $response = (object) array(
-                        'school'    => $school[0],
-                        'rooms'     => $data
-                    );
-                    if ($search == "") {
-                        $toarray = array_values($roomchat);
-                        // $filter = array_filter($toarray);
-                        $responseNoSearch = (object) array(
-                            'school'    => $school[0],
-                            'rooms'     => $toarray
-                        );
-                        return $responseNoSearch;
-                    } else {
-                        return $response;
+                    if ($current_page > 0 && $current_page <= $total_page) {
+                        $search = "";
+                        if ($request->search != null) {
+                            $searchLength = preg_replace('/\s+/', '', $request->search);
+                            if (strlen($searchLength) > 0) {
+                                $search = strtolower($request->search);
+                                $student = DB::connection('pgsql2')->table($this->tbStudent, 'student')
+                                    ->leftJoin($this->tbUserPersonal . ' as personal', 'student.user_id', '=', 'personal.id')
+                                    ->where('student.school_id', '=', $request->school_id)
+                                    ->whereRaw("lower(concat(personal.first_name,' ',personal.last_name)) like '%" . $search . "%'")
+                                    ->orderBy('personal.id', 'asc')
+                                    ->limit(10)
+                                    ->offset($start_item)
+                                    ->select('student.*', 'personal.first_name', 'personal.last_name')
+                                    ->get();
+
+
+                                $count =  count($student);
+                                if ($count > 0 || $count != null) {
+                                    for ($i = 0; $i < $count; $i++) {
+                                        $rooms = DB::table($this->tbRoom)
+                                            // ->selectRaw('count(id)')
+                                            ->where('student_id', '=', $student[$i]->user_id)
+                                            ->get();
+                                        $arrayroom[$i] = $rooms[0];
+                                    }
+                                    $rooms = [];
+                                    // var_dump($arrayroom);
+                                    $roomarray = [];
+                                    for ($j = 0; $j < count($arrayroom); $j++) {
+                                        //id, school_id, student_id, student_phone, student_name, student_photo & updated_at
+                                        $room = DB::table($this->tbRoom)
+                                            ->where('school_id', '=', $request->school_id)
+                                            ->where('student_id', '=', $student[$j]->user_id)
+                                            ->get();
+                                        $roomarray[$j] = $room[0];
+                                    }
+                                    // var_dump($roomarray);
+
+                                    for ($i = 0; $i < count($roomarray); $i++) {
+                                        $roomdetail[$i] = array(
+                                            'id'            => $roomarray[$i]->id,
+                                            "school_id"     => $roomarray[$i]->school_id,
+                                            "student_id"    => $roomarray[$i]->student_id,
+                                            "student_name"  => $student[$i]->first_name . " " . $student[$i]->last_name,
+                                            "student_photo" => $student[$i]->avatar,
+                                            "student_phone" => $student[$i]->phone,
+                                            "is_deleted"    => $roomarray[$i]->is_deleted,
+                                            "updated_at"    => $roomarray[$i]->updated_at,
+                                        );
+                                    }
+                                }
+                            }
+                        } else {
+                            // $channelArr = [];
+                            $channel = DB::table($this->tbRoom)
+                                ->where('school_id', '=', $request->school_id)
+                                ->get();
+                            //     $channelArr[$i] = $channel[0];
+                            // }
+                            // $studentArr = [];
+                            // for ($j = 0; $j < count($channelArr); $j++) {
+                            for ($i = 0; $i < count($channel); $i++) {
+                                $students = DB::connection('pgsql2')->table($this->tbStudent, 'student')
+                                    ->leftJoin($this->tbUserPersonal . ' as personal', 'student.user_id', '=', 'personal.id')
+                                    ->where('student.user_id', '=', $channel[$i]->student_id)
+                                    ->orderBy('personal.id', 'desc')
+                                    ->limit(10)
+                                    ->offset($start_item)
+                                    ->select('student.*', 'personal.first_name', 'personal.last_name')
+                                    ->get();
+                                $studentArr[$i] = $students[0];
+                            }
+                            for ($i = 0; $i < count($studentArr); $i++) {
+                                $roomdetail[$i] = array(
+                                    // 'channel' => $channel[$i],
+                                    // 'student' => $studentArr[$i]
+                                    'id'            => $channel[$i]->id,
+                                    "school_id"     => $channel[$i]->school_id,
+                                    "student_id"    => $channel[$i]->student_id,
+                                    "student_name"  => $studentArr[$i]->first_name . " " . $studentArr[$i]->last_name,
+                                    "student_photo" => $studentArr[$i]->avatar,
+                                    "student_phone" => $studentArr[$i]->phone,
+                                    "is_deleted"    => $channel[$i]->is_deleted,
+                                    "updated_at"    => $channel[$i]->updated_at,
+                                );
+                            }
+                        }
                     }
+
+                    // 
+                    $response = (object)array(
+                        'data'   => $roomdetail,
+                        'pagination' => (object) array(
+                            'current_page'    => (int) 1,
+                            'last_page'     => (int) $total_page,
+                            'total_data'    => (int) $room_count[0]->count
+                        )
+                    );
+
+                    return (object)array(
+                        'school' => $school[0],
+                        'channel' => $response,
+                        // 'count' => count($arrayroom)
+                    );
                 });
                 if ($data) {
                     return $this->makeJSONResponse($data, 200);
@@ -247,6 +323,7 @@ class SchoolChatBoxController extends Controller
             }
         }
     }
+
     public function listCandidate(Request $request)
     {
         $validation = Validator::make($request->all(), [
@@ -272,7 +349,7 @@ class SchoolChatBoxController extends Controller
             'channel_id' => 'required|numeric|exists:' . $this->tbRoom . ',id'
         ]);
         if ($validation->fails()) {
-            return $this->makeJSONResponse($validation->errors(), 400);
+            return $this->makeJSONResponse(['message' => $validation->errors()->first()], 400);
         } else {
             $delete = ChatRoomModel::findOrfail($channel_id);
             if ($delete) {
@@ -287,20 +364,36 @@ class SchoolChatBoxController extends Controller
             'channel_id' => 'required|numeric|exists:' . $this->tbRoom . ',id'
         ]);
         if ($validation->fails()) {
-            return $this->makeJSONResponse($validation->errors(), 400);
+            return $this->makeJSONResponse(['message' => $validation->errors()->first()], 400);
         } else {
             try {
                 // $data = DB::transaction(function () use ($channel_id) {
                 $detail = DB::table($this->tbChat, 'chat')
                     ->leftJoin($this->tbRoom . " as room", 'chat.room_chat_id', '=', 'room.id')
                     ->where('room.id', '=', $channel_id)
-                    ->select('room.id as room_id', 'room.student_id', 'room.school_id', 'chat.room_chat_id', 'chat.id as chat_id', 'chat.sender', 'chat.chat', 'chat.image', 'chat.send_time', 'chat.is_readed')
+                    ->select('room.id as room_id', 'room.student_id', 'room.school_id', 'chat.room_chat_id', 'chat.id as chat_id', 'chat.sender', 'chat.chat', 'chat.image', 'chat.send_time', 'chat.is_readed', 'room.updated_at')
                     ->get();
 
+                // $candidates = [];
+                // for($i = 0 ; $i < count($detail); $i++){
+                $candidate = DB::connection('pgsql2')->table($this->tbStudent, 'std')
+                    ->leftJoin($this->tbUserPersonal . " as user", 'std.user_id', '=', 'user.id')
+                    ->where('std.user_id', '=', $detail[0]->student_id)
+                    ->select('std.phone', 'user.first_name', 'user.last_name', 'std.avatar')
+                    ->get();
+
+                // $candidates[$i] = $candidate[0];
+                // }
+                // id, school_id, student_id, student_phone, student_photo & updated_at
                 $responseChannel = array(
                     'id'            => $detail[0]->room_id,
-                    'student_id'    => $detail[0]->student_id,
                     'school_id'     => $detail[0]->school_id,
+                    'student_id'    => $detail[0]->student_id,
+                    // "student_id"    =>
+                    "student_phone" => $candidate[0]->phone,
+                    "student_name"  => $candidate[0]->first_name . " " . $candidate[0]->last_name,
+                    "student_photo" => env("WEBINAR_URL") . $candidate[0]->avatar,
+                    "updated_at"     => $detail[0]->updated_at,
                 );
                 for ($i = 0; $i < count($detail); $i++) {
                     $chatmodel[$i] = ChatModel::find($detail[$i]->chat_id);
@@ -308,6 +401,13 @@ class SchoolChatBoxController extends Controller
                     if ($chatmodel[$i]->image != null) {
                         $response_path = env("WEBINAR_URL") . $chatmodel[$i]->image;
                     }
+                    // "id": 10,
+                    // "channel_id": 8,
+                    // "sender": "student",
+                    // "chat": "test message 123",
+                    // "image": null,
+                    // "send_time": "2021-07-08 23:58:44",
+                    // "is_readed": false
                     $responseChat[$i] = array(
                         'id'            => $detail[$i]->chat_id,
                         'channel_id'    => $detail[$i]->room_chat_id,
@@ -321,11 +421,11 @@ class SchoolChatBoxController extends Controller
                 $response = array(
                     // 'count' => count($detail),
                     'channel' => $responseChannel,
-                    'chats' => $responseChat
+                    'list_chat' => $responseChat
                     // 'detail' => $detail
                 );
                 $arrayResponse = array_values($response);
-                return  $arrayResponse;
+                return  $response;
             } catch (Exception $e) {
                 echo $e;
             }
@@ -348,6 +448,7 @@ class SchoolChatBoxController extends Controller
                         if (strlen($search_length) > 0) {
                             $search = strtolower($request->search);
                         }
+
                         $student = DB::connection('pgsql2')->table($this->tbStudent, 'student')
                             ->leftJoin($this->tbUserPersonal . ' as personal', 'student.user_id', '=', 'personal.id')
                             ->where('student.school_id', '=', $request->school_id)
@@ -356,21 +457,65 @@ class SchoolChatBoxController extends Controller
                             ->limit(10)
                             ->select('student.id', 'student.phone', 'student.nim', 'student.address', 'student.date_of_birth', 'student.gender', 'student.marital_status', 'student.religion', 'student.employment_status', 'student.description', 'student.avatar', 'student.domicile_id', 'student.user_id', 'student.school_id', 'personal.first_name', 'personal.last_name')
                             ->get();
+                        //    for($i =0 ; $i <) 
                         // $array = array_values($student);
-                        $response =  array(
-                            'candidate' => $student,
+                        $arr = [];
+                        for ($i = 0; $i < count($student); $i++) {
+                            $channelarray = DB::table($this->tbRoom)
+                                ->where('student_id', '=', $student[$i]->user_id)
+                                ->select('id')
+                                ->get();
+                            $arr[$i] = $channelarray[0];
+                        }
+                        for ($j = 0; $j < count($student); $j++) {
+
+                            $candidateResponse[$j] = array(
+                                'id'            => $student[$j]->user_id,
+                                'first_name'    => $student[$j]->first_name,
+                                'last_name'     => $student[$j]->last_name,
+                                'nim'           => $student[$j]->nim,
+                                'phone'         => $student[$j]->phone,
+                                'channel_id'    => $arr[$j]->id,
+                            );
+                        }
+                        //id, first_name, last_name, nim, phone, channel_id
+                        $response = array(
+                            'candidate' => $candidateResponse,
                         );
                         return $response;
                     } else {
-                        $candidate = DB::connection('pgsql2')->table($this->tbStudent, 'student')
-                            ->leftJoin($this->tbUserPersonal . ' as personal', 'student.user_id', '=', 'personal.id')
-                            ->where('student.school_id', '=', $request->school_id)
-                            ->orderBy('personal.id', 'asc')
-                            ->limit(10)
-                            ->select('student.id', 'student.phone', 'student.nim', 'student.address', 'student.date_of_birth', 'student.gender', 'student.marital_status', 'student.religion', 'student.employment_status', 'student.description', 'student.avatar', 'student.domicile_id', 'student.user_id', 'student.school_id', 'personal.first_name', 'personal.last_name')
+
+                        $channelarray = DB::table($this->tbRoom)
+                            ->where('school_id', '=', $request->school_id)
+                            ->select('id', 'student_id')
                             ->get();
+
+                        $candidateArray = [];
+                        for ($i = 0; $i < count($channelarray); $i++) {
+                            $candidate = DB::connection('pgsql2')->table($this->tbStudent, 'student')
+                                ->leftJoin($this->tbUserPersonal . ' as personal', 'student.user_id', '=', 'personal.id')
+                                ->where('student.user_id', '=', $channelarray[$i]->student_id)
+                                ->orderBy('personal.id', 'asc')
+                                ->limit(10)
+                                ->select('student.user_id', 'student.phone', 'student.nim', 'personal.first_name', 'personal.last_name')
+                                ->get();
+                            $candidateArray[$i] = $candidate[0];
+                        }
+                        // $channelarr = [];
+                        $count = count($candidate);
+                        for ($j = 0; $j < count($channelarray); $j++) {
+                            $candidateResponse[$j] = array(
+                                'id'            => $candidateArray[$j]->user_id,
+                                'first_name'    => $candidateArray[$j]->first_name,
+                                'last_name'     => $candidateArray[$j]->last_name,
+                                'nim'           => $candidateArray[$j]->nim,
+                                'phone'         => $candidateArray[$j]->phone,
+                                'channel_id'    => $channelarray[$j]->id,
+                            );
+                        }
+                        //id, first_name, last_name, nim, phone, channel_id
                         $response = array(
-                            'candidate' => $candidate,
+                            'candidate' => $candidateResponse,
                         );
                         return $response;
                     }
