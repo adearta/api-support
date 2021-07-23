@@ -184,7 +184,7 @@ class SchoolChatBoxController extends Controller
             try {
                 $data = DB::transaction(function () use ($request) {
                     $current_page = 1;
-                    $data = [];
+                    $roomdetail = [];
                     $start_item = 0;
 
 
@@ -263,8 +263,6 @@ class SchoolChatBoxController extends Controller
                                         );
                                     }
                                     // }
-                                } else {
-                                    $roomdetail = [];
                                 }
                             }
                         } else {
@@ -458,6 +456,7 @@ class SchoolChatBoxController extends Controller
         } else {
             try {
                 $data = DB::transaction(function () use ($request) {
+                    $candidateResponse = [];
                     if ($request->search != null) {
                         $search_length = preg_replace('/\s+/', '', $request->search);
                         if (strlen($search_length) > 0) {
@@ -476,7 +475,10 @@ class SchoolChatBoxController extends Controller
                         // $array = array_values($student);
                         $arr = [];
                         if (count($student) < 1) {
-                            $candidateResponse = [];
+                            $response = array(
+                                'candidate' => $arr,
+                            );
+                            return $response;
                         } else {
                             for ($i = 0; $i < count($student); $i++) {
                                 $channelarray = DB::table($this->tbRoom)
@@ -497,11 +499,11 @@ class SchoolChatBoxController extends Controller
                                 );
                             }
                             //id, first_name, last_name, nim, phone, channel_id
+                            $response = array(
+                                'candidate' => $candidateResponse,
+                            );
+                            return $response;
                         }
-                        $response = array(
-                            'candidate' => $candidateResponse,
-                        );
-                        return $response;
                     } else {
                         $arr = [];
                         $channelarray = DB::table($this->tbRoom)
