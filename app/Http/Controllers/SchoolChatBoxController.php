@@ -263,6 +263,8 @@ class SchoolChatBoxController extends Controller
                                         );
                                     }
                                     // }
+                                } else {
+                                    $roomdetail = [];
                                 }
                             }
                         } else {
@@ -474,10 +476,7 @@ class SchoolChatBoxController extends Controller
                         // $array = array_values($student);
                         $arr = [];
                         if (count($student) < 1) {
-                            $response = array(
-                                'candidate' => $arr,
-                            );
-                            return $response;
+                            $candidateResponse = [];
                         } else {
                             for ($i = 0; $i < count($student); $i++) {
                                 $channelarray = DB::table($this->tbRoom)
@@ -498,11 +497,11 @@ class SchoolChatBoxController extends Controller
                                 );
                             }
                             //id, first_name, last_name, nim, phone, channel_id
-                            $response = array(
-                                'candidate' => $candidateResponse,
-                            );
-                            return $response;
                         }
+                        $response = array(
+                            'candidate' => $candidateResponse,
+                        );
+                        return $response;
                     } else {
                         $arr = [];
                         $channelarray = DB::table($this->tbRoom)
