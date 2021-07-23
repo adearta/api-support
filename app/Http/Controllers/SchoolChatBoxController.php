@@ -214,7 +214,7 @@ class SchoolChatBoxController extends Controller
                             if (strlen($searchLength) > 0) {
                                 $search = strtolower($request->search);
                                 $student = DB::connection('pgsql2')->table($this->tbStudent, 'student')
-                                    ->leftJoin($this->tbUserPersonal . ' as personal', 'student.user_id', '=', 'personal.id')
+                                    ->leftJoin($this->tbUserPersonal . ' as personal', 'student.id', '=', 'personal.id')
                                     ->where('student.school_id', '=', $request->school_id)
                                     ->whereRaw("lower(concat(personal.first_name,' ',personal.last_name)) like '%" . $search . "%'")
                                     ->orderBy('personal.id', 'asc')
@@ -228,7 +228,7 @@ class SchoolChatBoxController extends Controller
                                     for ($i = 0; $i < $count; $i++) {
                                         $rooms = DB::table($this->tbRoom)
                                             // ->selectRaw('count(id)')
-                                            ->where('student_id', '=', $student[$i]->user_id)
+                                            ->where('student_id', '=', $student[$i]->id)
                                             ->get();
                                         $arrayroom[$i] = $rooms[0];
                                     }
@@ -239,7 +239,7 @@ class SchoolChatBoxController extends Controller
                                         //id, school_id, student_id, student_phone, student_name, student_photo & updated_at
                                         $room = DB::table($this->tbRoom)
                                             ->where('school_id', '=', $request->school_id)
-                                            ->where('student_id', '=', $student[$j]->user_id)
+                                            ->where('student_id', '=', $student[$j]->id)
                                             ->get();
                                         $roomarray[$j] = $room[0];
                                     }
@@ -276,8 +276,8 @@ class SchoolChatBoxController extends Controller
                             // for ($j = 0; $j < count($channelArr); $j++) {
                             for ($i = 0; $i < count($channel); $i++) {
                                 $students = DB::connection('pgsql2')->table($this->tbStudent, 'student')
-                                    ->leftJoin($this->tbUserPersonal . ' as personal', 'student.user_id', '=', 'personal.id')
-                                    ->where('student.user_id', '=', $channel[$i]->student_id)
+                                    ->leftJoin($this->tbUserPersonal . ' as personal', 'student.id', '=', 'personal.id')
+                                    ->where('student.id', '=', $channel[$i]->student_id)
                                     ->orderBy('personal.id', 'desc')
                                     ->limit(10)
                                     ->offset($start_item)
@@ -391,8 +391,8 @@ class SchoolChatBoxController extends Controller
                 // $candidates = [];
                 // for($i = 0 ; $i < count($detail); $i++){
                 $candidate = DB::connection('pgsql2')->table($this->tbStudent, 'std')
-                    ->leftJoin($this->tbUserPersonal . " as user", 'std.user_id', '=', 'user.id')
-                    ->where('std.user_id', '=', $detail[0]->student_id)
+                    ->leftJoin($this->tbUserPersonal . " as user", 'std.id', '=', 'user.id')
+                    ->where('std.id', '=', $detail[0]->student_id)
                     ->select('std.phone', 'user.first_name', 'user.last_name', 'std.avatar')
                     ->get();
 
@@ -463,7 +463,7 @@ class SchoolChatBoxController extends Controller
                         }
 
                         $student = DB::connection('pgsql2')->table($this->tbStudent, 'student')
-                            ->leftJoin($this->tbUserPersonal . ' as personal', 'student.user_id', '=', 'personal.id')
+                            ->leftJoin($this->tbUserPersonal . ' as personal', 'student.id', '=', 'personal.id')
                             ->where('student.school_id', '=', $request->school_id)
                             ->whereRaw("lower(concat(personal.first_name,' ',personal.last_name)) like '%" . $search . "%'")
                             ->orderBy('personal.id', 'asc')
@@ -473,7 +473,7 @@ class SchoolChatBoxController extends Controller
                         //    for($i =0 ; $i <) 
                         // $array = array_values($student);
                         $arr = [];
-                        if (count($arr) < 1) {
+                        if (count($student) < 1) {
                             $response = array(
                                 'candidate' => $arr,
                             );
@@ -481,7 +481,7 @@ class SchoolChatBoxController extends Controller
                         } else {
                             for ($i = 0; $i < count($student); $i++) {
                                 $channelarray = DB::table($this->tbRoom)
-                                    ->where('student_id', '=', $student[$i]->user_id)
+                                    ->where('student_id', '=', $student[$i]->id)
                                     ->select('id')
                                     ->get();
                                 $arr[$i] = $channelarray[0];
@@ -489,7 +489,7 @@ class SchoolChatBoxController extends Controller
                             for ($j = 0; $j < count($student); $j++) {
 
                                 $candidateResponse[$j] = array(
-                                    'id'            => $student[$j]->user_id,
+                                    'id'            => $student[$j]->id,
                                     'first_name'    => $student[$j]->first_name,
                                     'last_name'     => $student[$j]->last_name,
                                     'nim'           => $student[$j]->nim,
@@ -518,11 +518,11 @@ class SchoolChatBoxController extends Controller
                             $candidateArray = [];
                             for ($i = 0; $i < count($channelarray); $i++) {
                                 $candidate = DB::connection('pgsql2')->table($this->tbStudent, 'student')
-                                    ->leftJoin($this->tbUserPersonal . ' as personal', 'student.user_id', '=', 'personal.id')
-                                    ->where('student.user_id', '=', $channelarray[$i]->student_id)
+                                    ->leftJoin($this->tbUserPersonal . ' as personal', 'student.id', '=', 'personal.id')
+                                    ->where('student.id', '=', $channelarray[$i]->student_id)
                                     ->orderBy('personal.id', 'asc')
                                     ->limit(10)
-                                    ->select('student.user_id', 'student.phone', 'student.nim', 'personal.first_name', 'personal.last_name')
+                                    ->select('student.id', 'student.phone', 'student.nim', 'personal.first_name', 'personal.last_name')
                                     ->get();
                                 $candidateArray[$i] = $candidate[0];
                             }
@@ -531,7 +531,7 @@ class SchoolChatBoxController extends Controller
                             // $count = count($candidate);
                             for ($j = 0; $j < count($channelarray); $j++) {
                                 $candidateResponse[$j] = array(
-                                    'id'            => $candidateArray[$j]->user_id,
+                                    'id'            => $candidateArray[$j]->id,
                                     'first_name'    => $candidateArray[$j]->first_name,
                                     'last_name'     => $candidateArray[$j]->last_name,
                                     'nim'           => $candidateArray[$j]->nim,
