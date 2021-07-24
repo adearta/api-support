@@ -379,66 +379,95 @@ class SchoolChatBoxController extends Controller
             return $this->makeJSONResponse(['message' => $validation->errors()->first()], 400);
         } else {
             try {
+                $responseChat = [];
                 // $data = DB::transaction(function () use ($channel_id) {
                 $detail = DB::table($this->tbChat, 'chat')
                     ->leftJoin($this->tbRoom . " as room", 'chat.room_chat_id', '=', 'room.id')
                     ->where('room.id', '=', $channel_id)
                     ->select('room.id as room_id', 'room.student_id', 'room.school_id', 'chat.room_chat_id', 'chat.id as chat_id', 'chat.sender', 'chat.chat', 'chat.image', 'chat.send_time', 'chat.is_readed', 'room.updated_at')
                     ->get();
-                // if (count($detail) < 1) {
-                //     echo "here";
-                // }
-                // $candidates = [];
-                // for($i = 0 ; $i < count($detail); $i++){
-                $candidate = DB::connection('pgsql2')->table($this->tbStudent, 'std')
-                    ->leftJoin($this->tbUserPersonal . " as user", 'std.id', '=', 'user.id')
-                    ->where('std.id', '=', $detail[0]->student_id)
-                    ->select('std.phone', 'user.first_name', 'user.last_name', 'std.avatar')
-                    ->get();
-
-                // $candidates[$i] = $candidate[0];
-                // }
-                // id, school_id, student_id, student_phone, student_photo & updated_at
-                $responseChannel = array(
-                    'id'            => $detail[0]->room_id,
-                    'school_id'     => $detail[0]->school_id,
-                    'student_id'    => $detail[0]->student_id,
-                    "student_phone" => $candidate[0]->phone,
-                    "student_name"  => $candidate[0]->first_name . " " . $candidate[0]->last_name,
-                    "student_photo" => env("WEBINAR_URL") . $candidate[0]->avatar,
-                    "updated_at"     => $detail[0]->updated_at,
-                );
-                for ($i = 0; $i < count($detail); $i++) {
-                    $chatmodel[$i] = ChatModel::find($detail[$i]->chat_id);
+                $count = count($detail);
+                if ($count < 1) {
+                    // var_dump($detail);
+                    $channel = DB::table($this->tbRoom)
+                        ->where('id', '=', $channel_id)
+                        ->get();
+                    $detailChannel = DB::connection('pgsql2')->table($this->tbStudent, 'std')
+                        ->leftJoin($this->tbUserPersonal . " as user", 'std.id', '=', 'user.id')
+                        ->where('std.id', '=', $channel[0]->student_id)
+                        ->select('std.phone', 'user.first_name', 'user.last_name', 'std.avatar')
+                        ->get();
+                    $chatmodel = StudentModel::find($channel[0]->student_id);
                     $response_path = null;
-                    if ($chatmodel[$i]->image != null) {
-                        $response_path = env("WEBINAR_URL") . $chatmodel[$i]->image;
+                    if ($chatmodel->avatar != null) {
+                        $response_path = env("WEBINAR_URL") . $chatmodel->avatar;
                     }
-                    // "id": 10,
-                    // "channel_id": 8,
-                    // "sender": "student",
-                    // "chat": "test message 123",
-                    // "image": null,
-                    // "send_time": "2021-07-08 23:58:44",
-                    // "is_readed": false
-                    $responseChat[$i] = array(
-                        'id'            => $detail[$i]->chat_id,
-                        'channel_id'    => $detail[$i]->room_chat_id,
-                        'sender'        => $detail[$i]->sender,
-                        'chat'          => $detail[$i]->chat,
-                        'image'         => $response_path,
-                        'send_time'     => $detail[$i]->send_time,
-                        'is_readed'     => $detail[$i]->is_readed
+                    $responseChannel = array(
+                        'id'            => $channel[0]->id,
+                        'school_id'     => $channel[0]->school_id,
+                        'student_id'    => $channel[0]->student_id,
+                        "student_phone" => $detailChannel[0]->phone,
+                        "student_name"  => $detailChannel[0]->first_name . " " . $detailChannel[0]->last_name,
+                        "student_photo" => $response_path,
+                        "updated_at"     => $channel[0]->updated_at,
                     );
+                    $response = array(
+                        // 'count' => count($detail),
+                        'channel' => $responseChannel,
+                        // 'detail' => $channel,
+                        'list_chat' => $responseChat
+                    );
+                    return  $response;
+                } else {
+                    // $candidates = [];
+                    // for($i = 0 ; $i < count($detail); $i++){
+                    $candidate = DB::connection('pgsql2')->table($this->tbStudent, 'std')
+                        ->leftJoin($this->tbUserPersonal . " as user", 'std.id', '=', 'user.id')
+                        ->where('std.id', '=', $detail[0]->student_id)
+                        ->select('std.id as student_id', 'std.phone', 'user.first_name', 'user.last_name', 'std.avatar')
+                        ->get();
+
+                    $responseChannel = array(
+                        'id'            => $detail[0]->room_id,
+                        'school_id'     => $detail[0]->school_id,
+                        'student_id'    => $detail[0]->student_id,
+                        "student_phone" => $candidate[0]->phone,
+                        "student_name"  => $candidate[0]->first_name . " " . $candidate[0]->last_name,
+                        "student_photo" => env("WEBINAR_URL") . $candidate[0]->avatar,
+                        "updated_at"     => $detail[0]->updated_at,
+                    );
+                    for ($i = 0; $i < count($detail); $i++) {
+                        $chatmodel[$i] = ChatModel::find($detail[$i]->chat_id);
+                        $response_path = null;
+                        if ($chatmodel[$i]->image != null) {
+                            $response_path = env("WEBINAR_URL") . $chatmodel[$i]->image;
+                        }
+                        // "id": 10,
+                        // "channel_id": 8,
+                        // "sender": "student",
+                        // "chat": "test message 123",
+                        // "image": null,
+                        // "send_time": "2021-07-08 23:58:44",
+                        // "is_readed": false
+                        $responseChat[$i] = array(
+                            'id'            => $detail[$i]->chat_id,
+                            'channel_id'    => $detail[$i]->room_chat_id,
+                            'sender'        => $detail[$i]->sender,
+                            'chat'          => $detail[$i]->chat,
+                            'image'         => $response_path,
+                            'send_time'     => $detail[$i]->send_time,
+                            'is_readed'     => $detail[$i]->is_readed
+                        );
+                    }
+                    $response = array(
+                        // 'count' => count($detail),
+                        'channel' => $responseChannel,
+                        'list_chat' => $responseChat
+                        // 'detail' => $detail
+                    );
+                    // $arrayResponse = array_values($response);
+                    return  $response;
                 }
-                $response = array(
-                    // 'count' => count($detail),
-                    'channel' => $responseChannel,
-                    'list_chat' => $responseChat
-                    // 'detail' => $detail
-                );
-                // $arrayResponse = array_values($response);
-                return  $response;
             } catch (Exception $e) {
                 echo $e;
             }
