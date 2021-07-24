@@ -243,20 +243,18 @@ class SchoolChatBoxController extends Controller
                                             ->get();
                                         $roomarray[$j] = $room[0];
                                     }
-                                    // var_dump($roomarray);
-                                    // if (count($roomarray) < 1) {
-                                    //     $roomdetail = [];
-                                    //     echo "masuk sini";
-                                    //     var_dump($roomarray);
-                                    // } else {
-                                    // var_dump($roomarray);
                                     for ($i = 0; $i < count($roomarray); $i++) {
+                                        $photo = StudentModel::find($student[$i]->id);
+                                        $response_path = null;
+                                        if ($photo->avatar != null) {
+                                            $response_path = env("WEBINAR_URL") . $student[$i]->avatar;
+                                        }
                                         $roomdetail[$i] = array(
                                             'id'            => $roomarray[$i]->id,
                                             "school_id"     => $roomarray[$i]->school_id,
                                             "student_id"    => $roomarray[$i]->student_id,
                                             "student_name"  => $student[$i]->first_name . " " . $student[$i]->last_name,
-                                            "student_photo" => $student[$i]->avatar,
+                                            "student_photo" => $response_path,
                                             "student_phone" => $student[$i]->phone,
                                             "is_deleted"    => $roomarray[$i]->is_deleted,
                                             "updated_at"    => $roomarray[$i]->updated_at,
@@ -272,7 +270,7 @@ class SchoolChatBoxController extends Controller
                                 ->get();
                             //     $channelArr[$i] = $channel[0];
                             // }
-                            // $studentArr = [];
+                            $studentArr = [];
                             // for ($j = 0; $j < count($channelArr); $j++) {
                             for ($i = 0; $i < count($channel); $i++) {
                                 $students = DB::connection('pgsql2')->table($this->tbStudent, 'student')
@@ -292,6 +290,11 @@ class SchoolChatBoxController extends Controller
                             // } else {
                             // var_dump($studentArr);
                             for ($i = 0; $i < count($studentArr); $i++) {
+                                $photo = StudentModel::find($studentArr[$i]->id);
+                                $response_path = null;
+                                if ($photo->avatar != null) {
+                                    $response_path = env("WEBINAR_URL") . $studentArr[$i]->avatar;
+                                }
                                 $roomdetail[$i] = array(
                                     // 'channel' => $channel[$i],
                                     // 'student' => $studentArr[$i]
@@ -299,7 +302,7 @@ class SchoolChatBoxController extends Controller
                                     "school_id"     => $channel[$i]->school_id,
                                     "student_id"    => $channel[$i]->student_id,
                                     "student_name"  => $studentArr[$i]->first_name . " " . $studentArr[$i]->last_name,
-                                    "student_photo" => $studentArr[$i]->avatar,
+                                    "student_photo" => $response_path,
                                     "student_phone" => $studentArr[$i]->phone,
                                     "is_deleted"    => $channel[$i]->is_deleted,
                                     "updated_at"    => $channel[$i]->updated_at,
