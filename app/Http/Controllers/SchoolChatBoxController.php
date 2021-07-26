@@ -102,6 +102,11 @@ class SchoolChatBoxController extends Controller
                     ->where('std.id', '=', $request->student_id)
                     ->select('std.phone', 'std.avatar', 'user.first_name', 'user.last_name')
                     ->get();
+                $model = StudentModel::find($chattable[0]->student_id);
+                $response_path = null;
+                if ($model->avatar != null) {
+                    $response_path = env("WEBINAR_URL") . $model->avatar;
+                }
                 $roomResponse = array(
                     // id, school_id, student_id, student_phone, student_photo & updated_at
                     'id'            => $chattable[0]->room_id,
@@ -109,7 +114,7 @@ class SchoolChatBoxController extends Controller
                     'student_id'    => $chattable[0]->student_id,
                     'student_phone' => $student[0]->phone,
                     "student_name"  => $student[0]->first_name . " " . $student[0]->last_name,
-                    'student_photo' => env("WEBINAR_URL") . $student[0]->avatar,
+                    'student_photo' => $response_path,
                     'updated_at'    => $chattable[0]->updated_at,
                 );
                 $chat = DB::table($this->tbChat)
@@ -429,14 +434,18 @@ class SchoolChatBoxController extends Controller
                         ->where('std.id', '=', $detail[0]->student_id)
                         ->select('std.id as student_id', 'std.phone', 'user.first_name', 'user.last_name', 'std.avatar')
                         ->get();
-
+                    $model = StudentModel::find($candidate[0]->student_id);
+                    $response_path = null;
+                    if ($model->avatar != null) {
+                        $response_path = env("WEBINAR_URL") . $model->avatar;
+                    }
                     $responseChannel = array(
                         'id'            => $detail[0]->room_id,
                         'school_id'     => $detail[0]->school_id,
                         'student_id'    => $detail[0]->student_id,
                         "student_phone" => $candidate[0]->phone,
                         "student_name"  => $candidate[0]->first_name . " " . $candidate[0]->last_name,
-                        "student_photo" => env("WEBINAR_URL") . $candidate[0]->avatar,
+                        "student_photo" => $response_path,
                         "updated_at"     => $detail[0]->updated_at,
                     );
                     for ($i = 0; $i < count($detail); $i++) {
