@@ -6,7 +6,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Payment\WebinarPaymentController;
 use App\Http\Controllers\CertificateController;
+use App\Http\Controllers\CandidateChannelListController;
 use App\Http\Controllers\SchoolParticipantAkbarController;
+use App\Http\Controllers\StudentChatBoxController;
 
 /*
 |--------------------------------------------------------------------------
@@ -32,3 +34,5 @@ Route::group(['prefix' => 'administrator'], function () {
 });
 
 Route::get('/testing', [CertificateController::class, 'zipTest']);
+Route::get('/candidatelistchannel', [CandidateChannelListController::class, 'listChannel']);
+Route::get('/count', [StudentChatBoxController::class, 'countChat']);

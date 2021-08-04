@@ -608,22 +608,26 @@ class SchoolChatBoxController extends Controller
         if ($validation->fails()) {
             return $this->makeJSONResponse($validation->errors(), 400);
         } else {
+            $total = 0;
             $room = DB::table($this->tbRoom)
                 ->where('school_id', '=', $request->school_id)
                 ->select('id')
                 ->get();
-            $arraychat = [];
-            for ($i = 0; $i < count($room); $i++) {
-                $chat = DB::table($this->tbChat)
-                    ->where('room_chat_id', '=', $room[$i]->id)
-                    ->where('is_readed', '=', false)
-                    ->where('sender', '=', 'student')
-                    ->select('id')
-                    ->get();
-                $count = count($chat);
-                $arraychat[$i] = $count;
+            if (count($room) > 0) {
+                $arraychat = [];
+                for ($i = 0; $i < count($room); $i++) {
+                    $chat = DB::table($this->tbChat)
+                        ->where('room_chat_id', '=', $room[$i]->id)
+                        ->where('is_readed', '=', false)
+                        ->where('sender', '=', 'student')
+                        ->select('id')
+                        ->get();
+                    $count = count($chat);
+                    $arraychat[$i] = $count;
+                }
+                $total = array_sum($arraychat);
             }
-            $total = array_sum($arraychat);
+
             $response = array(
                 'count' => $total,
             );
