@@ -101,8 +101,8 @@ class CandidateChannelListController extends Controller
                     if ($p < 0) {
                         $p = 1;
                     }
-                    $next       = env("WEBINAR_URL") . "candidatelistchannel?page=" . $n . "&search=" . $search;
-                    $previous   = env("WEBINAR_URL") . "candidatelistchannel?page=" . $p . "&search=" . $search;
+                    $next       = env("MESSAGING_URL") . "candidatelistchannel?page=" . $n . "&search=" . $search;
+                    $previous   = env("MESSAGING_URL") . "candidatelistchannel?page=" . $p . "&search=" . $search;
                 } else {
                     // echo "null gais";
                     $search = " ";
