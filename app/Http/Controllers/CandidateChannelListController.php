@@ -75,9 +75,14 @@ class CandidateChannelListController extends Controller
     }
     public function listChannel(Request $request)
     {
+        // echo "a";
+        // var_dump($request->search);
+        // flow
+        // 1. data divalidasi
+        // 2. kalau benar di cek 
         $validation = Validator::make($request->all(), [
-            'search' => 'string',
-            'page'   => 'numeric'
+            'search' => 'string|nullable',
+            'page'   => 'numeric|nullable'
         ]);
         if ($validation->fails()) {
             $this->makeJSONResponse(['message' => $validation->errors()], 400);
@@ -88,8 +93,8 @@ class CandidateChannelListController extends Controller
                 $previous = null;
                 $search = "";
                 $result = [];
-                // var_dump($request->search);
-                if ($request->search != null) {
+                // echo "aaa";
+                if ($request->search != null && $request->page != null) {
                     $searchLength = preg_replace('/\s+/', '', $request->search);
                     if (strlen($searchLength) > 0) {
                         $search = strtolower($request->search);
@@ -103,18 +108,24 @@ class CandidateChannelListController extends Controller
                     }
                     $next       = env("MESSAGING_URL") . "candidatelistchannel?page=" . $n . "&search=" . $search;
                     $previous   = env("MESSAGING_URL") . "candidatelistchannel?page=" . $p . "&search=" . $search;
+                    $student = DB::connection('pgsql2')->table($this->tbStudent)
+                        ->where('user_id', '=', $request->user_id)
+                        ->get();
+                    // return $response;
+                    $school = DB::connection('pgsql2')->table($this->tbSchool)
+                        ->where('id', '=', $student[0]->school_id)
+                        ->whereRaw("lower(name)like '%" . $search . "%'")
+                        ->get();
                 } else {
+                    // var_dump($request->page);
                     // echo "null gais";
-                    $search = " ";
+                    $student = DB::connection('pgsql2')->table($this->tbStudent)
+                        ->where('user_id', '=', $request->user_id)
+                        ->get();
+                    $school = DB::connection('pgsql2')->table($this->tbSchool)
+                        ->where('id', '=', $student[0]->school_id)
+                        ->get();
                 }
-                $student = DB::connection('pgsql2')->table($this->tbStudent)
-                    ->where('user_id', '=', $request->user_id)
-                    ->get();
-                // return $response;
-                $school = DB::connection('pgsql2')->table($this->tbSchool)
-                    ->where('id', '=', $student[0]->school_id)
-                    ->whereRaw("lower(name)like '%" . $search . "%'")
-                    ->get();
                 $channel = DB::table($this->tbChat, 'chat')
                     ->leftJoin($this->tbRoom . " as room", 'chat.room_chat_id', '=', 'room.id')
                     ->where('room.student_id', '=', $student[0]->id)
@@ -122,12 +133,12 @@ class CandidateChannelListController extends Controller
                     ->select('room.id as room_id', 'room.student_id', 'room.school_id', 'chat.room_chat_id', 'chat.id as chat_id', 'chat.sender', 'chat.chat', 'chat.image', 'chat.send_time', 'chat.is_readed', 'room.updated_at', 'room.created')
                     ->get();
                 $channelid = DB::table($this->tbRoom)
-                    ->where('student_id', '=', $channel[0]->student_id)
+                    ->where('student_id', '=', $student[0]->id)
                     ->select('id')
                     ->get();
                 $countchannel = count($channelid);
 
-                if ($countchannel > 0) {
+                if ($countchannel > 0 || $channel != null) {
                     $count = $countchannel;
                     for ($i = 0; $i < count($school); $i++) {
                         $result[$i] = array(
@@ -149,12 +160,20 @@ class CandidateChannelListController extends Controller
                         'results'    => $result
                     );
                     return $response;
+                } else {
+                    var_dump($request->search);
+                    $response = array(
+                        'count'     => $count,
+                        'next'      => $next,
+                        'previous'  => $previous,
+                        'results'    => $result
+                    );
+                    return $response;
                 }
             });
             if ($data) {
                 return $this->makeJSONResponse($data, 200);
             } else {
-
                 return $this->makeJSONResponse(['message' => 'error'], 500);
             }
         }
