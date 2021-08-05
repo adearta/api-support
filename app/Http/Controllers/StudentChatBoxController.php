@@ -434,47 +434,6 @@ class StudentChatBoxController extends Controller
     }
     //next dan previuos itu mengandung semua parameter yang di requst
 
-    public function countChat(Request $request)
-    {
-        $validation = Validator::make($request->all(), [
-            'user_id' => 'numeric|exists:pgsql2.' . $this->tbStudent . ',user_id'
-        ]);
-        if ($validation->fails()) {
-            return $this->makeJSONResponse(['message' => $validation->errors()->first()], 400);
-        } else {
-            $count = 0;
-            $student = DB::connection('pgsql2')->table($this->tbStudent)
-                ->where('user_id', '=', $request->user_id)
-                ->get();
-            $room = DB::table($this->tbRoom)
-                ->where('student_id', '=', $student[0]->id)
-                ->select('id')
-                ->get();
-            if (count($room) > 0) {
-                // $arraychat = [];
-                // for ($i = 0; $i < count($room); $i++) {
-                $chat = DB::table($this->tbChat)
-                    ->where('room_chat_id', '=', $room[0]->id)
-                    ->where('is_readed', '=', false)
-                    ->where('sender', '=', 'school')
-                    ->select('id')
-                    ->get();
-                // for ($i = 0; $i < count($chat); $i++) {
-                //     DB::table($this->tbChat)
-                //         ->where('id', '=', $chat[$i]->id)
-                //         ->update(['is_readed' => true]);
-                // }
-                $count = count($chat);
-            }
-            //     $arraychat[$i] = $count;
-            // }
-            // $total = array_sum($arraychat);
-            $response = array(
-                'count' => $count,
-            );
-            return $this->makeJSONResponse($response, 200);
-        }
-    }
     public function setReaded(Request $request)
     {
         $validation = Validator::make($request->all(), [
