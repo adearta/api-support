@@ -87,6 +87,8 @@ class CandidateChannelListController extends Controller
                 $next = null;
                 $previous = null;
                 $search = "";
+                $result = [];
+                // var_dump($request->search);
                 if ($request->search != null) {
                     $searchLength = preg_replace('/\s+/', '', $request->search);
                     if (strlen($searchLength) > 0) {
@@ -101,6 +103,9 @@ class CandidateChannelListController extends Controller
                     }
                     $next       = env("WEBINAR_URL") . "candidatelistchannel?page=" . $n . "&search=" . $search;
                     $previous   = env("WEBINAR_URL") . "candidatelistchannel?page=" . $p . "&search=" . $search;
+                } else {
+                    // echo "null gais";
+                    $search = " ";
                 }
                 $student = DB::connection('pgsql2')->table($this->tbStudent)
                     ->where('user_id', '=', $request->user_id)
@@ -123,8 +128,7 @@ class CandidateChannelListController extends Controller
                 $countchannel = count($channelid);
 
                 if ($countchannel > 0) {
-                    $count = count($channelid);
-                    $result = [];
+                    $count = $countchannel;
                     for ($i = 0; $i < count($school); $i++) {
                         $result[$i] = array(
                             "id"            => $channel[0]->room_id,
