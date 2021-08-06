@@ -157,16 +157,20 @@ class CandidateChannelListController extends Controller
                         'count'     => $count,
                         'next'      => $next,
                         'previous'  => $previous,
-                        'results'    => $result
+                        'results'    => $result,
                     );
                     return $response;
                 } else {
                     // var_dump($request->search);
+                    //
+
                     $response = array(
                         'count'     => $count,
                         'next'      => $next,
                         'previous'  => $previous,
-                        'results'    => $result
+                        'results'    => $result,
+                        'channel'   => $channelid,
+                        'school'    => $school,
                     );
                     return $response;
                 }
