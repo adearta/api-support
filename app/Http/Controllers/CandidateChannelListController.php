@@ -138,7 +138,7 @@ class CandidateChannelListController extends Controller
                     ->get();
                 $count = count($channelid);
                 $countchannel = count($channel);
-
+                //baru
                 if ($countchannel != null && $count > 0) {
                     for ($i = 0; $i < count($school); $i++) {
                         $result[$i] = array(
