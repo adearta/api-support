@@ -109,6 +109,7 @@ class CandidateChannelListController extends Controller
                     }
                     $next       = env("MESSAGING_URL") . "candidatelistchannel?page=" . $n . "&search=" . $search;
                     $previous   = env("MESSAGING_URL") . "candidatelistchannel?page=" . $p . "&search=" . $search;
+                    //
                     $student = DB::connection('pgsql2')->table($this->tbStudent)
                         ->where('user_id', '=', $request->user_id)
                         ->get();
@@ -116,7 +117,6 @@ class CandidateChannelListController extends Controller
                         ->where('id', '=', $student[0]->school_id)
                         ->whereRaw("lower(name)like '%" . $search . "%'")
                         ->get();
-                    // var_dump($school);
                 } else {
                     $student = DB::connection('pgsql2')->table($this->tbStudent)
                         ->where('user_id', '=', $request->user_id)
@@ -158,6 +158,8 @@ class CandidateChannelListController extends Controller
                         'next'      => $next,
                         'previous'  => $previous,
                         'results'    => $result,
+                        'channel'   => $channelid,
+                        'school'    => $school,
                     );
                     return $response;
                 } else {
@@ -169,7 +171,6 @@ class CandidateChannelListController extends Controller
                         'next'      => $next,
                         'previous'  => $previous,
                         'results'    => $result,
-                        //test
                         'channel'   => $channelid,
                         'school'    => $school,
                     );
