@@ -169,6 +169,7 @@ class CandidateChannelListController extends Controller
                         'next'      => $next,
                         'previous'  => $previous,
                         'results'    => $result,
+                        //test
                         'channel'   => $channelid,
                         'school'    => $school,
                     );
