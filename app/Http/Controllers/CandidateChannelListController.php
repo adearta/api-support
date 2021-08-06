@@ -95,6 +95,7 @@ class CandidateChannelListController extends Controller
                 $result = [];
                 // echo "aaa";
                 if ($request->search != null && $request->page != null) {
+                    // echo "aaa";
                     $searchLength = preg_replace('/\s+/', '', $request->search);
                     if (strlen($searchLength) > 0) {
                         $search = strtolower($request->search);
@@ -111,11 +112,11 @@ class CandidateChannelListController extends Controller
                     $student = DB::connection('pgsql2')->table($this->tbStudent)
                         ->where('user_id', '=', $request->user_id)
                         ->get();
-                    // return $response;
                     $school = DB::connection('pgsql2')->table($this->tbSchool)
                         ->where('id', '=', $student[0]->school_id)
                         ->whereRaw("lower(name)like '%" . $search . "%'")
                         ->get();
+                    // var_dump($school);
                 } else {
                     $student = DB::connection('pgsql2')->table($this->tbStudent)
                         ->where('user_id', '=', $request->user_id)
@@ -124,6 +125,7 @@ class CandidateChannelListController extends Controller
                         ->where('id', '=', $student[0]->school_id)
                         ->get();
                 }
+                // echo 'aa';
                 $channel = DB::table($this->tbChat, 'chat')
                     ->leftJoin($this->tbRoom . " as room", 'chat.room_chat_id', '=', 'room.id')
                     ->where('room.student_id', '=', $student[0]->id)
@@ -134,10 +136,10 @@ class CandidateChannelListController extends Controller
                     ->where('student_id', '=', $student[0]->id)
                     ->select('id')
                     ->get();
-                $countchannel = count($channelid);
+                $countchannel = count($channel);
 
-                if ($countchannel > 0 || $channel != null) {
-                    $count = $countchannel;
+                if ($countchannel != null) {
+                    $count = count($channelid);
                     for ($i = 0; $i < count($school); $i++) {
                         $result[$i] = array(
                             "id"            => $channel[0]->room_id,
@@ -159,7 +161,7 @@ class CandidateChannelListController extends Controller
                     );
                     return $response;
                 } else {
-                    var_dump($request->search);
+                    // var_dump($request->search);
                     $response = array(
                         'count'     => $count,
                         'next'      => $next,
