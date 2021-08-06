@@ -117,8 +117,6 @@ class CandidateChannelListController extends Controller
                         ->whereRaw("lower(name)like '%" . $search . "%'")
                         ->get();
                 } else {
-                    // var_dump($request->page);
-                    // echo "null gais";
                     $student = DB::connection('pgsql2')->table($this->tbStudent)
                         ->where('user_id', '=', $request->user_id)
                         ->get();
