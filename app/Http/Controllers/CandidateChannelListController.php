@@ -136,10 +136,10 @@ class CandidateChannelListController extends Controller
                     ->where('student_id', '=', $student[0]->id)
                     ->select('id')
                     ->get();
+                $count = count($channelid);
                 $countchannel = count($channel);
 
-                if ($countchannel != null) {
-                    $count = count($channelid);
+                if ($countchannel != null && $count > 0) {
                     for ($i = 0; $i < count($school); $i++) {
                         $result[$i] = array(
                             "id"            => $channel[0]->room_id,
