@@ -175,6 +175,7 @@ class CandidateChannelListController extends Controller
                         'channel'   => $channelid,
                         'school'    => $school,
                         'student'    => $student,
+                        'else'         => 'else'
                     );
                     return $response;
                 }
