@@ -158,9 +158,9 @@ class CandidateChannelListController extends Controller
                         'next'      => $next,
                         'previous'  => $previous,
                         'results'    => $result,
-                        'channel'   => $channelid,
-                        'school'    => $school,
-                        'student'    => $student,
+                        // 'channel'   => $channelid,
+                        // 'school'    => $school,
+                        // 'student'    => $student,
                     );
                     return $response;
                 } else {
@@ -173,9 +173,9 @@ class CandidateChannelListController extends Controller
                         'previous'  => $previous,
                         'results'    => $result,
                         'channel'   => $channelid,
-                        'school'    => $school,
-                        'student'    => $student,
-                        'else'         => 'else'
+                        // 'school'    => $school,
+                        // 'student'    => $student,
+                        // 'else'         => 'else'
                     );
                     return $response;
                 }
