@@ -146,7 +146,7 @@ class CandidateChannelListController extends Controller
                             "student_id"    => $channel[0]->student_id,
                             "school_id"     => $channel[0]->school_id,
                             "school_name"   => $school[0]->name,
-                            "school_photo"  => env("PHYTON_URL") . "/media/" . $school[0]->logo,
+                            "school_photo"  => env("PYTHON_URL") . "/media/" . $school[0]->logo,
                             "school_phone"  => $school[0]->phone,
                             "is_deleted"    => false,
                             "created_at"    => $channel[0]->created,
