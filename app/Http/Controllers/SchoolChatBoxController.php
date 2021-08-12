@@ -219,7 +219,7 @@ class SchoolChatBoxController extends Controller
                             if (strlen($searchLength) > 0) {
                                 $search = strtolower($request->search);
                                 $student = DB::connection('pgsql2')->table($this->tbStudent, 'student')
-                                    ->leftJoin($this->tbUserPersonal . ' as personal', 'student.id', '=', 'personal.id')
+                                    ->leftJoin($this->tbUserPersonal . ' as personal', 'student.user_id', '=', 'personal.id')
                                     ->where('student.school_id', '=', $request->school_id)
                                     ->whereRaw("lower(concat(personal.first_name,' ',personal.last_name)) like '%" . $search . "%'")
                                     ->orderBy('personal.id', 'asc')
@@ -279,7 +279,7 @@ class SchoolChatBoxController extends Controller
                             // for ($j = 0; $j < count($channelArr); $j++) {
                             for ($i = 0; $i < count($channel); $i++) {
                                 $students = DB::connection('pgsql2')->table($this->tbStudent, 'student')
-                                    ->leftJoin($this->tbUserPersonal . ' as personal', 'student.id', '=', 'personal.id')
+                                    ->leftJoin($this->tbUserPersonal . ' as personal', 'student.user_id', '=', 'personal.id')
                                     ->where('student.id', '=', $channel[$i]->student_id)
                                     ->orderBy('personal.id', 'desc')
                                     ->limit(10)
@@ -490,7 +490,7 @@ class SchoolChatBoxController extends Controller
         $validation = Validator::make($request->all(), [
             'school_id' => 'required|numeric|exists:pgsql2.' . $this->tbSchool . ',id',
             // 'page' => 'numeric',
-            // 'search' => 'string'
+            'search' => 'string|nullable'
         ]);
         if ($validation->fails()) {
             return $this->makeJSONResponse($validation->errors(), 400);
@@ -505,7 +505,7 @@ class SchoolChatBoxController extends Controller
                         }
 
                         $student = DB::connection('pgsql2')->table($this->tbStudent, 'student')
-                            ->leftJoin($this->tbUserPersonal . ' as personal', 'student.id', '=', 'personal.id')
+                            ->leftJoin($this->tbUserPersonal . ' as personal', 'student.user_id', '=', 'personal.id')
                             ->where('student.school_id', '=', $request->school_id)
                             ->whereRaw("lower(concat(personal.first_name,' ',personal.last_name)) like '%" . $search . "%'")
                             ->orderBy('personal.id', 'asc')
@@ -542,6 +542,7 @@ class SchoolChatBoxController extends Controller
                             //id, first_name, last_name, nim, phone, channel_id
                             $response = array(
                                 'candidate' => $candidateResponse,
+                                'data_cek'  => $student
                             );
                             return $response;
                         }
@@ -560,7 +561,7 @@ class SchoolChatBoxController extends Controller
                             $candidateArray = [];
                             for ($i = 0; $i < count($channelarray); $i++) {
                                 $candidate = DB::connection('pgsql2')->table($this->tbStudent, 'student')
-                                    ->leftJoin($this->tbUserPersonal . ' as personal', 'student.id', '=', 'personal.id')
+                                    ->leftJoin($this->tbUserPersonal . ' as personal', 'student.user_id', '=', 'personal.id')
                                     ->where('student.id', '=', $channelarray[$i]->student_id)
                                     ->orderBy('personal.id', 'asc')
                                     ->limit(10)
