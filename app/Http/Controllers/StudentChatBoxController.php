@@ -100,7 +100,7 @@ class StudentChatBoxController extends Controller
                         'student_id'    => $chattable[0]->student_id,
                         "school_phone"  => $schooldata[0]->phone,
                         "school_name"   => $schooldata[0]->name,
-                        "school_photo"  => $schooldata[0]->logo,
+                        "school_photo"  => env("PYTHON_URL") . "/media/" . $schooldata[0]->logo,
                         "updated_at"    => $chattable[0]->send_time,
                         "created_at"    => $chattable[0]->created
                     );
@@ -158,7 +158,7 @@ class StudentChatBoxController extends Controller
                             'student_id'    => $chattable[0]->student_id,
                             "school_phone"  => $schooldata[0]->phone,
                             "school_name"   => $schooldata[0]->name,
-                            "school_photo"  => $schooldata[0]->logo,
+                            "school_photo"  => env("PYTHON_URL") . "/media/" . $schooldata[0]->logo,
                             "updated_at"    => $chattable[0]->send_time,
                             "created_at"    => $chattable[0]->created
                         );
@@ -391,14 +391,14 @@ class StudentChatBoxController extends Controller
                         'school_id'     => $detail[0]->school_id,
                         "school_phone"  => $schooldata[0]->phone,
                         "school_name"   => $schooldata[0]->name,
-                        "school_photo"  => $schooldata[0]->logo,
+                        "school_photo"  => env("PYTHON_URL") . "/media/" . $schooldata[0]->logo,
                         "updated_at"    => $detail[0]->send_time,
                         "created_at"    => $detail[0]->created
                     );
                     $chatmodel[$i] = ChatModel::find($detail[$i]->chat_id);
                     $response_path = null;
                     if ($chatmodel[$i]->image != null) {
-                        $response_path = env("WEBINAR_URL") . $chatmodel[$i]->image;
+                        $response_path = env("PYTHON_URL") . $chatmodel[$i]->image;
                     }
                     //         "id": 10,
                     // "channel_id": 8,

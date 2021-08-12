@@ -35,4 +35,4 @@ Route::group(['prefix' => 'administrator'], function () {
 
 Route::get('/testing', [CertificateController::class, 'zipTest']);
 Route::get('/candidatelistchannel', [CandidateChannelListController::class, 'listChannel']);
-Route::get('/count', [StudentChatBoxController::class, 'countChat']);
+Route::get('/count', [CandidateChannelListController::class, 'countChat']);

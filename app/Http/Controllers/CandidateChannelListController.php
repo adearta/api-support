@@ -107,8 +107,8 @@ class CandidateChannelListController extends Controller
                     if ($p < 0) {
                         $p = 1;
                     }
-                    $next       = env("MESSAGING_URL") . "candidatelistchannel?page=" . $n . "&search=" . $search;
-                    $previous   = env("MESSAGING_URL") . "candidatelistchannel?page=" . $p . "&search=" . $search;
+                    $next       = env("PYTHON_URL") . "/candidatelistchannel?page=" . $n . "&search=" . $search;
+                    $previous   = env("PYTHON_URL") . "/candidatelistchannel?page=" . $p . "&search=" . $search;
                     //
                     $student = DB::connection('pgsql2')->table($this->tbStudent)
                         ->where('user_id', '=', $request->user_id)
@@ -146,7 +146,7 @@ class CandidateChannelListController extends Controller
                             "student_id"    => $channel[0]->student_id,
                             "school_id"     => $channel[0]->school_id,
                             "school_name"   => $school[0]->name,
-                            "school_photo"  => env("WEBINAR_URL") . $school[0]->logo,
+                            "school_photo"  => env("PHYTON_URL") . "/media/" . $school[0]->logo,
                             "school_phone"  => $school[0]->phone,
                             "is_deleted"    => false,
                             "created_at"    => $channel[0]->created,
