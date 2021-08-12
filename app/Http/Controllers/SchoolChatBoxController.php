@@ -543,7 +543,7 @@ class SchoolChatBoxController extends Controller
                             $response = array(
                                 'candidate' => $candidateResponse,
                                 //testing untuk lihat data
-                                'data_cek'  => $student
+                                // 'data_cek'  => $student
                             );
                             return $response;
                         }
