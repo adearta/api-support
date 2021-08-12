@@ -498,6 +498,7 @@ class SchoolChatBoxController extends Controller
             try {
                 $data = DB::transaction(function () use ($request) {
                     $candidateResponse = [];
+                    $search = "";
                     if ($request->search != null) {
                         $search_length = preg_replace('/\s+/', '', $request->search);
                         if (strlen($search_length) > 0) {
@@ -512,16 +513,9 @@ class SchoolChatBoxController extends Controller
                             ->limit(10)
                             ->select('student.id', 'student.phone', 'student.nim', 'student.address', 'student.date_of_birth', 'student.gender', 'student.marital_status', 'student.religion', 'student.employment_status', 'student.description', 'student.avatar', 'student.domicile_id', 'student.user_id', 'student.school_id', 'personal.first_name', 'personal.last_name')
                             ->get();
-                        //    for($i =0 ; $i <) 
                         // $array = array_values($student);
                         $arr = [];
-                        if (count($student) < 1) {
-                            $response = array(
-                                'candidate' => $arr,
-                            );
-                            return $response;
-                        } else {
-                            //masih salah
+                        if (count($student) > 0) {
                             echo "masuk1";
                             for ($i = 0; $i < count($student); $i++) {
                                 echo "masuk2";
@@ -529,25 +523,39 @@ class SchoolChatBoxController extends Controller
                                     ->where('student_id', '=', $student[$i]->id)
                                     ->select('id')
                                     ->get();
-                                $arr[$i] = $channelarray[0];
-                            }
-                            for ($j = 0; $j < count($student); $j++) {
-                                echo "masuk3";
-                                $candidateResponse[$j] = array(
-                                    'id'            => $student[$j]->id,
-                                    'first_name'    => $student[$j]->first_name,
-                                    'last_name'     => $student[$j]->last_name,
-                                    'nim'           => $student[$j]->nim,
-                                    'phone'         => $student[$j]->phone,
-                                    'channel_id'    => $arr[$j]->id,
+                                $candidateResponse[$i] = array(
+                                    'id'            => $student[$i]->id,
+                                    'first_name'    => $student[$i]->first_name,
+                                    'last_name'     => $student[$i]->last_name,
+                                    'nim'           => $student[$i]->nim,
+                                    'phone'         => $student[$i]->phone,
+                                    // 'channel_id'    => $channelarray[$i]->id,
                                 );
+                                // $arr[$i] = $channelarray[0];
                             }
+                            // for ($j = 0; $j < count($student); $j++) {
+                            //     echo "masuk3";
+                            //     $candidateResponse[$j] = array(
+                            //         'id'            => $student[$j]->id,
+                            //         'first_name'    => $student[$j]->first_name,
+                            //         'last_name'     => $student[$j]->last_name,
+                            //         'nim'           => $student[$j]->nim,
+                            //         'phone'         => $student[$j]->phone,
+                            //         'channel_id'    => $arr[$j]->id,
+                            //     );
+                            // }
                             echo "masuk4";
                             //id, first_name, last_name, nim, phone, channel_id
                             $response = array(
                                 'candidate' => $candidateResponse,
                                 //testing untuk lihat data
-                                'data_cek'  => $student
+                                'data_cek'  => $channelarray
+                            );
+                            return $response;
+                        } else {
+                            //masih salah
+                            $response = array(
+                                'candidate' => $arr,
                             );
                             return $response;
                         }
