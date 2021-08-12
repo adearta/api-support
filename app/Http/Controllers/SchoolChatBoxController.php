@@ -521,7 +521,10 @@ class SchoolChatBoxController extends Controller
                             );
                             return $response;
                         } else {
+                            //masih salah
+                            echo "masuk1";
                             for ($i = 0; $i < count($student); $i++) {
+                                echo "masuk2";
                                 $channelarray = DB::table($this->tbRoom)
                                     ->where('student_id', '=', $student[$i]->id)
                                     ->select('id')
@@ -529,7 +532,7 @@ class SchoolChatBoxController extends Controller
                                 $arr[$i] = $channelarray[0];
                             }
                             for ($j = 0; $j < count($student); $j++) {
-
+                                echo "masuk3";
                                 $candidateResponse[$j] = array(
                                     'id'            => $student[$j]->id,
                                     'first_name'    => $student[$j]->first_name,
@@ -539,11 +542,12 @@ class SchoolChatBoxController extends Controller
                                     'channel_id'    => $arr[$j]->id,
                                 );
                             }
+                            echo "masuk4";
                             //id, first_name, last_name, nim, phone, channel_id
                             $response = array(
                                 'candidate' => $candidateResponse,
                                 //testing untuk lihat data
-                                // 'data_cek'  => $student
+                                'data_cek'  => $student
                             );
                             return $response;
                         }
