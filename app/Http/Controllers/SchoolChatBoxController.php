@@ -497,6 +497,7 @@ class SchoolChatBoxController extends Controller
         } else {
             try {
                 $data = DB::transaction(function () use ($request) {
+                    $arr = [];
                     $candidateResponse = [];
                     $search = "";
                     if ($request->search != null) {
@@ -513,23 +514,27 @@ class SchoolChatBoxController extends Controller
                             ->limit(10)
                             ->select('student.id', 'student.phone', 'student.nim', 'student.address', 'student.date_of_birth', 'student.gender', 'student.marital_status', 'student.religion', 'student.employment_status', 'student.description', 'student.avatar', 'student.domicile_id', 'student.user_id', 'student.school_id', 'personal.first_name', 'personal.last_name')
                             ->get();
+
+                        for ($i = 0; $i < count($student); $i++) {
+                            $channelarray = DB::table($this->tbRoom)
+                                ->where('student_id', '=', $student[$i]->id)
+                                ->select('id')
+                                ->get();
+                            $arr[$i] = $channelarray[0];
+                        }
                         // $array = array_values($student);
-                        $arr = [];
                         if (count($student) > 0) {
                             echo "masuk1";
                             for ($i = 0; $i < count($student); $i++) {
-                                echo "masuk2";
-                                $channelarray = DB::table($this->tbRoom)
-                                    ->where('student_id', '=', $student[$i]->id)
-                                    ->select('id')
-                                    ->get();
+
                                 $candidateResponse[$i] = array(
                                     'id'            => $student[$i]->id,
                                     'first_name'    => $student[$i]->first_name,
                                     'last_name'     => $student[$i]->last_name,
                                     'nim'           => $student[$i]->nim,
                                     'phone'         => $student[$i]->phone,
-                                    'channel_id'    => $channelarray[0]->id,
+                                    /* 'channel_id'    => $arr[$i]->id,
+                                   */
                                 );
                                 // $arr[$i] = $channelarray[0];
                             }
@@ -544,7 +549,7 @@ class SchoolChatBoxController extends Controller
                             //         'channel_id'    => $arr[$j]->id,
                             //     );
                             // }
-                            echo "masuk4";
+                            // echo "masuk4";
                             //id, first_name, last_name, nim, phone, channel_id
                             $response = array(
                                 'candidate' => $candidateResponse,
