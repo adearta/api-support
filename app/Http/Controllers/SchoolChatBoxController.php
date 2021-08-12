@@ -542,6 +542,7 @@ class SchoolChatBoxController extends Controller
                             //id, first_name, last_name, nim, phone, channel_id
                             $response = array(
                                 'candidate' => $candidateResponse,
+                                //testing untuk lihat data
                                 'data_cek'  => $student
                             );
                             return $response;
