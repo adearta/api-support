@@ -529,7 +529,7 @@ class SchoolChatBoxController extends Controller
                                     'last_name'     => $student[$i]->last_name,
                                     'nim'           => $student[$i]->nim,
                                     'phone'         => $student[$i]->phone,
-                                    // 'channel_id'    => $channelarray[$i]->id,
+                                    'channel_id'    => $channelarray[0]->id,
                                 );
                                 // $arr[$i] = $channelarray[0];
                             }
