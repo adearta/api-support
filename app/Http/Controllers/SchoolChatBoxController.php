@@ -219,56 +219,90 @@ class SchoolChatBoxController extends Controller
                             $searchLength = preg_replace('/\s+/', '', $request->search);
                             if (strlen($searchLength) > 0) {
                                 $search = strtolower($request->search);
-                                $student = DB::connection('pgsql2')->table($this->tbStudent, 'student')
+                            }
+                            $channel = DB::table($this->tbRoom)
+                                ->where('school_id', '=', $request->school_id)
+                                ->select('*')
+                                ->orderBy('id', 'asc')
+                                ->get();
+
+                            $student = array();
+                            $studentIndex = 0;
+                            for ($i = 0; $i < count($channel); $i++) {
+                                $req[$i] = $channel[$i]->student_id;
+                                $data = DB::connection('pgsql2')->table($this->tbStudent, 'student')
                                     ->leftJoin($this->tbUserPersonal . ' as personal', 'student.user_id', '=', 'personal.id')
-                                    ->where('student.school_id', '=', $request->school_id)
+                                    ->where('student.school_id', '=', $req[$i])
                                     ->whereRaw("lower(concat(personal.first_name,' ',personal.last_name)) like '%" . $search . "%'")
                                     ->orderBy('personal.id', 'asc')
                                     ->limit(10)
                                     ->offset($start_item)
                                     ->select('student.*', 'personal.first_name', 'personal.last_name')
                                     ->get();
-
-                                $count =  count($student);
-                                if ($count > 0 || $count != null) {
-                                    for ($i = 0; $i < $count; $i++) {
-                                        $rooms = DB::table($this->tbRoom)
-                                            // ->selectRaw('count(id)')
-                                            ->where('student_id', '=', $student[$i]->id)
-                                            ->get();
-                                        $arrayroom[$i] = $rooms[0];
-                                    }
-                                    $rooms = [];
-                                    // var_dump($arrayroom);
-                                    $roomarray = [];
-                                    for ($j = 0; $j < count($arrayroom); $j++) {
-                                        //id, school_id, student_id, student_phone, student_name, student_photo & updated_at
-                                        $room = DB::table($this->tbRoom)
-                                            ->where('school_id', '=', $request->school_id)
-                                            ->where('student_id', '=', $student[$j]->id)
-                                            ->get();
-                                        $roomarray[$j] = $room[0];
-                                    }
-                                    for ($i = 0; $i < count($roomarray); $i++) {
-                                        $photo = StudentModel::find($student[$i]->id);
-                                        $response_path = null;
-                                        if ($photo->avatar != null) {
-                                            $response_path = env("WEBINAR_URL") . $student[$i]->avatar;
-                                        }
-                                        $roomdetail[$i] = array(
-                                            'id'            => $roomarray[$i]->id,
-                                            "school_id"     => $roomarray[$i]->school_id,
-                                            "student_id"    => $roomarray[$i]->student_id,
-                                            "student_name"  => $student[$i]->first_name . " " . $student[$i]->last_name,
-                                            "student_photo" => $response_path,
-                                            "student_phone" => $student[$i]->phone,
-                                            "is_deleted"    => $roomarray[$i]->is_deleted,
-                                            "updated_at"    => $roomarray[$i]->updated_at,
-                                        );
-                                    }
-                                    // }
+                                if (count($data) > 0) {
+                                    $student[$studentIndex] = $data[0];
+                                    $studentIndex++;
                                 }
                             }
+                            if (count($student) > 0) {
+                                for ($i = 0; $i < count($student); $i++) {
+                                    $photo = StudentModel::find($student[$i]->id);
+                                    $response_path = null;
+                                    if ($photo->avatar != null) {
+                                        $response_path = env("WEBINAR_URL") . $student[$i]->avatar;
+                                    }
+                                    $roomdetail[$i] = (object) array(
+                                        'id'            => $channel[$i]->id,
+                                        "school_id"     => $channel[$i]->school_id,
+                                        "student_id"    => $channel[$i]->student_id,
+                                        "student_name"  => $student[$i]->first_name . " " . $student[$i]->last_name,
+                                        "student_photo" => $response_path,
+                                        "student_phone" => $student[$i]->phone,
+                                        "is_deleted"    => $channel[$i]->is_deleted,
+                                        "updated_at"    => $channel[$i]->updated_at,
+                                    );
+                                }
+                            }
+
+                            // $count =  count($student);
+                            // if ($count > 0 || $count != null) {
+                            //     for ($i = 0; $i < $count; $i++) {
+                            //         $rooms = DB::table($this->tbRoom)
+                            //             // ->selectRaw('count(id)')
+                            //             ->where('student_id', '=', $student[$i]->id)
+                            //             ->get();
+                            //         $arrayroom[$i] = $rooms[0];
+                            //     }
+                            //     $rooms = [];
+                            //     // var_dump($arrayroom);
+                            //     $roomarray = [];
+                            // for ($j = 0; $j < count($arrayroom); $j++) {
+                            //     //id, school_id, student_id, student_phone, student_name, student_photo & updated_at
+                            //     $room = DB::table($this->tbRoom)
+                            //         ->where('school_id', '=', $request->school_id)
+                            //         ->where('student_id', '=', $student[$j]->id)
+                            //         ->get();
+                            //     $roomarray[$j] = $room[0];
+                            // }
+                            // for ($i = 0; $i < count($roomarray); $i++) {
+                            //     $photo = StudentModel::find($student[$i]->id);
+                            //     $response_path = null;
+                            //     if ($photo->avatar != null) {
+                            //         $response_path = env("WEBINAR_URL") . $student[$i]->avatar;
+                            //     }
+                            //     $roomdetail[$i] = array(
+                            //         'id'            => $roomarray[$i]->id,
+                            //         "school_id"     => $roomarray[$i]->school_id,
+                            //         "student_id"    => $roomarray[$i]->student_id,
+                            //         "student_name"  => $student[$i]->first_name . " " . $student[$i]->last_name,
+                            //         "student_photo" => $response_path,
+                            //         "student_phone" => $student[$i]->phone,
+                            //         "is_deleted"    => $roomarray[$i]->is_deleted,
+                            //         "updated_at"    => $roomarray[$i]->updated_at,
+                            //     );
+                            // }
+                            // }
+                            // }
                         } else {
                             // $channelArr = [];
                             $channel = DB::table($this->tbRoom)
@@ -521,8 +555,7 @@ class SchoolChatBoxController extends Controller
                         // $names = [];
                         //kemudian select id room nya
                         for ($h = 0; $h < $count; $h++) {
-                            //kemudian select nama student sesuai dengan id student yang berada di room 
-                            //berdasarkan search request nya
+
                             $stu[$h] = $channel[$h]->student_id;
                             $data = DB::connection('pgsql2')->table($this->tbStudent, 'student')
                                 ->leftJoin($this->tbUserPersonal . ' as personal', 'student.user_id', '=', 'personal.id')
@@ -531,13 +564,13 @@ class SchoolChatBoxController extends Controller
                                 ->orderBy('id', 'asc')
                                 ->select('student.id', 'student.phone', 'student.nim', 'personal.first_name', 'personal.last_name')
                                 ->get();
+
                             if (count($data) > 0) {
                                 $name[$nameIndex] = $data[0];
                                 $nameIndex++;
                             }
                         }
-                        // $names[$h] = $name[$h];
-                        // $arrayvalue = array_values($arrchannel);
+
                         if (count($name) > 0) {
                             for ($j = 0; $j < count($name); $j++) {
                                 $test[$j] = (object) array(
