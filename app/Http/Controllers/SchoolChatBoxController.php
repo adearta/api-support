@@ -13,6 +13,7 @@ use App\Models\UserPersonal;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Exception;
+use Illuminate\Broadcasting\Channel;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Contracts\Service\Attribute\Required;
 
@@ -497,7 +498,6 @@ class SchoolChatBoxController extends Controller
         } else {
             try {
                 $data = DB::transaction(function () use ($request) {
-                    $arr = [];
                     $candidateResponse = [];
                     $search = "";
                     if ($request->search != null) {
@@ -505,59 +505,57 @@ class SchoolChatBoxController extends Controller
                         if (strlen($search_length) > 0) {
                             $search = strtolower($request->search);
                         }
-
-                        $student = DB::connection('pgsql2')->table($this->tbStudent, 'student')
-                            ->leftJoin($this->tbUserPersonal . ' as personal', 'student.user_id', '=', 'personal.id')
-                            ->where('student.school_id', '=', $request->school_id)
-                            ->whereRaw("lower(concat(personal.first_name,' ',personal.last_name)) like '%" . $search . "%'")
-                            ->orderBy('personal.id', 'asc')
-                            ->limit(10)
-                            ->select('student.id', 'student.phone', 'student.nim', 'student.address', 'student.date_of_birth', 'student.gender', 'student.marital_status', 'student.religion', 'student.employment_status', 'student.description', 'student.avatar', 'student.domicile_id', 'student.user_id', 'student.school_id', 'personal.first_name', 'personal.last_name')
+                        //get student id yang terdapat pada tabel room
+                        $channel = DB::table($this->tbRoom)
+                            ->where('school_id', '=', $request->school_id)
+                            ->select('id', 'student_id')
+                            ->orderBy('id', 'asc')
                             ->get();
-
-                        for ($i = 0; $i < count($student); $i++) {
-                            $channelarray = DB::table($this->tbRoom)
-                                ->where('student_id', '=', $student[$i]->id)
-                                ->select('id')
+                        //hitung banyaknya room dengan id school yang sesuai
+                        $count = count($channel);
+                        //jika ada room
+                        $arr = [];
+                        $arrchannel = [];
+                        $name = array();
+                        $nameIndex = 0;
+                        // $names = [];
+                        //kemudian select id room nya
+                        for ($h = 0; $h < $count; $h++) {
+                            //kemudian select nama student sesuai dengan id student yang berada di room 
+                            //berdasarkan search request nya
+                            $stu[$h] = $channel[$h]->student_id;
+                            $data = DB::connection('pgsql2')->table($this->tbStudent, 'student')
+                                ->leftJoin($this->tbUserPersonal . ' as personal', 'student.user_id', '=', 'personal.id')
+                                ->where('student.id', '=', $stu[$h])
+                                ->whereRaw("lower(concat(personal.first_name,' ',personal.last_name)) like '%" . $search . "%'")
+                                ->orderBy('id', 'asc')
+                                ->select('student.id', 'student.phone', 'student.nim', 'personal.first_name', 'personal.last_name')
                                 ->get();
-                            $arr[$i] = $channelarray[0];
-                        }
-                        // $array = array_values($student);
-                        if (count($student) > 0) {
-                            echo "masuk1";
-                            for ($i = 0; $i < count($student); $i++) {
-
-                                $candidateResponse[$i] = array(
-                                    'id'            => $student[$i]->id,
-                                    'first_name'    => $student[$i]->first_name,
-                                    'last_name'     => $student[$i]->last_name,
-                                    'nim'           => $student[$i]->nim,
-                                    'phone'         => $student[$i]->phone,
-                                    //still mistery
-                                    /* 'channel_id'    => $arr[$i]->id,
-                                   */
-                                );
-                                // $arr[$i] = $channelarray[0];
+                            if (count($data) > 0) {
+                                $name[$nameIndex] = $data[0];
+                                $nameIndex++;
                             }
-                            // for ($j = 0; $j < count($student); $j++) {
-                            //     echo "masuk3";
-                            //     $candidateResponse[$j] = array(
-                            //         'id'            => $student[$j]->id,
-                            //         'first_name'    => $student[$j]->first_name,
-                            //         'last_name'     => $student[$j]->last_name,
-                            //         'nim'           => $student[$j]->nim,
-                            //         'phone'         => $student[$j]->phone,
-                            //         'channel_id'    => $arr[$j]->id,
-                            //     );
-                            // }
-                            // echo "masuk4";
-                            //id, first_name, last_name, nim, phone, channel_id
+                        }
+                        // $names[$h] = $name[$h];
+                        // $arrayvalue = array_values($arrchannel);
+                        if (count($name) > 0) {
+                            for ($j = 0; $j < count($name); $j++) {
+                                $test[$j] = (object) array(
+                                    'id'            => $name[$j]->id,
+                                    'first_name'    => $name[$j]->first_name,
+                                    'last_name'     => $name[$j]->last_name,
+                                    'nim'           => $name[$j]->nim,
+                                    'phone'         => $name[$j]->phone,
+                                    'channel_id'    => $channel[$j]->id,
+                                );
+                            }
+
                             $response = array(
-                                'candidate' => $candidateResponse,
-                                //testing untuk lihat data
-                                'data_cek'  => $channelarray
+                                // 'candidate'     => $test,
+                                'candidate'  => $test
                             );
                             return $response;
+                            //
                         } else {
                             //masih salah
                             $response = array(
