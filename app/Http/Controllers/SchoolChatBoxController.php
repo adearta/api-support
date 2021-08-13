@@ -106,7 +106,7 @@ class SchoolChatBoxController extends Controller
                 $model = StudentModel::find($chattable[0]->student_id);
                 $response_path = null;
                 if ($model->avatar != null) {
-                    $response_path = env("WEBINAR_URL") . $model->avatar;
+                    $response_path = env("PYTHON_URL") . "/media/" . $model->avatar;
                 }
                 $roomResponse = array(
                     // id, school_id, student_id, student_phone, student_photo & updated_at
@@ -123,10 +123,10 @@ class SchoolChatBoxController extends Controller
                     ->get();
 
                 for ($i = 0; $i < count($chat); $i++) {
-                    $chatmodel[$i] = ChatModel::find($chat[$i]->id);
+                    $chatmodel = ChatModel::find($chat[$i]->id);
                     $response_path = null;
-                    if ($chatmodel[$i]->image != null) {
-                        $response_path = env("WEBINAR_URL") . $chatmodel[$i]->image;
+                    if ($chatmodel->image != null) {
+                        $response_path = env("PYTHON_URL") . "/media/" . $chatmodel->image;
                     }
                     $chatResponse[$i] = array(
                         'id'       => $chat[$i]->id,
@@ -249,7 +249,7 @@ class SchoolChatBoxController extends Controller
                                     $photo = StudentModel::find($student[$i]->id);
                                     $response_path = null;
                                     if ($photo->avatar != null) {
-                                        $response_path = env("WEBINAR_URL") . $student[$i]->avatar;
+                                        $response_path = env("PYTHON_URL") . "/media/" . $photo->avatar;
                                     }
                                     $roomdetail[$i] = (object) array(
                                         'id'            => $channel[$i]->id,
@@ -333,7 +333,7 @@ class SchoolChatBoxController extends Controller
                                 $photo = StudentModel::find($studentArr[$i]->id);
                                 $response_path = null;
                                 if ($photo->avatar != null) {
-                                    $response_path = env("WEBINAR_URL") . $studentArr[$i]->avatar;
+                                    $response_path = env("PYTHON_URL") . "/media/" . $studentArr[$i]->avatar;
                                 }
                                 $roomdetail[$i] = array(
                                     // 'channel' => $channel[$i],
@@ -443,7 +443,7 @@ class SchoolChatBoxController extends Controller
                     $chatmodel = StudentModel::find($channel[0]->student_id);
                     $response_path = null;
                     if ($chatmodel->avatar != null) {
-                        $response_path = env("WEBINAR_URL") . $chatmodel->avatar;
+                        $response_path = env("PYTHON_URL") . "/media/" . $chatmodel->avatar;
                     }
                     $responseChannel = array(
                         'id'            => $channel[0]->id,
@@ -472,7 +472,7 @@ class SchoolChatBoxController extends Controller
                     $model = StudentModel::find($candidate[0]->student_id);
                     $response_path = null;
                     if ($model->avatar != null) {
-                        $response_path = env("WEBINAR_URL") . $model->avatar;
+                        $response_path = env("PYTHON_URL") . "/media/" . $model->avatar;
                     }
                     $responseChannel = array(
                         'id'            => $detail[0]->room_id,
@@ -487,7 +487,7 @@ class SchoolChatBoxController extends Controller
                         $chatmodel[$i] = ChatModel::find($detail[$i]->chat_id);
                         $response_path = null;
                         if ($chatmodel[$i]->image != null) {
-                            $response_path = env("WEBINAR_URL") . $chatmodel[$i]->image;
+                            $response_path = env("PYTHON_URL") . "/media/" . $chatmodel[$i]->image;
                         }
                         // "id": 10,
                         // "channel_id": 8,

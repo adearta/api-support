@@ -94,13 +94,18 @@ class StudentChatBoxController extends Controller
                         ->where('id', '=', $chattable[0]->school_id)
                         ->get();
 
+                    $schoolmodel = SchoolModel::find($school[0]->school_id);
+                    $response_path = null;
+                    if ($schoolmodel->logo != null) {
+                        $response_path = env("PYTHON_URL") . "/media/" . $schoolmodel->logo;
+                    }
                     $roomResponse = array(
                         'id'       => $chattable[0]->room_id,
                         'school_id'     => $chattable[0]->school_id,
                         'student_id'    => $chattable[0]->student_id,
                         "school_phone"  => $schooldata[0]->phone,
                         "school_name"   => $schooldata[0]->name,
-                        "school_photo"  => env("PYTHON_URL") . "/media/" . $schooldata[0]->logo,
+                        "school_photo"  => $response_path,
                         "updated_at"    => $chattable[0]->send_time,
                         "created_at"    => $chattable[0]->created
                     );
@@ -152,20 +157,25 @@ class StudentChatBoxController extends Controller
                         ->where('room_chat_id', '=', $chattable[0]->room_id)
                         ->get();
                     for ($i = 0; $i < count($chat); $i++) {
+                        $schoolmodel = SchoolModel::find($school[0]->school_id);
+                        $response_path = null;
+                        if ($schoolmodel->logo != null) {
+                            $response_path = env("PYTHON_URL") . "/media/" . $schoolmodel->logo;
+                        }
                         $roomResponse = array(
                             'id'       => $chattable[0]->room_id,
                             'school_id'     => $chattable[0]->school_id,
                             'student_id'    => $chattable[0]->student_id,
                             "school_phone"  => $schooldata[0]->phone,
                             "school_name"   => $schooldata[0]->name,
-                            "school_photo"  => env("PYTHON_URL") . "/media/" . $schooldata[0]->logo,
+                            "school_photo"  => $response_path,
                             "updated_at"    => $chattable[0]->send_time,
                             "created_at"    => $chattable[0]->created
                         );
-                        $chatmodel[$i] = ChatModel::find($chat[$i]->id);
+                        $chatmodel = ChatModel::find($chat[$i]->id);
                         $response_path = null;
-                        if ($chatmodel[$i]->image != null) {
-                            $response_path = env("WEBINAR_URL") . $chattable[$i]->image;
+                        if ($chatmodel->image != null) {
+                            $response_path = env("PYTHON_URL") . "/media/" . $chatmodel->image;
                         }
                         $chatResponse[$i] = array(
                             'id'            => $chattable[$i]->chat_id,
@@ -253,10 +263,10 @@ class StudentChatBoxController extends Controller
 
                                     );
                                     for ($i = 0; $i < count($chatting); $i++) {
-                                        $chatmodel[$i] = ChatModel::find($chatting[$i]->chat_id);
+                                        $chatmodel = ChatModel::find($chatting[$i]->chat_id);
                                         $response_path = null;
-                                        if ($chatmodel[$i]->image != null) {
-                                            $response_path = env("WEBINAR_URL") . $chatmodel[$i]->image;
+                                        if ($chatmodel->image != null) {
+                                            $response_path = env("PYTHON_URL") . "/media/" . $chatmodel->image;
                                         }
                                         $chat[$i] = (object) array(
                                             "chat_id"       => $chatting[$i]->chat_id,
@@ -385,20 +395,25 @@ class StudentChatBoxController extends Controller
                 //     "created_at": 
                 // }
                 for ($i = 0; $i < count($detail); $i++) {
+                    $schoolmodel = SchoolModel::find($detail[$i]->school_id);
+                    $response_path = null;
+                    if ($schoolmodel->logo != null) {
+                        $response_path = env("PYTHON_URL") . "/media/" . $schoolmodel->logo;
+                    }
                     $responseChannel = array(
                         'id'            => $detail[0]->room_id,
                         'student_id'    => $detail[0]->student_id,
                         'school_id'     => $detail[0]->school_id,
                         "school_phone"  => $schooldata[0]->phone,
                         "school_name"   => $schooldata[0]->name,
-                        "school_photo"  => env("PYTHON_URL") . "/media/" . $schooldata[0]->logo,
+                        "school_photo"  => $response_path,
                         "updated_at"    => $detail[0]->send_time,
                         "created_at"    => $detail[0]->created
                     );
                     $chatmodel[$i] = ChatModel::find($detail[$i]->chat_id);
                     $response_path = null;
                     if ($chatmodel[$i]->image != null) {
-                        $response_path = env("PYTHON_URL") . $chatmodel[$i]->image;
+                        $response_path = env("PYTHON_URL") . "/media/" . $chatmodel[$i]->image;
                     }
                     //         "id": 10,
                     // "channel_id": 8,
