@@ -38,7 +38,10 @@ class CandidateChannelListController extends Controller
             'user_id' => 'numeric|exists:pgsql2.' . $this->tbStudent . ',user_id'
         ]);
         if ($validation->fails()) {
-            return $this->makeJSONResponse(['message' => $validation->errors()->first()], 400);
+            return $this->makeJSONResponse([
+                'message' => $validation->errors()->first(),
+                'data'    => $request,
+            ], 400);
         } else {
             $count = 0;
             $student = DB::connection('pgsql2')->table($this->tbStudent)
