@@ -220,44 +220,77 @@ class SchoolChatBoxController extends Controller
                             if (strlen($searchLength) > 0) {
                                 $search = strtolower($request->search);
                             }
+                            //
                             $channel = DB::table($this->tbRoom)
                                 ->where('school_id', '=', $request->school_id)
-                                ->select('*')
-                                ->orderBy('id', 'asc')
                                 ->get();
-
-                            $student = array();
-                            $studentIndex = 0;
+                            //     $channelArr[$i] = $channel[0];
+                            // }
+                            $studentArr = array();
+                            $indeks = 0;
+                            // for ($j = 0; $j < count($channelArr); $j++) {
                             for ($i = 0; $i < count($channel); $i++) {
-                                $req[$i] = $channel[$i]->student_id;
-                                $data = DB::connection('pgsql2')->table($this->tbStudent, 'student')
+
+                                $students = DB::connection('pgsql2')->table($this->tbStudent, 'student')
                                     ->leftJoin($this->tbUserPersonal . ' as personal', 'student.user_id', '=', 'personal.id')
-                                    ->where('student.school_id', '=', $req[$i])
+                                    ->where('student.id', '=', $channel[$i]->student_id)
                                     ->whereRaw("lower(concat(personal.first_name,' ',personal.last_name)) like '%" . $search . "%'")
-                                    ->orderBy('personal.id', 'asc')
+                                    ->orderBy('personal.id', 'desc')
                                     ->limit(10)
                                     ->offset($start_item)
                                     ->select('student.*', 'personal.first_name', 'personal.last_name')
                                     ->get();
-                                if (count($data) > 0) {
-                                    $student[$studentIndex] = $data[0];
-                                    $studentIndex++;
+
+                                if (count($students) > 0) {
+                                    $studentArr[$indeks] = $students[0];
+                                    $indeks++;
                                 }
+
+                                // $studentArr[$i] = $students[0];
                             }
-                            if (count($student) > 0) {
-                                for ($i = 0; $i < count($student); $i++) {
-                                    $photo = StudentModel::find($student[$i]->id);
+                            //
+                            // $channel = DB::table($this->tbRoom)
+                            //     ->where('school_id', '=', $request->school_id)
+                            //     ->select('*')
+                            //     ->orderBy('id', 'asc')
+                            //     ->get();
+
+                            // $student = array();
+                            // $studentIndex = 0;
+                            // for ($i = 0; $i < count($channel); $i++) {
+
+                            //     $req[$i] = $channel[$i]->student_id;
+                            //     $data = DB::connection('pgsql2')->table($this->tbStudent, 'student')
+                            //         ->leftJoin($this->tbUserPersonal . ' as personal', 'student.user_id', '=', 'personal.id')
+                            //         ->where('student.school_id', '=', $req[$i])
+                            //         ->whereRaw("lower(concat(personal.first_name,' ',personal.last_name)) like '%" . $search . "%'")
+                            //         ->orderBy('personal.id', 'asc')
+                            //         ->limit(10)
+                            //         // ->offset($start_item)
+                            //         ->select('student.*', 'personal.first_name', 'personal.last_name')
+                            //         ->get();
+
+                            //     if (count($data) > 0) {
+                            //         $student[$studentIndex] = $data[0];
+                            //         $studentIndex++;
+                            //     }
+                            // }
+                            echo count($students);
+                            if (count($studentArr) > 0) {
+                                for ($i = 0; $i < count($studentArr); $i++) {
+                                    $photo = StudentModel::find($studentArr[$i]->id);
                                     $response_path = null;
                                     if ($photo->avatar != null) {
                                         $response_path = env("PYTHON_URL") . "/media/" . $photo->avatar;
                                     }
                                     $roomdetail[$i] = (object) array(
+                                        // 'student'   => $studentArr
                                         'id'            => $channel[$i]->id,
                                         "school_id"     => $channel[$i]->school_id,
                                         "student_id"    => $channel[$i]->student_id,
-                                        "student_name"  => $student[$i]->first_name . " " . $student[$i]->last_name,
+                                        "student_name"  => $studentArr[$i]->first_name . " " . $studentArr[$i]->last_name,
                                         "student_photo" => $response_path,
-                                        "student_phone" => $student[$i]->phone,
+                                        "student_phone" => $studentArr[$i]->phone,
                                         "is_deleted"    => $channel[$i]->is_deleted,
                                         "updated_at"    => $channel[$i]->updated_at,
                                     );
