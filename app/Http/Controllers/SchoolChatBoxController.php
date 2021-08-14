@@ -245,37 +245,8 @@ class SchoolChatBoxController extends Controller
                                     $studentArr[$indeks] = $students[0];
                                     $indeks++;
                                 }
-
-                                // $studentArr[$i] = $students[0];
                             }
-                            //
-                            // $channel = DB::table($this->tbRoom)
-                            //     ->where('school_id', '=', $request->school_id)
-                            //     ->select('*')
-                            //     ->orderBy('id', 'asc')
-                            //     ->get();
-
-                            // $student = array();
-                            // $studentIndex = 0;
-                            // for ($i = 0; $i < count($channel); $i++) {
-
-                            //     $req[$i] = $channel[$i]->student_id;
-                            //     $data = DB::connection('pgsql2')->table($this->tbStudent, 'student')
-                            //         ->leftJoin($this->tbUserPersonal . ' as personal', 'student.user_id', '=', 'personal.id')
-                            //         ->where('student.school_id', '=', $req[$i])
-                            //         ->whereRaw("lower(concat(personal.first_name,' ',personal.last_name)) like '%" . $search . "%'")
-                            //         ->orderBy('personal.id', 'asc')
-                            //         ->limit(10)
-                            //         // ->offset($start_item)
-                            //         ->select('student.*', 'personal.first_name', 'personal.last_name')
-                            //         ->get();
-
-                            //     if (count($data) > 0) {
-                            //         $student[$studentIndex] = $data[0];
-                            //         $studentIndex++;
-                            //     }
-                            // }
-                            echo count($students);
+                            // echo count($students);
                             if (count($studentArr) > 0) {
                                 for ($i = 0; $i < count($studentArr); $i++) {
                                     $photo = StudentModel::find($studentArr[$i]->id);
@@ -296,46 +267,6 @@ class SchoolChatBoxController extends Controller
                                     );
                                 }
                             }
-
-                            // $count =  count($student);
-                            // if ($count > 0 || $count != null) {
-                            //     for ($i = 0; $i < $count; $i++) {
-                            //         $rooms = DB::table($this->tbRoom)
-                            //             // ->selectRaw('count(id)')
-                            //             ->where('student_id', '=', $student[$i]->id)
-                            //             ->get();
-                            //         $arrayroom[$i] = $rooms[0];
-                            //     }
-                            //     $rooms = [];
-                            //     // var_dump($arrayroom);
-                            //     $roomarray = [];
-                            // for ($j = 0; $j < count($arrayroom); $j++) {
-                            //     //id, school_id, student_id, student_phone, student_name, student_photo & updated_at
-                            //     $room = DB::table($this->tbRoom)
-                            //         ->where('school_id', '=', $request->school_id)
-                            //         ->where('student_id', '=', $student[$j]->id)
-                            //         ->get();
-                            //     $roomarray[$j] = $room[0];
-                            // }
-                            // for ($i = 0; $i < count($roomarray); $i++) {
-                            //     $photo = StudentModel::find($student[$i]->id);
-                            //     $response_path = null;
-                            //     if ($photo->avatar != null) {
-                            //         $response_path = env("WEBINAR_URL") . $student[$i]->avatar;
-                            //     }
-                            //     $roomdetail[$i] = array(
-                            //         'id'            => $roomarray[$i]->id,
-                            //         "school_id"     => $roomarray[$i]->school_id,
-                            //         "student_id"    => $roomarray[$i]->student_id,
-                            //         "student_name"  => $student[$i]->first_name . " " . $student[$i]->last_name,
-                            //         "student_photo" => $response_path,
-                            //         "student_phone" => $student[$i]->phone,
-                            //         "is_deleted"    => $roomarray[$i]->is_deleted,
-                            //         "updated_at"    => $roomarray[$i]->updated_at,
-                            //     );
-                            // }
-                            // }
-                            // }
                         } else {
                             // $channelArr = [];
                             $channel = DB::table($this->tbRoom)
@@ -394,9 +325,52 @@ class SchoolChatBoxController extends Controller
                             'total_data'    => (int) $room_count[0]->count
                         )
                     );
-
+                    //school response
+                    $logo = SchoolModel::find($request->school_id);
+                    $response_path = null;
+                    if ($photo->logo != null) {
+                        $response_path = env("PYTHON_URL") . "/media/" . $logo->logo;
+                    }
+                    $schoolResponse = (object) array(
+                        'id'                => $school[0]->id,
+                        'is_deleted'        => $school[0]->is_deleted,
+                        'created'           => $school[0]->created,
+                        'modified'          => $school[0]->modified,
+                        'school_type_id'    => $school[0]->school_type_id,
+                        'name'              => $school[0]->name,
+                        'phone'             => $school[0]->phone,
+                        'email'             => $school[0]->email,
+                        'fax'               => $school[0]->fax,
+                        'address'           => $school[0]->address,
+                        'website'           => $school[0]->website,
+                        'logo'              => $response_path,
+                        'is_registered'     => $school[0]->is_registered,
+                        'secret'            => $school[0]->secret,
+                        'city_id'           => $school[0]->city_id,
+                        'creator_id'        => $school[0]->creator_id,
+                        'modifier_id'       => $school[0]->modifier_id,
+                        'branch'            => $school[0]->branch,
+                        'subdomain'         => $school[0]->subdomain,
+                        'is_active'         => $school[0]->is_active,
+                        'is_selected'       => $school[0]->is_selected,
+                        'is_recipient'      => $school[0]->is_recipient,
+                        'postal_code'       => $school[0]->postal_code,
+                        'about'             => $school[0]->about,
+                        'mission'           => $school[0]->mission,
+                        'vision'            => $school[0]->vision,
+                        'facebookURL'       => $school[0]->facebookURL,
+                        'googleURL'         => $school[0]->googleURL,
+                        'linkedinURL'       => $school[0]->linkedinURL,
+                        'pinterestURL'      => $school[0]->pinterestURL,
+                        'twitterURL'        => $school[0]->twitterURL,
+                        'verification_status' => $school[0]->verification_status,
+                        'registration_step' => $school[0]->registration_step,
+                        'subpath'           => $school[0]->subpath,
+                        'banner'            => $school[0]->banner,
+                        'reason_inactive'   => $school[0]->reason_inactive,
+                    );
                     return (object)array(
-                        'school' => $school[0],
+                        'school' => $schoolResponse,
                         'channel' => $response,
                         // 'count' => count($arrayroom)
                     );
