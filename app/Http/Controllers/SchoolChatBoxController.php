@@ -99,7 +99,7 @@ class SchoolChatBoxController extends Controller
                     ->get();
                 // if (!empty($chattable)) {
                 $student = DB::connection('pgsql2')->table($this->tbStudent, "std")
-                    ->leftJoin($this->tbUserPersonal . " as user", 'std.id', '=', 'user.id')
+                    ->leftJoin($this->tbUserPersonal . " as user", 'std.user_id', '=', 'user.id')
                     ->where('std.id', '=', $request->student_id)
                     ->select('std.phone', 'std.avatar', 'user.first_name', 'user.last_name')
                     ->get();

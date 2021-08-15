@@ -72,6 +72,7 @@ class CandidateChannelListController extends Controller
             // $total = array_sum($arraychat);
             $response = array(
                 'count' => $count,
+                'user'  => $request->user_id
             );
             return $this->makeJSONResponse($response, 200);
         }
