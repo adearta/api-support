@@ -49,7 +49,7 @@ class CandidateChannelListController extends Controller
                 ->get();
             $room = DB::table($this->tbRoom)
                 ->where('student_id', '=', $student[0]->id)
-                ->select('id')
+                ->select('id', 'school_id')
                 ->get();
             if (count($room) > 0) {
                 // $arraychat = [];
@@ -72,7 +72,9 @@ class CandidateChannelListController extends Controller
             // $total = array_sum($arraychat);
             $response = array(
                 'count' => $count,
-                'user'  => $request->user_id
+                'user'  => $request->user_id,
+                'student_id' => $student[0]->id,
+                'school_id' => $room[0]->school_id
             );
             return $this->makeJSONResponse($response, 200);
         }
