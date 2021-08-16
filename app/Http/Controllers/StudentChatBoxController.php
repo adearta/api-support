@@ -254,7 +254,54 @@ class StudentChatBoxController extends Controller
                                         ->where("id", "=", $chatting[0]->school_id)
                                         ->get();
 
-                                    $schooldata = (object) $dbSchool;
+                                    $schooldata = $dbSchool;
+                                    $logo = SchoolModel::find($request->school_id);
+                                    $response_path = null;
+                                    $response_banner = null;
+                                    if ($logo->logo != null) {
+                                        $response_path = env("PYTHON_URL") . "/media/" . $logo->logo;
+                                    }
+                                    if ($logo->banner != null) {
+                                        $response_banner = env("PYTHON_URL") . "/media/" . $logo->banner;
+                                    }
+                                    $schoolResponse = (object) array(
+                                        'id'                => $schooldata[0]->id,
+                                        'is_deleted'        => $schooldata[0]->is_deleted,
+                                        'created'           => $schooldata[0]->created,
+                                        'modified'          => $schooldata[0]->modified,
+                                        'school_type_id'    => $schooldata[0]->school_type_id,
+                                        'name'              => $schooldata[0]->name,
+                                        'phone'             => $schooldata[0]->phone,
+                                        'email'             => $schooldata[0]->email,
+                                        'fax'               => $schooldata[0]->fax,
+                                        'address'           => $schooldata[0]->address,
+                                        'website'           => $schooldata[0]->website,
+                                        'logo'              => $response_path,
+                                        'is_registered'     => $schooldata[0]->is_registered,
+                                        'secret'            => $schooldata[0]->secret,
+                                        'city_id'           => $schooldata[0]->city_id,
+                                        'creator_id'        => $schooldata[0]->creator_id,
+                                        'modifier_id'       => $schooldata[0]->modifier_id,
+                                        'branch'            => $schooldata[0]->branch,
+                                        'subdomain'         => $schooldata[0]->subdomain,
+                                        'is_active'         => $schooldata[0]->is_active,
+                                        'is_selected'       => $schooldata[0]->is_selected,
+                                        'is_recipient'      => $schooldata[0]->is_recipient,
+                                        'postal_code'       => $schooldata[0]->postal_code,
+                                        'about'             => $schooldata[0]->about,
+                                        'mission'           => $schooldata[0]->mission,
+                                        'vision'            => $schooldata[0]->vision,
+                                        'facebookURL'       => $schooldata[0]->facebookURL,
+                                        'googleURL'         => $schooldata[0]->googleURL,
+                                        'linkedinURL'       => $schooldata[0]->linkedinURL,
+                                        'pinterestURL'      => $schooldata[0]->pinterestURL,
+                                        'twitterURL'        => $schooldata[0]->twitterURL,
+                                        'verification_status' => $schooldata[0]->verification_status,
+                                        'registration_step' => $schooldata[0]->registration_step,
+                                        'subpath'           => $schooldata[0]->subpath,
+                                        'banner'            => $response_banner,
+                                        'reason_inactive'   => $schooldata[0]->reason_inactive,
+                                    );
 
                                     $room = (object) array(
                                         "room_chat_id"  => $chatting[0]->room_chat_id,
@@ -280,7 +327,7 @@ class StudentChatBoxController extends Controller
                                 }
                                 $response = array_values(
                                     array(
-                                        "school" => $schooldata[0],
+                                        "school" => $schoolResponse,
                                         "room" => $room,
                                         "chat_data" => $chat,
                                         "pagination" => (object) array(

@@ -328,8 +328,12 @@ class SchoolChatBoxController extends Controller
                     //school response
                     $logo = SchoolModel::find($request->school_id);
                     $response_path = null;
-                    if ($photo->logo != null) {
+                    $response_banner = null;
+                    if ($logo->logo != null) {
                         $response_path = env("PYTHON_URL") . "/media/" . $logo->logo;
+                    }
+                    if ($logo->banner != null) {
+                        $response_banner = env("PYTHON_URL") . "/media/" . $logo->banner;
                     }
                     $schoolResponse = (object) array(
                         'id'                => $school[0]->id,
@@ -366,7 +370,7 @@ class SchoolChatBoxController extends Controller
                         'verification_status' => $school[0]->verification_status,
                         'registration_step' => $school[0]->registration_step,
                         'subpath'           => $school[0]->subpath,
-                        'banner'            => $school[0]->banner,
+                        'banner'            => $response_banner,
                         'reason_inactive'   => $school[0]->reason_inactive,
                     );
                     return (object)array(
