@@ -116,7 +116,7 @@ class SchoolChatBoxController extends Controller
                     'student_phone' => $student[0]->phone,
                     "student_name"  => $student[0]->first_name . " " . $student[0]->last_name,
                     'student_photo' => $response_path,
-                    'updated_at'    => $chattable[0]->updated_at,
+                    'updated_at'    => $chattable[0]->send_time,
                 );
                 $chat = DB::table($this->tbChat)
                     ->where('room_chat_id', '=', $chattable[0]->room_id)
