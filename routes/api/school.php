@@ -17,7 +17,7 @@ Route::group(['prefix' => 'messaging'], function () {
         Route::middleware('admin')->group(function () {
             Route::post('/channel/send-chat', [SchoolChatBoxController::class, 'createChat']); //
             // Route::get('/channel/candidates', [SchoolChatBoxController::class, 'listCandidate']); //list student
-            Route::get('/channel/candidates', [SchoolChatBoxController::class, 'listChat']); //
+            Route::get('/channel/candidates', [SchoolChatBoxController::class, 'listStudent']); //
             Route::delete('/delete-chat/{chat_id}', [SchoolChatBoxController::class, 'deleteChat']);
             Route::get('/channel', [SchoolChatBoxController::class, 'listRoom']); //
             Route::delete('/channel/delete/{room_chat_id}', [SchoolChatBoxController::class, 'deleteRoom']);
