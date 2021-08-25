@@ -68,7 +68,8 @@ class StudentChatBoxController extends Controller
                 if ($count < 1) {
                     $room = DB::table($this->tbRoom)->insertGetId(array(
                         'student_id' => $request->student_id,
-                        'school_id' => $school[0]->school_id
+                        'school_id' => $school[0]->school_id,
+                        'updated_at' => $datetime,
                     ));
 
                     DB::table($this->tbChat)->insert(array(
@@ -125,6 +126,9 @@ class StudentChatBoxController extends Controller
                     );
                     return $response;
                 } else {
+                    DB::table($this->tbRoom)->update([
+                        'updated_at' => $datetime
+                    ]);
                     $lastRoom = DB::table($this->tbRoom)
                         ->where('student_id', '=', $request->student_id)
                         ->where('school_id', '=', $school[0]->school_id)
