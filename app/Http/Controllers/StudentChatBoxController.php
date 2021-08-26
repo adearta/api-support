@@ -110,11 +110,16 @@ class StudentChatBoxController extends Controller
                         "updated_at"    => $chattable[0]->send_time,
                         "created_at"    => $chattable[0]->created
                     );
+                    $chatmodel = ChatModel::find($chattable[0]->chat_id);
+                    $chatpath = null;
+                    if ($chatmodel->image != null) {
+                        $chatpath = env("WEBINAR_URL") . $chatmodel->image;
+                    }
                     $chatResponse = array(
                         'id'       => $chattable[0]->chat_id,
                         'channel_id'  => $chattable[0]->room_chat_id,
                         'chat'          => $chattable[0]->chat,
-                        'image'         => url('api/v1/administrator/img/' . $chattable[0]->image),
+                        'image'         => $chatpath,
                         'send_time'     => $chattable[0]->send_time,
                         'sender'        => "student",
                         'is_readed'     => $chattable[0]->is_readed,
@@ -176,16 +181,17 @@ class StudentChatBoxController extends Controller
                             "updated_at"    => $chattable[0]->send_time,
                             "created_at"    => $chattable[0]->created
                         );
-                        $chatmodel = ChatModel::find($chat[$i]->id);
-                        $response_path = null;
+                        //modif belum bener
+                        $chatmodel = ChatModel::find($chattable[$i]->chat_id);
+                        $chat_path = null;
                         if ($chatmodel->image != null) {
-                            $response_path = env("PYTHON_URL") . "/media/" . $chatmodel->image;
+                            $chat_path = env("WEBINAR_URL") . $chatmodel->image;
                         }
                         $chatResponse[$i] = array(
                             'id'            => $chattable[$i]->chat_id,
                             'channel_id'    => $chattable[$i]->room_chat_id,
                             'chat'          => $chattable[$i]->chat,
-                            'image'         => $response_path,
+                            'image'         => $chat_path,
                             'send_time'     => $chattable[$i]->send_time,
                             'sender'        => "student",
                             'is_readed'     => $chattable[$i]->is_readed,
