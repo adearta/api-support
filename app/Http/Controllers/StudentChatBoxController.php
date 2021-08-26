@@ -386,7 +386,7 @@ class StudentChatBoxController extends Controller
             'chat_id' => 'numeric|required|exists:' . $this->tbChat . ',id'
         ]);
         if ($validation->fails()) {
-            return $this->makeJSONResponse(['message' => $validation->errors()], 400);
+            return $this->makeJSONResponse(['message' => $validation->errors()->first()], 400);
         } else {
             $delete = ChatModel::findOrfail($chat_id);
             if ($delete) {
