@@ -431,65 +431,79 @@ class StudentChatBoxController extends Controller
         } else {
             try {
                 // $data = DB::transaction(function () use ($channel_id) {
+                //cek channel
+                $responseChat = array();
                 $detail = DB::table($this->tbChat, 'chat')
                     ->leftJoin($this->tbRoom . " as room", 'chat.room_chat_id', '=', 'room.id')
                     ->where('room.id', '=', $request->id)
                     ->orderBy('chat.send_time', 'desc')
                     ->select('room.id as room_id', 'room.student_id', 'room.school_id', 'chat.room_chat_id', 'chat.id as chat_id', 'chat.sender', 'chat.chat', 'chat.image', 'chat.send_time', 'chat.is_readed', 'room.updated_at', 'room.created')
                     ->get();
+                $channel = DB::table($this->tbRoom)
+                    ->where('id', '=', $request->id)
+                    ->get();
                 $schooldata = DB::connection('pgsql2')->table($this->tbSchool)
-                    ->where('id', '=', $detail[0]->school_id)
+                    ->where('id', '=', $channel[0]->school_id)
                     ->get();
 
-                // "channel": {
-                //     "id": 2,
-                //     "student_id": 1140,
-                //     "school_id": 48365,
-                //     "school_phone": "085634293842",
-                //     "school_name": "Demo candidate",
-                //     "school_photo": null,
-                //     "updated_at": ,
-                //     "created_at": 
-                // }
-                for ($i = 0; $i < count($detail); $i++) {
-                    $schoolmodel = SchoolModel::find($detail[$i]->school_id);
+                if (count($detail) > 0) {
+                    for ($i = 0; $i < count($detail); $i++) {
+                        $schoolmodel = SchoolModel::find($detail[$i]->school_id);
+                        $response_path = null;
+                        if ($schoolmodel->logo != null) {
+                            $response_path = env("PYTHON_URL") . "/media/" . $schoolmodel->logo;
+                        }
+                        $responseChannel = array(
+                            'id'            => $detail[0]->room_id,
+                            'student_id'    => $detail[0]->student_id,
+                            'school_id'     => $detail[0]->school_id,
+                            "school_phone"  => $schooldata[0]->phone,
+                            "school_name"   => $schooldata[0]->name,
+                            "school_photo"  => $response_path,
+                            "updated_at"    => $detail[0]->updated_at,
+                            "created_at"    => $detail[0]->created
+                        );
+                        $chatmodel[$i] = ChatModel::find($detail[$i]->chat_id);
+                        $response_path = null;
+                        if ($chatmodel[$i]->image != null) {
+                            $response_path = env("WEBINAR_URL") . $chatmodel[$i]->image;
+                        }
+                        //         "id": 10,
+                        // "channel_id": 8,
+                        // "sender": "school",
+                        // "chat": "test message 123",
+                        // "image": null,
+                        // "send_time": "2021-07-08 23:58:44",
+                        // "is_readed": false,
+                        // "is_broadcast": false
+                        $responseChat[$i] = array(
+                            'id'            => $detail[$i]->chat_id,
+                            'channel_id'    => $detail[$i]->room_chat_id,
+                            'sender'        => $detail[$i]->sender,
+                            'chat'          => $detail[$i]->chat,
+                            'image'         => $response_path,
+                            'send_time'     => $detail[$i]->send_time,
+                            'is_readed'     => $detail[$i]->is_readed,
+                            'is_broadcast'  => false
+                        );
+                    }
+                } else {
+                    $schoolmodel = SchoolModel::find($channel[0]->school_id);
                     $response_path = null;
                     if ($schoolmodel->logo != null) {
                         $response_path = env("PYTHON_URL") . "/media/" . $schoolmodel->logo;
                     }
                     $responseChannel = array(
-                        'id'            => $detail[0]->room_id,
-                        'student_id'    => $detail[0]->student_id,
-                        'school_id'     => $detail[0]->school_id,
+                        'id'            => $channel[0]->id,
+                        'student_id'    => $channel[0]->student_id,
+                        'school_id'     => $channel[0]->school_id,
                         "school_phone"  => $schooldata[0]->phone,
                         "school_name"   => $schooldata[0]->name,
                         "school_photo"  => $response_path,
-                        "updated_at"    => $detail[0]->send_time,
-                        "created_at"    => $detail[0]->created
+                        "updated_at"    => $channel[0]->updated_at,
+                        "created_at"    => $channel[0]->created
                     );
-                    $chatmodel[$i] = ChatModel::find($detail[$i]->chat_id);
-                    $response_path = null;
-                    if ($chatmodel[$i]->image != null) {
-                        $response_path = env("WEBINAR_URL") . $chatmodel[$i]->image;
-                    }
-                    //         "id": 10,
-                    // "channel_id": 8,
-                    // "sender": "school",
-                    // "chat": "test message 123",
-                    // "image": null,
-                    // "send_time": "2021-07-08 23:58:44",
-                    // "is_readed": false,
-                    // "is_broadcast": false
-                    $responseChat[$i] = array(
-                        'id'            => $detail[$i]->chat_id,
-                        'channel_id'    => $detail[$i]->room_chat_id,
-                        'sender'        => $detail[$i]->sender,
-                        'chat'          => $detail[$i]->chat,
-                        'image'         => $response_path,
-                        'send_time'     => $detail[$i]->send_time,
-                        'is_readed'     => $detail[$i]->is_readed,
-                        'is_broadcast'  => false
-                    );
+                    // $responseChat
                 }
                 $response = array(
                     // 'count' => count($detail),
