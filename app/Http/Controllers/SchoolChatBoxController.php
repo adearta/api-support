@@ -131,7 +131,7 @@ class SchoolChatBoxController extends Controller
                     $chatmodel = ChatModel::find($chat[$i]->id);
                     $response_path = null;
                     if ($chatmodel->image != null) {
-                        $response_path = env("PYTHON_URL") . "/media/" . $chatmodel->image;
+                        $response_path = env("WEBINAR_URL") . $chatmodel->image;
                     }
                     $chatResponse[$i] = array(
                         'id'       => $chat[$i]->id,
@@ -502,7 +502,7 @@ class SchoolChatBoxController extends Controller
                         $chatmodel[$i] = ChatModel::find($detail[$i]->chat_id);
                         $response_path = null;
                         if ($chatmodel[$i]->image != null) {
-                            $response_path = env("PYTHON_URL") . "/media/" . $chatmodel[$i]->image;
+                            $response_path = env("WEBINAR_URL") . $chatmodel[$i]->image;
                         }
                         // "id": 10,
                         // "channel_id": 8,
