@@ -616,7 +616,7 @@ class SchoolChatBoxController extends Controller
                         );
                     }
                     $response = array(
-                        'channel' => $test
+                        'candidate' => $test
                     );
                 }
                 //
