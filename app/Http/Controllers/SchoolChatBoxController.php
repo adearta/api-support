@@ -504,13 +504,7 @@ class SchoolChatBoxController extends Controller
                         if ($chatmodel[$i]->image != null) {
                             $response_path = env("WEBINAR_URL") . $chatmodel[$i]->image;
                         }
-                        // "id": 10,
-                        // "channel_id": 8,
-                        // "sender": "student",
-                        // "chat": "test message 123",
-                        // "image": null,
-                        // "send_time": "2021-07-08 23:58:44",
-                        // "is_readed": false
+
                         $responseChat[$i] = array(
                             'id'            => $detail[$i]->chat_id,
                             'channel_id'    => $detail[$i]->room_chat_id,
@@ -615,6 +609,7 @@ class SchoolChatBoxController extends Controller
                             // 'skuy'  => 'kuyyy'
                         );
                     }
+                    //semoga bisa di pull
                     $response = array(
                         'candidate' => $test
                     );
