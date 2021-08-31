@@ -304,11 +304,7 @@ class CertificateController extends Controller
             'certificate.*' => 'required|mimes:jpg,jpeg,png|max:2000',
         ]);
         if ($validation->fails()) {
-<<<<<<< HEAD
-            return $this->makeJSONResponse(['message' => $validation->errors()->first()], 400);
-=======
             return $this->makeJSONResponse(["message" => $validation->errors()->first()], 400);
->>>>>>> 40c1a72144a32abfb5a644e3ba4d37acdbbf6eea
         } else {
             $validStudent = true;
             $invalidNim = [];
