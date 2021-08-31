@@ -18,6 +18,7 @@ class CareerSupportModelsWebinarBiasa extends Model
         'start_time',
         'end_time',
         'price',
+        'is_certificate'
     ];
     protected $hidden = [
         'creator_id',

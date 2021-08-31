@@ -307,6 +307,15 @@ class WebinarNormalController extends Controller
             }
         }
     }
+    private function checkParam($param, $dbData)
+    {
+        $data = $param;
+        if ($data == null) {
+            $data = $dbData;
+        }
+
+        return $data;
+    }
     public function editWebinar(Request $request, $webinar_id)
     {
         //validasi 
@@ -330,29 +339,30 @@ class WebinarNormalController extends Controller
             'event_picture' => 'mimes:jpg,jpeg,png|max:2000'
         ]);
         if ($validation->fails()) {
-            return response()->json(['message' => $validation->errors()->first()], 202);
+            return response()->json(['message' => $validation->errors()->first()], 400);
         } else {
             //find webinar id
-            $webinar = DB::table($this->tbWebinar)
-                ->where('id', '=', $webinar_id)
-                ->select('id as webinar_id', 'event_picture as path', 'event_name', 'event_date', 'event_link', 'event_start', 'event_end', 'is_certificate', 'certificate')
-                ->get();
+            // $webinar = DB::table($this->tbWebinar)
+            //     ->where('id', '=', $webinar_id)
+            //     ->select('id as webinar_id', 'event_picture as path', 'event_name', 'event_date', 'event_link', 'event_start', 'event_end', 'is_certificate', 'certificate')
+            //     ->get();
+            $webinar = CareerSupportModelsWebinarBiasa::findOrFail($webinar_id);
             //set modified
             if (!empty($webinar)) {
                 $data = DB::transaction(function () use ($request, $webinar, $webinar_id) {
-                    $path = $webinar[0]->path;
+                    $path = $webinar->event_picture;
                     if ($file = $request->file('event_picture')) {
                         $path = $file->store('webinar_internal', 'public');
                     }
                     $datetime = Carbon::now();
                     $datetime->toDateTimeString();
                     $edited = array(
-                        'event_name' => $this->checkparam($request->event_name),
-                        'event_date' => $this->checkparam($request->event_date),
-                        'event_link' => $this->checkparam($request->event_link),
-                        'event_start' => $this->checkparam($request->event_start),
-                        'event_end' => $this->checkparam($request->event_end),
-                        'price' => $this->checkparam($request->price),
+                        'event_name' => $this->checkparam($request->event_name, $webinar->event_name),
+                        'event_date' => $this->checkparam($request->event_date, $webinar->event_date),
+                        'event_link' => $this->checkparam($request->event_link, $webinar->event_link),
+                        'event_start' => $this->checkparam($request->event_start, $webinar->event_start),
+                        'event_end' => $this->checkparam($request->event_end, $webinar->event_end),
+                        'price' => $this->checkparam($request->price, $webinar->price),
                         'modified' => $datetime,
                         'event_picture' => $path
                     );
@@ -367,19 +377,19 @@ class WebinarNormalController extends Controller
                     $currency = "Rp " . number_format($request->price, 2, ',', '.');
                     $path_zip = null;
 
-                    if ($webinar[0]->is_certificate) {
-                        $path_zip = env("WEBINAR_URL") . $webinar[0]->certificate;
+                    if ($webinar->is_certificate) {
+                        $path_zip = env("WEBINAR_URL") . $webinar->certificate;
                     }
                     $response = array(
                         "id"            => $request->webinar_id,
                         "event_name"    => $request->event_name,
                         "event_date"    => $request->event_date,
                         "event_picture" => env("WEBINAR_URL") . $tableUpdated[0]->event_picture,
-                        "zoom_link"     => $request->zoom_link,
+                        "zoom_link"     => $request->event_link,
                         'event_start'   => $request->event_start,
                         'event_end'     => $request->event_end,
                         'price'         => $currency,
-                        "is_certificate"    => $webinar[0]->is_certificate,
+                        "is_certificate"    => $webinar->is_certificate,
                         "certificate"       => $path_zip,
                     );
                     return array(
