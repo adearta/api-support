@@ -58,13 +58,13 @@ class CertificateController extends Controller
     public function addCertificateAkbar(Request $request)
     {
         $validation = Validator::make($request->all(), [
-            'webinar_id.*' => 'required|numeric|exists:' . $this->tbWebinarakbar . ',id',
+            'webinar_id' => 'required|numeric|exists:' . $this->tbWebinarakbar . ',id',
             'certificate' => 'required',
             'certificate.*' => 'mimes:jpg,jpeg,png|max:2000',
         ]);
 
         if ($validation->fails()) {
-            return $this->makeJSONResponse($validation->errors(), 400);
+            return $this->makeJSONResponse(["message" => $validation->errors()->first()], 400);
         } else {
             $validStudent = true;
             $invalidNim = [];
@@ -304,7 +304,11 @@ class CertificateController extends Controller
             'certificate.*' => 'required|mimes:jpg,jpeg,png|max:2000',
         ]);
         if ($validation->fails()) {
+<<<<<<< HEAD
             return $this->makeJSONResponse(['message' => $validation->errors()->first()], 400);
+=======
+            return $this->makeJSONResponse(["message" => $validation->errors()->first()], 400);
+>>>>>>> 40c1a72144a32abfb5a644e3ba4d37acdbbf6eea
         } else {
             $validStudent = true;
             $invalidNim = [];
