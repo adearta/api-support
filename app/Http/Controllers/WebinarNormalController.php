@@ -310,7 +310,16 @@ class WebinarNormalController extends Controller
     public function editWebinar(Request $request, $webinar_id)
     {
         //validasi 
-        $validation = Validator::make($request->all(), [
+        $array_validation = array(
+            'webinar_id' => $webinar_id,
+            'event_name' => $request->event_name,
+            'event_date' => $request->event_date,
+            'event_link' => $request->event_link,
+            'event_start' => $request->event_start,
+            'event_end' => $request->event_end,
+            'event_picture' => $request->event_picture
+        );
+        $validation = Validator::make($array_validation, [
             'webinar_id'    => 'required|numeric|exists:' . $this->tbWebinar . ',id',
             'event_name'    => 'string',
             'event_date'    => 'date_format:Y-m-d',
@@ -321,7 +330,7 @@ class WebinarNormalController extends Controller
             'event_picture' => 'mimes:jpg,jpeg,png|max:2000'
         ]);
         if ($validation->fails()) {
-            return response()->json($validation->errors(), 202);
+            return response()->json(['message' => $validation->errors()->first()], 202);
         } else {
             //find webinar id
             $webinar = DB::table($this->tbWebinar)
@@ -330,7 +339,7 @@ class WebinarNormalController extends Controller
                 ->get();
             //set modified
             if (!empty($webinar)) {
-                $data = DB::transaction(function () use ($request, $webinar) {
+                $data = DB::transaction(function () use ($request, $webinar, $webinar_id) {
                     $path = $webinar[0]->path;
                     if ($file = $request->file('event_picture')) {
                         $path = $file->store('webinar_internal', 'public');
@@ -338,12 +347,12 @@ class WebinarNormalController extends Controller
                     $datetime = Carbon::now();
                     $datetime->toDateTimeString();
                     $edited = array(
-                        'event_name' => $request->event_name,
-                        'event_date' => $request->event_date,
-                        'event_link' => $request->event_link,
-                        'event_start' => $request->event_start,
-                        'event_end' => $request->event_end,
-                        'price' => $request->price,
+                        'event_name' => $this->checkparam($request->event_name),
+                        'event_date' => $this->checkparam($request->event_date),
+                        'event_link' => $this->checkparam($request->event_link),
+                        'event_start' => $this->checkparam($request->event_start),
+                        'event_end' => $this->checkparam($request->event_end),
+                        'price' => $this->checkparam($request->price),
                         'modified' => $datetime,
                         'event_picture' => $path
                     );
@@ -362,7 +371,7 @@ class WebinarNormalController extends Controller
                         $path_zip = env("WEBINAR_URL") . $webinar[0]->certificate;
                     }
                     $response = array(
-                        "id"            => $webinar_id,
+                        "id"            => $request->webinar_id,
                         "event_name"    => $request->event_name,
                         "event_date"    => $request->event_date,
                         "event_picture" => env("WEBINAR_URL") . $tableUpdated[0]->event_picture,
