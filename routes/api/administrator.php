@@ -35,7 +35,7 @@ Route::group(['prefix' => 'webinar-akbar'], function () {
 Route::group(['prefix' => 'webinar-internal'], function () {
     Route::middleware('admin')->group(function () {
         Route::post('/create', [WebinarNormalController::class, 'addNormalWebinar']);
-        Route::post('/edit', [WebinarNormalController::class, 'editWebinar']);
+        Route::post('/edit/{webinar_id}', [WebinarNormalController::class, 'editWebinar']);
         Route::delete('/delete/{webinar_id}', [WebinarNormalController::class, 'destroyWebinar']);
         Route::get('/', [WebinarNormalController::class, 'listWebinar']);
         Route::get('/detail/{webinar_id}', [WebinarNormalController::class, 'detailNormalWebinar']);
