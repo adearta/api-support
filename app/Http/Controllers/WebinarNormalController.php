@@ -62,7 +62,7 @@ class WebinarNormalController extends Controller
             'webinar_id' => 'required|numeric|exists:' . $this->tbWebinar . ',id'
         ]);
         if ($validation->fails()) {
-            return $this->makeJSONResponse($validation->errors(), 400);
+            return $this->makeJSONResponse(['message' => $validation->errors()->first()], 400);
         } else {
             if ($webinar_id == null) {
                 return $this->makeJSONResponse(["message" => "webinar must not empty!"], 400);
@@ -230,7 +230,7 @@ class WebinarNormalController extends Controller
             'price'         => 'numeric',
         ]);
         if ($validation->fails()) {
-            return $this->makeJSONResponse($validation->errors(), 202);
+            return $this->makeJSONResponse(['message' => $validation->errors()->first()], 202);
         } else {
             $data = DB::transaction(function () use ($request) {
                 $duplicatename = DB::table($this->tbWebinar)
@@ -307,7 +307,7 @@ class WebinarNormalController extends Controller
             }
         }
     }
-    public function editWebinar(Request $request)
+    public function editWebinar(Request $request, $webinar_id)
     {
         //validasi 
         $validation = Validator::make($request->all(), [
@@ -325,7 +325,7 @@ class WebinarNormalController extends Controller
         } else {
             //find webinar id
             $webinar = DB::table($this->tbWebinar)
-                ->where('id', '=', $request->webinar_id)
+                ->where('id', '=', $webinar_id)
                 ->select('id as webinar_id', 'event_picture as path', 'event_name', 'event_date', 'event_link', 'event_start', 'event_end', 'is_certificate', 'certificate')
                 ->get();
             //set modified
@@ -348,11 +348,11 @@ class WebinarNormalController extends Controller
                         'event_picture' => $path
                     );
                     DB::table($this->tbWebinar)
-                        ->where('id', '=', $request->webinar_id)
+                        ->where('id', '=', $webinar_id)
                         ->update($edited);
 
                     $tableUpdated = DB::table($this->tbWebinar)
-                        ->where('id', '=', $request->webinar_id)
+                        ->where('id', '=', $webinar_id)
                         ->select('*')
                         ->get();
                     $currency = "Rp " . number_format($request->price, 2, ',', '.');
@@ -362,7 +362,7 @@ class WebinarNormalController extends Controller
                         $path_zip = env("WEBINAR_URL") . $webinar[0]->certificate;
                     }
                     $response = array(
-                        "id"            => $request->webinar_id,
+                        "id"            => $webinar_id,
                         "event_name"    => $request->event_name,
                         "event_date"    => $request->event_date,
                         "event_picture" => env("WEBINAR_URL") . $tableUpdated[0]->event_picture,
@@ -395,7 +395,7 @@ class WebinarNormalController extends Controller
             'webinar_id' => 'required|numeric|exists:' . $this->tbWebinar . ',id'
         ]);
         if ($validation->fails()) {
-            return $this->makeJSONResponse($validation->errors(), 400);
+            return $this->makeJSONResponse(['message' => $validation->errors()->first()], 400);
         } else {
             $webinar = DB::table($this->tbWebinar)
                 ->where('id', '=', $webinar_id)
@@ -403,7 +403,7 @@ class WebinarNormalController extends Controller
             $delete = CareerSupportModelsWebinarBiasa::findOrfail($webinar_id);
             $name = str_replace(' ', '_', $webinar[0]->event_name);
             $path = 'certificate_internal/webinar_' . $name;
-            if (!empty($delete)) {
+            if ($delete) {
                 if (Storage::disk('public')->exists($delete->event_picture)) {
                     Storage::disk('public')->delete($delete->event_picture);
                     Storage::disk('public')->deleteDirectory($path);
