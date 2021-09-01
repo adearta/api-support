@@ -44,7 +44,6 @@ class WebinarNormalController extends Controller
 
     public function listNormalWebinar()
     {
-        //count data fom tabel participant to get the registerd
         try {
             $count = "select count('part.webinar_id') from " . $this->tbParticipant . " as part where part.webinar_id = web.id";
             $datas = DB::select("select web.id as webinar_id, web.event_name, web.event_picture, web.event_date, web.event_start, web.event_end, web.price, (500) as quota, (" . $count . ") as registered from " . $this->tbWebinar . " as web where web.event_date > current_date");
