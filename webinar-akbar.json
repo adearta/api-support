@@ -1,0 +1,252 @@
+[
+    {
+        "method": "GET",
+        "uri": "/api/v1/administrator/img/{folder}/{img}",
+        "success_code": 200
+    },
+    {
+        "method": "POST",
+        "uri": "/api/v1/administrator/login",
+        "success_code": 200
+    },
+    {
+        "method": "POST",
+        "uri": "/api/v1/administrator/payment/status",
+        "success_code": 200
+    },
+    {
+        "method": "POST",
+        "uri": "/api/v1/administrator/register",
+        "success_code": 200
+    },
+    {
+        "method": "GET",
+        "uri": "/api/v1/administrator/webinar-akbar",
+        "success_code": 200
+    },
+    {
+        "method": "POST",
+        "uri": "/api/v1/administrator/webinar-akbar/create",
+        "success_code": 200
+    },
+    {
+        "method": "DELETE",
+        "uri": "/api/v1/administrator/webinar-akbar/delete/{webinar_id}",
+        "success_code": 200
+    },
+    {
+        "method": "POST",
+        "uri": "/api/v1/administrator/webinar-akbar/detail/upload-certificate",
+        "success_code": 200
+    },
+    {
+        "method": "GET",
+        "uri": "/api/v1/administrator/webinar-akbar/detail/{webinar_id}",
+        "success_code": 200
+    },
+    {
+        "method": "POST",
+        "uri": "/api/v1/administrator/webinar-akbar/edit/{webinar_id}",
+        "success_code": 200
+    },
+    {
+        "method": "GET",
+        "uri": "/api/v1/administrator/webinar-akbar/list-school",
+        "success_code": 200
+    },
+    {
+        "method": "GET",
+        "uri": "/api/v1/administrator/webinar-akbar/notification",
+        "success_code": 200
+    },
+    {
+        "method": "POST",
+        "uri": "/api/v1/administrator/webinar-akbar/notification/read",
+        "success_code": 200
+    },
+    {
+        "method": "GET",
+        "uri": "/api/v1/administrator/webinar-akbar/participant/{webinar_id}",
+        "success_code": 200
+    },
+    {
+        "method": "POST",
+        "uri": "/api/v1/administrator/webinar-akbar/update-status",
+        "success_code": 200
+    },
+    {
+        "method": "GET",
+        "uri": "/api/v1/administrator/webinar-akbar/webinar-by-school/{id}",
+        "success_code": 200
+    },
+    {
+        "method": "GET",
+        "uri": "/api/v1/administrator/webinar-internal",
+        "success_code": 200
+    },
+    {
+        "method": "POST",
+        "uri": "/api/v1/administrator/webinar-internal/create",
+        "success_code": 200
+    },
+    {
+        "method": "DELET",
+        "uri": "/api/v1/administrator/webinar-internal/delete/{webinar_id}",
+        "success_code": 200
+    },
+    {
+        "method": "GET",
+        "uri": "/api/v1/administrator/webinar-internal/detail-list/student/{webinar_id}",
+        "success_code": 200
+    },
+    {
+        "method": "POST",
+        "uri": "/api/v1/administrator/webinar-internal/detail/upload-certificate",
+        "success_code": 200
+    },
+    {
+        "method": "GET",
+        "uri": "/api/v1/administrator/webinar-internal/detail/{webinar_id}",
+        "success_code": 200
+    },
+    {
+        "method": "POST",
+        "uri": "/api/v1/administrator/webinar-internal/edit/{webinar_id}",
+        "success_code": 200
+    },
+    {
+        "method": "GET",
+        "uri": "/api/v1/administrator/webinar-internal/notification",
+        "success_code": 200
+    },
+    {
+        "method": "POST",
+        "uri": "/api/v1/administrator/webinar-internal/notification/read",
+        "success_code": 200
+    },
+    {
+        "method": "GET",
+        "uri": "/api/v1/administrator/webinar-internal/order/detail",
+        "success_code": 200
+    },
+    {
+        "method": "GET",
+        "uri": "/api/v1/administrator/webinar-internal/payment/charge",
+        "success_code": 200
+    },
+    {
+        "method": "POST",
+        "uri": "/api/v1/administrator/webinar-internal/register",
+        "success_code": 200
+    },
+    {
+        "method": "GET",
+        "uri": "/api/v1/candidate/messaging/broadcast/detail",
+        "success_code": 200
+    },
+    {
+        "method": "GET",
+        "uri": "/api/v1/candidate/messaging/channel",
+        "success_code": 200
+    },
+    {
+        "method": "DELETE",
+        "uri": "/api/v1/candidate/messaging/channel/delete-chat/{chat_id}",
+        "success_code": 200
+    },
+    {
+        "method": "GET",
+        "uri": "/api/v1/candidate/messaging/channel/detail",
+        "success_code": 200
+    },
+    {
+        "method": "GET",
+        "uri": "/api/v1/candidate/messaging/channel/school",
+        "success_code": 200
+    },
+    {
+        "method": "GET",
+        "uri": "/api/v1/candidate/messaging/channel/school/detail",
+        "success_code": 200
+    },
+    {
+        "method": "POST",
+        "uri": "/api/v1/candidate/messaging/channel/send-chat",
+        "success_code": 201
+    },
+    {
+        "method": "GET",
+        "uri": "/api/v1/candidate/messaging/count",
+        "success_code": 200
+    },
+    {
+        "method": "GET",
+        "uri": "/api/v1/candidate/messaging/readed",
+        "success_code": 200
+    },
+    {
+        "method": "GET",
+        "uri": "/api/v1/school/messaging/broadcast",
+        "success_code": 200
+    },
+    {
+        "method": "POST",
+        "uri": "/api/v1/school/messaging/broadcast/create",
+        "success_code": 201
+    },
+    {
+        "method": "DELETE",
+        "uri": "/api/v1/school/messaging/broadcast/delete/{broadcast_id}",
+        "success_code": 200
+    },
+    {
+        "method": "GET",
+        "uri": "/api/v1/school/messaging/broadcast/detail",
+        "success_code": 200
+    },
+    {
+        "method": "GET",
+        "uri": "/api/v1/school/messaging/count",
+        "success_code": 200
+    },
+    {
+        "method": "GET",
+        "uri": "/api/v1/school/messaging/personal/channel",
+        "success_code": 200
+    },
+    {
+        "method": "GET",
+        "uri": "/api/v1/school/messaging/personal/channel/candidates",
+        "success_code": 200
+    },
+    {
+        "method": "DELETE",
+        "uri": "/api/v1/school/messaging/personal/channel/delete/{room_chat_id}",
+        "success_code": 200
+    },
+    {
+        "method": "POST",
+        "uri": "/api/v1/school/messaging/personal/channel/send-chat",
+        "success_code": 201
+    },
+    {
+        "method": "GET",
+        "uri": "/api/v1/school/messaging/personal/channel/{channel_id}",
+        "success_code": 200
+    },
+    {
+        "method": "DELETE",
+        "uri": "/api/v1/school/messaging/personal/delete-chat/{chat_id}",
+        "success_code": 200
+    },
+    {
+        "method": "GET",
+        "uri": "/api/v1/school/messaging/readed",
+        "success_code": 200
+    },
+    {
+        "method": "GET",
+        "uri": "/api/v1/testing",
+        "success_code": 200
+    }
+]
