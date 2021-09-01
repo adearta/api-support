@@ -246,7 +246,7 @@
     },
     {
         "method": "GET",
-        "uri": "/api/v1/testing",
+        "uri": "/api/v1/testing ",
         "success_code": 200
     }
 ]
