@@ -319,23 +319,23 @@ class WebinarNormalController extends Controller
     {
         //validasi 
         $array_validation = array(
-            'webinar_id' => $webinar_id,
-            'event_name' => $request->event_name,
-            'event_date' => $request->event_date,
-            'event_link' => $request->event_link,
-            'event_start' => $request->event_start,
-            'event_end' => $request->event_end,
+            'webinar_id'    => $webinar_id,
+            'event_name'    => $request->event_name,
+            'event_date'    => $request->event_date,
+            'event_link'    => $request->event_link,
+            'event_start'   => $request->event_start,
+            'event_end'     => $request->event_end,
             'event_picture' => $request->event_picture
         );
         $validation = Validator::make($array_validation, [
             'webinar_id'    => 'required|numeric|exists:' . $this->tbWebinar . ',id',
-            'event_name'    => 'string',
-            'event_date'    => 'date_format:Y-m-d',
-            'event_link'    => 'url',
-            'event_start'   => 'date_format:H:i:s',
-            'event_end'     => 'date_format:H:i:s|after:event_start',
+            'event_name'    => 'nullable|string',
+            'event_date'    => 'nullable|date_format:Y-m-d',
+            'event_link'    => 'nullable|url',
+            'event_start'   => 'nullable|date_format:H:i:s',
+            'event_end'     => 'nullable|date_format:H:i:s|after:event_start',
             // 'price' => 'numeric|required',
-            'event_picture' => 'mimes:jpg,jpeg,png|max:2000'
+            'event_picture' => 'nullable|mimes:jpg,jpeg,png|max:2000'
         ]);
         if ($validation->fails()) {
             return response()->json(['message' => $validation->errors()->first()], 400);
