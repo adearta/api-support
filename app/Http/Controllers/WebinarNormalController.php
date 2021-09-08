@@ -229,7 +229,7 @@ class WebinarNormalController extends Controller
             'price'         => 'numeric',
         ]);
         if ($validation->fails()) {
-            return $this->makeJSONResponse(['message' => $validation->errors()->first()], 202);
+            return $this->makeJSONResponse(['message' => $validation->errors()->first()], 400);
         } else {
             $data = DB::transaction(function () use ($request) {
                 $duplicatename = DB::table($this->tbWebinar)
