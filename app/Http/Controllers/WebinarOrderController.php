@@ -28,22 +28,27 @@ class WebinarOrderController extends Controller
         $this->tbStudent = StudentModel::tableName();
     }
     //get the detail of webinar + order status by student
-    public function getDetailOrder(Request $request)
+    public function getDetailOrder($webinar_id, Request $request)
     {
+        $student_id = $request->student_id;
+        $needValidate = array(
+            'webinar_id'    => $webinar_id,
+            'student_id'    => $student_id
+        );
 
-        $validation = Validator::make($request->all(), [
+        $validation = Validator::make($needValidate, [
             'webinar_id' => 'required|numeric|exists:' . $this->tbWebinar . ',id',
             'student_id' => 'required|numeric|exists:pgsql2.' . $this->tbStudent . ',id'
         ]);
 
         if ($validation->fails()) {
-            return $this->makeJSONResponse($validation->errors(), 400);
+            return $this->makeJSONResponse(['message' => $validation->errors()->first()], 400);
         } else {
             $detail = DB::table($this->tbWebinar, 'webinar')
                 ->leftJoin($this->tbParticipant . ' as participant', 'participant.webinar_id', '=', 'webinar.id')
                 ->leftJoin($this->tbOrder . ' as pesan', 'participant.id', '=', 'pesan.participant_id')
-                ->where('webinar.id', '=', $request->webinar_id)
-                ->where('participant.student_id', '=', $request->student_id)
+                ->where('webinar.id', '=', $webinar_id)
+                ->where('participant.student_id', '=', $student_id)
                 ->select('webinar.event_name', 'webinar.event_date', 'webinar.event_picture', 'webinar.event_link', 'webinar.event_start', 'webinar.event_end', 'webinar.price', 'pesan.order_id', 'pesan.status', 'webinar.is_certificate', 'webinar.certificate')
                 ->get();
 
@@ -62,9 +67,9 @@ class WebinarOrderController extends Controller
                     'certificate'       => env("WEBINAR_URL") . $detail[0]->certificate,
 
                 );
-                return $this->makeJSONResponse(array($data), 200);
+                return $this->makeJSONResponse(['data' => $data], 200);
             } else {
-                return $this->makeJSONResponse(['message' => 'Data not found'], 202);
+                return $this->makeJSONResponse(['message' => 'Data not found'], 400);
             }
         }
     }

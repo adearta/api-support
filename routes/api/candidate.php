@@ -3,6 +3,10 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\StudentChatBoxController;
 use App\Http\Controllers\BroadcastChat\BroadcastController;
+use App\Http\Controllers\Payment\WebinarPaymentController;
+use App\Http\Controllers\StudentNormalWebinarParticipantController;
+use App\Http\Controllers\WebinarNormalController;
+use App\Http\Controllers\WebinarOrderController;
 
 Route::group(['prefix' => 'messaging'], function () {
     Route::group(['prefix' => 'broadcast'], function () {
@@ -19,4 +23,14 @@ Route::group(['prefix' => 'messaging'], function () {
     });
     // Route::get('/count', [StudentChatBoxController::class, 'countChat']);
     Route::get('/readed', [StudentChatBoxController::class, 'setReaded']);
+});
+
+Route::group(['prefix' => 'webinar-internal'], function () {
+    Route::get('/detail/{webinar_id}', [WebinarNormalController::class, 'detailNormalWebinar']);
+    Route::post('/register', [StudentNormalWebinarParticipantController::class, 'registerStudent']);
+
+    Route::group(['prefix' => 'order'], function () {
+        Route::get('/detail/{webinar_id}', [WebinarOrderController::class, 'getOrderDetail']);
+        Route::post('/charge', [WebinarPaymentController::class, 'charge']);
+    });
 });
