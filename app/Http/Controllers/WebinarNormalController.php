@@ -62,7 +62,7 @@ class WebinarNormalController extends Controller
             'webinar_id' => 'required|numeric|exists:' . $this->tbWebinar . ',id'
         ]);
         if ($validation->fails()) {
-            return $this->makeJSONResponse($validation->errors(), 400);
+            return $this->makeJSONResponse(['message' => $validation->errors()->first()], 400);
         } else {
             if ($webinar_id == null) {
                 return $this->makeJSONResponse(["message" => "webinar must not empty!"], 400);

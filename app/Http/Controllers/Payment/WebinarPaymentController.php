@@ -122,7 +122,7 @@ class WebinarPaymentController extends Controller
                 return $token;
             });
 
-            return $status ? $this->makeJSONResponse(['token' => $status], 200) : $this->makeJSONResponse(['message' => 'failed'], 400);
+            return $status ? $this->makeJSONResponse(['token' => $status], 201) : $this->makeJSONResponse(['message' => 'failed'], 400);
         }
     }
 

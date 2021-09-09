@@ -3,6 +3,9 @@
 use App\Http\Controllers\BroadcastChat\BroadcastController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SchoolChatBoxController;
+use App\Http\Controllers\SchoolParticipantAkbarController;
+use App\Models\SchoolParticipantAkbarModel;
+use App\Http\Controllers\WebinarAkbarController;
 
 Route::group(['prefix' => 'messaging'], function () {
     Route::group(['prefix' => 'broadcast'], function () {
@@ -26,4 +29,9 @@ Route::group(['prefix' => 'messaging'], function () {
     });
     Route::get('/count', [SchoolChatBoxController::class, 'countChat']);
     Route::get('/readed', [SchoolChatBoxController::class, 'setReaded']);
+});
+
+Route::group(['prefix' => 'webinar-akbar'], function () {
+    Route::patch('/update-status/{webinarId}', [SchoolParticipantAkbarController::class, 'updateSchoolWebinar']);
+    Route::get('/detail/{webinar_id}', [SchoolParticipantAkbarController::class, 'detailWebinar']);
 });

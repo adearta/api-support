@@ -41,7 +41,7 @@ class StudentNormalWebinarParticipantController extends Controller
             'student_id' => 'required|numeric|exists:pgsql2.' . $this->tbStudent . ',id',
         ]);
         if ($validation->fails()) {
-            return $this->makeJSONResponse($validation->errors(), 400);
+            return $this->makeJSONResponse(['message' => $validation->errors()->first()], 400);
         } else {
             $data = DB::transaction(function () use ($request) {
                 $message = " ";
@@ -74,7 +74,7 @@ class StudentNormalWebinarParticipantController extends Controller
                             //check if the student has been registered on other webinar with the same time before            
                             if (count($pariticipant) > 0) {
                                 $message = "Cannot register to this event because this student has been registered on other webinar with the same time before";
-                                $code = 202;
+                                $code = 400;
                             } else {
                                 //inser to participant table
                                 $participant = DB::table($this->tbParticipant)->insertGetId(array(
@@ -97,7 +97,7 @@ class StudentNormalWebinarParticipantController extends Controller
                                 ));
 
                                 $message = "Success to register student to this webinar";
-                                $code = 200;
+                                $code = 201;
                             }
 
                             return array(
@@ -124,7 +124,7 @@ class StudentNormalWebinarParticipantController extends Controller
                 );
             });
             if ($data) {
-                return $this->makeJSONResponse($data, 200);
+                return $this->makeJSONResponse($data, 201);
             } else {
                 return $this->makeJSONResponse(["message" => "transaction failed!"], 400);
             }
