@@ -155,6 +155,16 @@
         "success_code": 200
     },
     {
+        "method": "GET",
+        "uri": "/api/v1/candidate/webinar-internal/",
+        "success_code": 200
+    },
+    {
+        "method": "GET",
+        "uri": "/api/v1/candidate/webinar-internal/detail-list/student/{webinar_id}",
+        "success_code": 200
+    },
+    {
         "method": "POST",
         "uri": "/api/v1/candidate/webinar-internal/order/charge",
         "success_code": 201
@@ -279,4 +289,5 @@
         "uri": "/api/v1/testing ",
         "success_code": 200
     }
+    
 ]
