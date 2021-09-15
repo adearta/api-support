@@ -33,7 +33,7 @@ class WebinarPaymentController extends Controller
 
     public function __construct()
     {
-        Veritrans_Config::$serverKey = '';
+        Veritrans_Config::$serverKey = 'SB-Mid-server-nz9Nayf1uAfI0C-6TRgt5AK9';
         Veritrans_Config::$isProduction = false; //false -> sandbox, true -> production
         Veritrans_Config::$isSanitized = true;
         Veritrans_Config::$is3ds = true;
@@ -55,7 +55,7 @@ class WebinarPaymentController extends Controller
         ]);
 
         if ($validation->fails()) {
-            return response($validation->errors(), 400);
+            return response(["message" => $validation->errors()->first()], 400);
         } else {
             $status = DB::transaction(function () use ($request) {
                 //get the detail of order & webinar by order_id

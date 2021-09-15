@@ -28,11 +28,11 @@ Route::group(['prefix' => 'messaging'], function () {
 Route::group(['prefix' => 'webinar-internal'], function () {
     Route::get('/detail/{webinar_id}', [WebinarNormalController::class, 'detailNormalWebinar']);
     Route::post('/register', [StudentNormalWebinarParticipantController::class, 'registerStudent']);
-    Route::get('/', [WebinarNormalController::class, 'listwebinar']);
+    Route::get('/', [WebinarNormalController::class, 'listwebinar']); // not found
     Route::get('/detail-list/student/{webinar_id}', [WebinarNormalController::class, 'detailNormalWebinarWithStudent']);
 
     Route::group(['prefix' => 'order'], function () {
-        Route::get('/detail/{webinar_id}', [WebinarOrderController::class, 'getOrderDetail']);
+        Route::get('/detail/{webinar_id}', [WebinarOrderController::class, 'getDetailOrder']);
         Route::post('/charge', [WebinarPaymentController::class, 'charge']);
     });
 });

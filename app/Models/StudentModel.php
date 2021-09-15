@@ -10,7 +10,7 @@ class StudentModel extends Model
 {
     use HasFactory, ModelHelper;
     protected $connection = 'pgsql2';
-    protected $table = "career_support_models_personalinfo";
+    protected $table = 'career_support_models_personalinfo';
     protected $fillable = [
         'phone',
         'nim',
