@@ -51,7 +51,11 @@ class WebinarOrderController extends Controller
                 ->where('participant.student_id', '=', $student_id)
                 ->select('webinar.event_name', 'webinar.event_date', 'webinar.event_picture', 'webinar.event_link', 'webinar.event_start', 'webinar.event_end', 'webinar.price', 'pesan.order_id', 'pesan.status', 'webinar.is_certificate', 'webinar.certificate', 'pesan.id as order_id')
                 ->get();
+            $path_zip = null;
 
+            if ($detail[0]->is_certificate == true) {
+                $path_zip = env("WEBINAR_URL") . $detail[0]->certificate;
+            }
             if (count($detail) > 0) {
                 $data = (object) array(
                     'event_name'        => $detail[0]->event_name,
@@ -64,7 +68,7 @@ class WebinarOrderController extends Controller
                     'order_id'          => $detail[0]->order_id,
                     'status'            => $detail[0]->status,
                     'is_certificate'    => $detail[0]->is_certificate,
-                    'certificate'       => env("WEBINAR_URL") . $detail[0]->certificate,
+                    'certificate'       => $path_zip,
 
                 );
                 return $this->makeJSONResponse(['data' => $data], 200);

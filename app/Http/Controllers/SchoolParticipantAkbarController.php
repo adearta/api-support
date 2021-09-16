@@ -356,7 +356,7 @@ class SchoolParticipantAkbarController extends Controller
         } else {
             try {
                 $data = DB::transaction(function () use ($webinar_id) {
-                    $detail = DB::select("select * from " . $this->tbWebinar . " as web left join " . $this->tbSchoolParticipants . " as school on school.webinar_id = web.id where web.id = " . $webinar_id);
+                    $detail = DB::select("select * from " . $this->tbWebinar . " as web left join " . $this->tbSchoolParticipant . " as school on school.webinar_id = web.id where web.id = " . $webinar_id);
 
                     $school = array();
 
