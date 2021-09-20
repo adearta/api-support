@@ -131,12 +131,16 @@ class StudentNormalWebinarParticipantController extends Controller
                 // +
                 // (case when (select (count(candidateorganization) > 0) as res from " . $this->tbAssoc . " as candidateorganization where candidateorganization.user_id = cu.id) then 10 else 0 end)) end) as profile_completeness from " . $this->tbStudent . " as cdp left join " . $this->tbUserPersonal . " as cu on cdp.user_id = cu.id where cu.is_candidate=true) as ucp group by ucp.profile_completeness");
 
-
                 $registered = DB::select("select count(pesan.webinar_id) as registered from " . $this->tbOrder . " as pesan left join " . $this->tbWebinar . " as web on web.id = pesan.webinar_id where pesan.status != 'order' and pesan.status != 'expire'");
+                $statusRegis = DB::table($this->tbParticipant)->where('student_id', '=', $request->student_id)->get();
+                $webinar_id = null;
                 //     // check if the student have the percent of profile or percent of profile is under 60
                 if ($profilePercentage[0]->completeness < 60) {
                     $message = "please complete your profile, minimum 60% profile required";
-                    $code = 202;
+                    $code = 400;
+                } elseif ($statusRegis) {
+                    $message = "you already register to this webinar!";
+                    $code = 400;
                 } else {
                     if ($registered[0]->registered < 500) {
                         //register
@@ -155,7 +159,6 @@ class StudentNormalWebinarParticipantController extends Controller
                             ->where('web.event_start', '<=', $webinar[0]->event_end)
                             ->where('web.event_end', '>=', $webinar[0]->event_end)
                             ->get();
-
                         //check if the student has been registered on other webinar with the same time before            
                         if (count($pariticipant) > 0) {
                             $message = "Cannot register to this event because this student has been registered on other webinar with the same time before";
@@ -180,8 +183,9 @@ class StudentNormalWebinarParticipantController extends Controller
                                 'message_id'    => "Anda telah mendaftar untuk mengikuti Webinar dengan judul " . $webinar[0]->event_name . " pada tanggal " . $webinar[0]->event_date . " dan pada jam " . $webinar[0]->event_start,
                                 'message_en'    => "You have been register to join a webinar with a title" . $webinar[0]->event_name . " on " . $webinar[0]->event_date . " and at " . $webinar[0]->event_start
                             ));
-
-                            $message = "Success to register student to this webinar";
+                            $orderId = DB::table($this->tbOrder)->where('participant_id', '=', $participant)->select('id', 'webinar_id')->get();
+                            $message = $orderId[0]->id;
+                            $webinar_id = $orderId[0]->webinar_id;
                             $code = 201;
                         }
 
@@ -203,11 +207,20 @@ class StudentNormalWebinarParticipantController extends Controller
                 return array(
                     'status'    => true,
                     'message'   => $message,
+                    'webinar_id' => $webinar_id,
                     'code'      => $code
                 );
             });
-            if ($result) {
-                return $this->makeJSONResponse(["message" => $result['message']], 201);
+
+            if ($result && $result['code'] == 201) {
+                return $this->makeJSONResponse([
+                    "order_id" => $result['message'],
+                    "webinar_id" => $result['webinar_id']
+                ], $result['code']);
+            } elseif ($result && $result['code'] == 400) {
+                return $this->makeJSONResponse([
+                    'message' => $result['message']
+                ], $result['code']);
             } else {
                 return $this->makeJSONResponse(["message" => "transaction failed!"], 400);
             }

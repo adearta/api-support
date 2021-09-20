@@ -75,7 +75,7 @@ class WebinarNormalController extends Controller
                         ->leftJoin($this->tbOrder . ' as order', 'participant.id', '=', 'order.participant_id')
                         ->where('order.webinar_id', '=', $webinar_id)
                         ->where('order.status', '=', 'success')
-                        ->select('participant.student_id')
+                        ->select('participant.student_id', 'order.id')
                         ->get();
 
                     $dataStudent = [];
@@ -103,16 +103,21 @@ class WebinarNormalController extends Controller
                     if ($webinar[0]->is_certificate) {
                         $path_zip = env("WEBINAR_URL") . $webinar[0]->certificate;
                     }
+                    // Response body harus ada property/field id, event_name, event_picture, event_date, event_price, event_link, is_joined, is_paid & order_id
                     if (count($webinar) > 0) {
                         $responsea = array(
                             "id"                => $webinar_id,
                             "event_name"        => $webinar[0]->event_name,
+                            "event_picture"     => env("WEBINAR_URL") . $webinar[0]->event_picture,
                             "event_date"        => $webinar[0]->event_date,
+                            // "event_price"       => $webinar[0]->price,
+                            "event_link"        => $webinar[0]->event_link,
+                            // "is_joined"         => "not join",
+                            // "is_paid"           => "not paid",
+                            // "order_id"          => $participant[0]->id,
                             "event_start"       => $webinar[0]->event_start,
                             "event_end"         => $webinar[0]->event_end,
-                            "event_picture"     => env("WEBINAR_URL") . $webinar[0]->event_picture,
                             "schools"           => $unique,
-                            "event_link"        => $webinar[0]->event_link,
                             "is_certificate"    => false,
                             "certificate"       => $path_zip,
                         );
@@ -134,6 +139,96 @@ class WebinarNormalController extends Controller
             }
         }
     }
+    //for candidate
+    public function detailNormalWebinarCandidate($webinar_id)
+    {
+        $validation = Validator::make(['webinar_id' => $webinar_id], [
+            'webinar_id' => 'required|numeric|exists:' . $this->tbWebinar . ',id'
+        ]);
+        if ($validation->fails()) {
+            return $this->makeJSONResponse(['message' => $validation->errors()->first()], 400);
+        } else {
+            if ($webinar_id == null) {
+                return $this->makeJSONResponse(["message" => "webinar must not empty!"], 400);
+            }
+            try {
+                $data = DB::transaction(function () use ($webinar_id) {
+                    $webinar = DB::table($this->tbWebinar)
+                        ->where('id', '=', $webinar_id)
+                        ->get();
+                    $participant = DB::table($this->tbParticipant, 'participant')
+                        ->leftJoin($this->tbOrder . ' as order', 'participant.id', '=', 'order.participant_id')
+                        ->where('order.webinar_id', '=', $webinar_id)
+                        // ->where('order.status', '=', 'success')
+                        ->select('participant.student_id', 'order.id', 'order.status')
+                        ->get();
+
+                    $dataStudent = [];
+                    $dataSchool = [];
+                    for ($i = 0; $i < count($participant); $i++) {
+                        $school = DB::connection('pgsql2')->table($this->tbStudent, "student")
+                            ->leftJoin($this->tbSchool . " as school", "student.school_id", "=", "school.id")
+                            ->where('student.id', '=', $participant[$i]->student_id)
+                            ->select("school_id")
+                            ->get();
+                        $dataSchool[$i] = $school[0];
+                    }
+                    for ($i = 0; $i < count($dataSchool); $i++) {
+                        $temp = DB::connection('pgsql2')->table($this->tbSchool)
+                            ->where('id', '=', $dataSchool[$i]->school_id)
+                            ->select('*')
+                            ->get();
+
+                        $dataStudent[$i] = $temp[0];
+                    }
+
+                    $unique = array_values(array_unique($dataStudent, SORT_REGULAR));
+                    $path_zip = null;
+
+                    if ($webinar[0]->is_certificate) {
+                        $path_zip = env("WEBINAR_URL") . $webinar[0]->certificate;
+                    }
+                    $join = "";
+                    $paid = "";
+                    if ($participant[0]->status != "pending" || $participant[0]->status != "success") {
+                        $join = "you are not join this webinar";
+                        $paid = "you are not pay for this webinar yet";
+                    } else {
+                        $join = "you already join this webinar";
+                        $paid = "you already paid this webinar";
+                    }
+                    // Response body harus ada property/field id, event_name, event_picture, event_date, event_price, event_link, is_joined, is_paid & order_id
+                    if (count($webinar) > 0) {
+                        $responsea = array(
+                            "id"                => $webinar_id,
+                            "event_name"        => $webinar[0]->event_name,
+                            "event_picture"     => env("WEBINAR_URL") . $webinar[0]->event_picture,
+                            "event_date"        => $webinar[0]->event_date,
+                            "event_price"       => $webinar[0]->price,
+                            "event_link"        => $webinar[0]->event_link,
+                            "is_joined"         => $join,
+                            "is_paid"           => $paid,
+                            "order_id"          => $participant[0]->id,
+                        );
+
+                        return $responsea;
+                    } else {
+                        return (object) array(
+                            'message' => 'Data not found'
+                        );
+                    }
+                });
+                if ($data) {
+                    return $this->makeJSONResponse($data, 200);
+                } else {
+                    return $this->makeJSONResponse(["message" => "transaction failed"], 400);
+                }
+            } catch (Exception $e) {
+                echo $e;
+            }
+        }
+    }
+
 
     //get the detail of webinar with the participant list
     public function detailNormalWebinarWithStudent($webinar_id)
