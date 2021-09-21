@@ -6,6 +6,7 @@ use App\Http\Controllers\SchoolChatBoxController;
 use App\Http\Controllers\SchoolParticipantAkbarController;
 use App\Models\SchoolParticipantAkbarModel;
 use App\Http\Controllers\WebinarAkbarController;
+use App\Models\WebinarAkbarModel;
 
 Route::group(['prefix' => 'messaging'], function () {
     Route::group(['prefix' => 'broadcast'], function () {
@@ -32,6 +33,8 @@ Route::group(['prefix' => 'messaging'], function () {
 });
 
 Route::group(['prefix' => 'webinar-akbar'], function () {
+    // Route::get('/',[])
     Route::patch('/update-status/{webinarId}', [SchoolParticipantAkbarController::class, 'updateSchoolWebinar']);
-    Route::get('/detail/{webinar_id}', [WebinarAkbarController::class, 'detailWebinar']);
+    Route::get('/detail/{webinar_id}', [WebinarAkbarController::class, 'detailWebinarSchool']);
+    Route::get('/', [WebinarAkbarController::class, 'listWebinarSchool']);
 });
