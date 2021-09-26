@@ -225,6 +225,11 @@
         "success_code": 200
     },
     {
+        "method": "POST",
+        "uri": "/api/v1/school/webinar-akbar/send-invitation/{webinar_id}",
+        "success_code": 200
+    },
+    {
         "method": "GET",
         "uri": "/api/v1/school/messaging/broadcast",
         "success_code": 200
@@ -289,5 +294,4 @@
         "uri": "/api/v1/testing ",
         "success_code": 200
     }
-    
 ]

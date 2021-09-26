@@ -259,6 +259,126 @@ class SchoolParticipantAkbarController extends Controller
         }
     }
 
+    public function sendInvitation($webinarId, Request $request)
+    {
+        /* the status of school
+            1 -> created
+            2 -> rejected
+            3 -> accepted
+            4 -> submit the data of student
+            5.-> finished webinar
+        */
+        $needValidate = array(
+            'school_id'     => $request->school_id,
+            'webinar_id'    => $webinarId,
+            'years'         => $request->student,
+        );
+
+        $validation = Validator::make($needValidate, [
+            'webinar_id'    => 'required|numeric|exists:' . $this->tbWebinar . ',id',
+            'school_id'     => 'required|numeric|exists:pgsql2.' . $this->tbSchool . ',id',
+            'years.*'       => 'required|numeric|exists:pgsql2.' . $this->tbUserEdu . ',start_year,school_id,' . $needValidate['school_id'],
+        ]);
+
+        if ($validation->fails()) {
+            return $this->makeJSONResponse(['message' => $validation->errors()->first()], 400);
+        } else {
+            $response = DB::transaction(function () use ($needValidate) {
+                $schoolParticipant = DB::table($this->tbSchoolParticipant)
+                    ->where('webinar_id', '=', $needValidate['webinar_id'])
+                    ->where('school_id', '=', $needValidate['school_id'])
+                    ->select('id', 'status')
+                    ->get();
+
+                $webinar = WebinarAkbarModel::findOrFail($needValidate['webinar_id']);
+
+                if ($schoolParticipant[0]->status == 3 || $schoolParticipant[0]->status == 4) {
+                    if ($webinar->event_date >= date("Y-m-d")) {
+
+                        $participant = StudentParticipantAkbarModel::where('webinar_id', '=', $needValidate['webinar_id'])->count();
+
+                        $years = "ARRAY[";
+                        foreach ($needValidate['years'] as $index => $year) {
+                            if ($index == 0) {
+                                $years .= $year;
+                            } else {
+                                $years .= "," . $year;
+                            }
+                        }
+
+                        $years .= "]";
+                        $student = DB::connection('pgsql2')->table($this->tbUserEdu, 'edu')
+                            ->leftJoin($this->tbStudent . ' as student', 'edu.nim', '=', 'student.nim')
+                            ->where('edu.school_id', '=', $needValidate['school_id'])
+                            ->whereRaw('edu.start_year = ANY(' . $years . ')')
+                            ->where('edu.verified', '=', true)
+                            ->where('student.id', '!=', null)
+                            ->get();
+
+                        $registered = 0;
+                        $newparticipants = 0;
+                        //kuota sekarang + jumlah peserta yang akan di daftarkan
+                        $newparticipants = count($student);
+                        $countparticipants = $participant + $newparticipants;
+                        //cek apakah melebihi 500 /tidak
+                        if ($countparticipants <= 500) {
+                            for ($i = 0; $i < $newparticipants; $i++) {
+                                $studentId = DB::connection('pgsql2')->table($this->tbStudent)->where('nim', '=', $student[$i]->nim)->get();
+                                $data = DB::select('select student_id from ' . $this->tbStudentParticipant . " where student_id = " . $studentId[0]->id . " and webinar_id = " . $needValidate['webinar_id']);
+
+                                if (empty($data)) {
+                                    $registered++;
+                                    DB::table($this->tbStudentParticipant)->insert(array(
+                                        'school_participant_id' => $schoolParticipant[0]->id,
+                                        'webinar_id'            => $needValidate['webinar_id'],
+                                        'student_id'            => $studentId[0]->id
+                                    ));
+                                    DB::table($this->tbNotification)->insert(array(
+                                        'student_id'        => $studentId[0]->id,
+                                        'webinar_akbar_id'  => $needValidate['webinar_id'],
+                                        'message_id'        => "Anda mendapatkan undangan untuk mengikuti Webinar dengan judul " . $webinar->event_name . " pada tanggal " . $webinar->event_date . " dan pada jam " . $webinar->event_time,
+                                        'message_en'        => "You get an invitation to join in a webinar with a title" . $webinar->event_name . " on " . $webinar->event_date . " and at " . $webinar->event_time
+                                    ));
+
+                                    $this->sendMailInvitation($needValidate['webinar_id'], $studentId[0]->id);
+                                }
+                            }
+
+                            $this->updateStatusParticipant($needValidate['webinar_id'], $needValidate['school_id'], 4);
+                            //success add data
+
+                            //$currentParticipant = StudentParticipantAkbarModel::where('webinar_id', '=', $needValidate['webinar_id'])->count();
+
+                            $message = "Success registered data of students";
+                            $code = 200;
+                            //if more than 500 automatically rejected
+                        } else {
+                            $message = "failed";
+                            $code = 400;
+                        }
+                    } else {
+                        $message = "Cannot registered data of students because you has passed the deadline for registration";
+                        $code = 400;
+                    }
+                } else {
+                    $message = "Cannot registered data of students because you not accept this webinar yet";
+                    $code = 400;
+                }
+
+                return (object) array(
+                    'message' => $message,
+                    'code'    => $code,
+                );
+            });
+
+            if ($response) {
+                return $this->makeJSONResponse(['message' => $response->message], $response->code);
+            } else {
+                return $this->makeJSONResponse(['message' => 'Internal Server Error'], 500);
+            }
+        }
+    }
+
     private function updateStatusParticipant($webinar_id, $school_id, $status)
     {
         DB::table($this->tbSchoolParticipant)

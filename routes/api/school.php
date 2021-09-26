@@ -34,8 +34,8 @@ Route::group(['prefix' => 'messaging'], function () {
 
 Route::group(['prefix' => 'webinar-akbar'], function () {
     // Route::get('/',[])
-    Route::patch('/update-status/{webinarId}', [SchoolParticipantAkbarController::class, 'updateSchoolWebinar']);
+    Route::post('/update-status/{webinarId}', [SchoolParticipantAkbarController::class, 'updateSchoolWebinar']);
     Route::get('/detail/{webinar_id}', [WebinarAkbarController::class, 'detailWebinarSchool']);
     Route::get('/', [WebinarAkbarController::class, 'listWebinarSchool']);
-    Route::post('/send-invitation/{webinar_id}', [SchoolParticipantAkbarController::class, 'updateStatus']);
+    Route::post('/send-invitation/{webinar_id}', [SchoolParticipantAkbarController::class, 'sendInvitation']);
 });

@@ -251,12 +251,14 @@ class WebinarAkbarController extends Controller
                         $availableSlot = 500 - $totalParticipant;
                         // RESPONSE BODY should have property id, event_name, event_picture, event_date, event_time, zoom_link, is_joined, option_date & option_student
                         $angkatanArr = array();
-                        for ($i = 0; $i < count($startYear); $i++) {
-                            $angkatan[$i] = array(
-                                "year"  => $startYear[$i],
-                                "total" => count(DB::connection('pgsql2')->table($this->tbUserEdu)->where('school_id', '=', $request->school_id)->where("start_year", '=', $startYear[$i])->get())
+                        $idTemp = 0;
+                        foreach ($startYear as $year) {
+                            $angkatan[$idTemp] = array(
+                                "year"  => $year,
+                                "total" => count(DB::connection('pgsql2')->table($this->tbUserEdu)->where('school_id', '=', $request->school_id)->where("start_year", '=', $year)->get())
                             );
-                            $angkatanArr[$i] = $angkatan[$i];
+                            $angkatanArr[$idTemp] = $angkatan[$idTemp];
+                            $idTemp++;
                         }
                         $join = false;
                         $case = $status[0]->status;
