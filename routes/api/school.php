@@ -37,4 +37,5 @@ Route::group(['prefix' => 'webinar-akbar'], function () {
     Route::patch('/update-status/{webinarId}', [SchoolParticipantAkbarController::class, 'updateSchoolWebinar']);
     Route::get('/detail/{webinar_id}', [WebinarAkbarController::class, 'detailWebinarSchool']);
     Route::get('/', [WebinarAkbarController::class, 'listWebinarSchool']);
+    Route::post('/send-invitation/{webinar_id}', [SchoolParticipantAkbarController::class, 'updateStatus']);
 });

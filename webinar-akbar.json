@@ -215,7 +215,7 @@
         "success_code": 200
     },
     {
-        "method": "PATCH",
+        "method": "POST",
         "uri": "/api/v1/school/webinar-akbar/update-status/{webinarId}",
         "success_code": 200
     },
