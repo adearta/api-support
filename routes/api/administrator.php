@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdministratorWebinarAkbarController;
 use App\Http\Controllers\BroadcastChat\BroadcastController;
 use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\WebinarAkbarController;
@@ -16,15 +17,14 @@ use App\Jobs\CertificateAkbarJob;
 
 Route::group(['prefix' => 'webinar-akbar'], function () {
     Route::middleware('admin')->group(function () {
-        Route::post('/create', [WebinarAkbarController::class, 'addWebinar']);
-        Route::delete('/delete/{webinar_id}', [WebinarAkbarController::class, 'destroyWebinar']);
-        Route::post('/edit/{webinar_id}', [WebinarAkbarController::class, 'editWebinar']);
-        Route::get('/', [WebinarAkbarController::class, 'listWebinar']);
-        Route::get('/list-school', [SchoolParticipantAkbarController::class, 'listSchool']);
-        Route::get('/webinar-by-school/{id}', [WebinarAkbarController::class, 'getWebinarBySchoolId']);
-        Route::post('/update-status', [SchoolParticipantAkbarController::class, 'updateSchoolWebinar']);
-        Route::get('/detail/{webinar_id}', [WebinarAkbarController::class, 'detailWebinar']);
-        Route::get('/participant/{webinar_id}', [WebinarAkbarController::class, 'participantList']);
+        Route::post('/create', [AdministratorWebinarAkbarController::class, 'addWebinar']);
+        Route::delete('/delete/{webinar_id}', [AdministratorWebinarAkbarController::class, 'destroyWebinar']);
+        Route::post('/edit/{webinar_id}', [AdministratorWebinarAkbarController::class, 'editWebinar']);
+        Route::get('/', [AdministratorWebinarAkbarController::class, 'listWebinar']);
+        Route::get('/list-school', [AdministratorWebinarAkbarController::class, 'listSchool']);
+        Route::get('/webinar-by-school/{id}', [AdministratorWebinarAkbarController::class, 'getWebinarBySchoolId']);
+        Route::get('/detail/{webinar_id}', [AdministratorWebinarAkbarController::class, 'detailWebinar']);
+        Route::get('/participant/{webinar_id}', [AdministratorWebinarAkbarController::class, 'participantList']);
         Route::post('/detail/upload-certificate', [CertificateController::class, 'addCertificateAkbar']);
         Route::group(['prefix' => 'notification'], function () {
             Route::get('/', [NotificationWebinarController::class, 'getNotification']);

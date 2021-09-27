@@ -44,7 +44,7 @@ class WebinarAkbarController extends Controller
         $this->tbStudent = StudentModel::tableName();
         $this->tbSchool = SchoolModel::tableName();
         $this->tbUserPersonal = UserPersonal::tableName();
-        $this->tbUserEdu = UserEducationModel::tableName();;
+        $this->tbUserEdu = UserEducationModel::tableName();
     }
 
     public function getWebinarBySchoolId($id)
