@@ -865,7 +865,7 @@ class WebinarAkbarController extends Controller
 
                         $arrWebinar[$j] =  array(
                             'id'                => $web[0]->id,
-                            'event_picture'     => $web[0]->event_picture
+                            'event_picture'     => env("WEBINAR_URL") . $web[0]->event_picture
                         );
                         $value = array_values($arrWebinar);
                     }
