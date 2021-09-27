@@ -75,7 +75,7 @@ class StudentNormalWebinarParticipantController extends Controller
         // add
 
     }
-
+    //pindah controller
     public function registerStudent(Request $request)
     {
         $validation = Validator::make($request->all(), [
