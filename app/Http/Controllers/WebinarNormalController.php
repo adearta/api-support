@@ -190,12 +190,15 @@ class WebinarNormalController extends Controller
                     }
                     $join = "";
                     $paid = "";
+                    $orderId = null;
                     if ($participant[0]->status != "pending" || $participant[0]->status != "success") {
                         $join = "you are not join this webinar";
                         $paid = "you are not pay for this webinar yet";
+                        $orderId = $participant[0]->id;
                     } else {
                         $join = "you already join this webinar";
                         $paid = "you already paid this webinar";
+                        $orderId;
                     }
                     // Response body harus ada property/field id, event_name, event_picture, event_date, event_price, event_link, is_joined, is_paid & order_id
                     if (count($webinar) > 0) {
@@ -204,11 +207,12 @@ class WebinarNormalController extends Controller
                             "event_name"        => $webinar[0]->event_name,
                             "event_picture"     => env("WEBINAR_URL") . $webinar[0]->event_picture,
                             "event_date"        => $webinar[0]->event_date,
+                            "event_time"        => $webinar[0]->event_time,
                             "event_price"       => $webinar[0]->price,
                             "event_link"        => $webinar[0]->event_link,
                             "is_joined"         => $join,
                             "is_paid"           => $paid,
-                            "order_id"          => $participant[0]->id,
+                            "order_id"          => $orderId,
                         );
 
                         return $responsea;
