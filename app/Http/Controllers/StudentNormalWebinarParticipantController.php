@@ -93,46 +93,8 @@ class StudentNormalWebinarParticipantController extends Controller
                 $profilePercentage = DB::connection('pgsql2')
                     ->select("select ucp.profile_completeness as completeness from (select cu.first_name,cu.last_name,cu.date_joined,cu.is_active,cu.email,cu.id as user_id,cdp.id as personal_id,cdp.school_id,to_json(cu) as user,to_json(cdp) as personal,(case when ((case when (length(cdp.avatar) > 3) then 10 else 0 end)+(case when (cu.first_name is not null and cdp.gender is not null and cdp.date_of_birth is not null and cdp.phone is not null and cu.email is not null) then 10 else 0 end)+(case when (select (count(candidateskill) > 0) as res from " . $this->tbSkill . " as candidateskill where candidateskill.user_id = cu.id) then 10 else 0 end)+(case when (select (count(candidatepersonality) > 0) as res from " . $this->tbPersonality . " as candidatepersonality where candidatepersonality.user_id = cu.id) then 10 else 0 end)+(case when (select (count(candidatelanguage) > 0) as res from " . $this->tbLanguage . " as candidatelanguage where candidatelanguage.user_id = cu.id) then 10 else 0 end)+(case when (select (count(candidateeducation) > 0) as res from " . $this->tbUserEdu . " as candidateeducation where candidateeducation.user_id = cu.id) then 10 else 0 end)+(case when (select (count(candidateachievement) > 0) as res from " . $this->tbAchievement . " as candidateachievement where candidateachievement.user_id = cu.id) then 10 else 0 end)+(case when (select (count(candidateworkexperience) > 0) as res from " . $this->tbWorkExp . " as candidateworkexperience where candidateworkexperience.user_id = cu.id) then 10 else 0 end)+(case when (select (count(candidateportofolio) > 0) as res from " . $this->tbPortofolio . " as candidateportofolio where candidateportofolio.candidate_id = cu.id) then 10 else 0 end)+(case when (select (count(candidateorganization) > 0) as res from " . $this->tbAssoc . " as candidateorganization where candidateorganization.user_id = cu.id) then 10 else 0 end))=0 then 10 else ((case when (length(cdp.avatar) > 3) then 10 else 0 end)+(case when (cu.first_name is not null and cdp.gender is not null and cdp.date_of_birth is not null and cdp.phone is not null and cu.email is not null) then 10 else 0 end)+(case when (select (count(candidateskill) > 0) as res from " . $this->tbSkill . " as candidateskill where candidateskill.user_id = cu.id) then 10 else 0 end)+(case when (select (count(candidatepersonality) > 0) as res from " . $this->tbPersonality . " as candidatepersonality where candidatepersonality.user_id = cu.id) then 10 else 0 end)+(case when (select (count(candidatelanguage) > 0) as res from " . $this->tbLanguage . " as candidatelanguage where candidatelanguage.user_id = cu.id) then 10 else 0 end)+(case when (select (count(candidateeducation) > 0) as res from " . $this->tbUserEdu . " as candidateeducation where candidateeducation.user_id = cu.id) then 10 else 0 end)+(case when (select (count(candidateachievement) > 0) as res from " . $this->tbAchievement . " as candidateachievement where candidateachievement.user_id = cu.id) then 10 else 0 end)+(case when (select (count(candidateworkexperience) > 0) as res from " . $this->tbWorkExp . " as candidateworkexperience where candidateworkexperience.user_id = cu.id) then 10 else 0 end)+(case when (select (count(candidateportofolio) > 0) as res from " . $this->tbPortofolio . " as candidateportofolio where candidateportofolio.candidate_id = cu.id) then 10 else 0 end)+(case when (select (count(candidateorganization) > 0) as res from " . $this->tbAssoc . " as candidateorganization where candidateorganization.user_id = cu.id) then 10 else 0 end))end) as profile_completeness from " . $this->tbStudent . " as cdp left join " . $this->tbUserPersonal . " as cu on cdp.user_id = cu.id where cdp.id = " . $request->student_id . " and cu.is_candidate=true) as ucp group by ucp.profile_completeness");
 
-                //return $this->makeJSONResponse(['profile percentage' => $profilePercentage[0]->completeness], 200);
-                //     $profilePercentage = DB::connection('pgsql')
-                //     ->select("select ucp.profile_completeness as completeness,count(ucp) as total from (select cu.first_name,cu.last_name,cu.date_joined,cu.is_active,cu.email,cu.id as user_id,cdp.id as personal_id,cdp.school_id,to_json(cu) as user,to_json(cdp) as personal,(case when ((case when (length(cdp.avatar) > 3) then 10 else 0 end)
-                // +
-                // (case when (cu.first_name is not null and cdp.gender is not null and cdp.date_of_birth is not null and cdp.phone is not null and cu.email is not null) then 10 else 0 end)+(case when (select (count(candidateskill) > 0) as res from " . $this->tbSkill . " as candidateskill where candidateskill.user_id = cu.id) then 10 else 0 end)
-                // +
-                // (case when (select (count(candidatepersonality) > 0) as res from " . $this->tbPersonality . " as candidatepersonality where candidatepersonality.user_id = cu.id) then 10 else 0 end)
-                // +
-                // (case when (select (count(candidatelanguage) > 0) as res from " . $this->tbLanguage . " as candidatelanguage where candidatelanguage.user_id = cu.id) then 10 else 0 end)
-                // +
-                // (case when (select (count(candidateeducation) > 0) as res from " . $this->tbUserEdu . " as candidateeducation where candidateeducation.user_id = cu.id) then 10 else 0 end)
-                // +
-                // (case when (select (count(candidateachievement) > 0) as res from " . $this->tbAchievement . " as candidateachievement where candidateachievement.user_id = cu.id) then 10 else 0 end)
-                // +
-                // (case when (select (count(candidateworkexperience) > 0) as res from " . $this->tbWorkExp . " as candidateworkexperience where candidateworkexperience.user_id = cu.id) then 10 else 0 end)
-                // +
-                // (case when (select (count(candidateportofolio) > 0) as res from " . $this->tbPortofolio . " as candidateportofolio where candidateportofolio.candidate_id = cu.id) then 10 else 0 end)
-                // +
-                // (case when (select (count(candidateorganization) > 0) as res from " . $this->tbAssoc . " as candidateorganization where candidateorganization.user_id = cu.id) then 10 else 0 end))=0 then 10 else ((case when (length(cdp.avatar) > 3) then 10 else 0 end)
-                // +
-                // (case when (cu.first_name is not null and cdp.gender is not null and cdp.date_of_birth is not null and cdp.phone is not null and cu.email is not null) then 10 else 0 end)
-                // +
-                // (case when (select (count(candidateskill) > 0) as res from " . $this->tbSkill . " as candidateskill where candidateskill.user_id = cu.id) then 10 else 0 end)
-                // +
-                // (case when (select (count(candidatepersonality) > 0) as res from " . $this->tbPersonality . " as candidatepersonality where candidatepersonality.user_id = cu.id) then 10 else 0 end)
-                // +
-                // (case when (select (count(candidatelanguage) > 0) as res from " . $this->tbLanguage . " as candidatelanguage where candidatelanguage.user_id = cu.id) then 10 else 0 end)
-                // +
-                // (case when (select (count(candidateeducation) > 0) as res from " . $this->tbUserEdu . " as candidateeducation where candidateeducation.user_id = cu.id) then 10 else 0 end)
-                // +
-                // (case when (select (count(candidateachievement) > 0) as res from " . $this->tbAchievement . " as candidateachievement where candidateachievement.user_id = cu.id) then 10 else 0 end)
-                // +
-                // (case when (select (count(candidateworkexperience) > 0) as res from " . $this->tbWorkExp . " as candidateworkexperience where candidateworkexperience.user_id = cu.id) then 10 else 0 end)
-                // +
-                // (case when (select (count(candidateportofolio) > 0) as res from " . $this->tbPortofolio . " as candidateportofolio where candidateportofolio.candidate_id = cu.id) then 10 else 0 end)
-                // +
-                // (case when (select (count(candidateorganization) > 0) as res from " . $this->tbAssoc . " as candidateorganization where candidateorganization.user_id = cu.id) then 10 else 0 end)) end) as profile_completeness from " . $this->tbStudent . " as cdp left join " . $this->tbUserPersonal . " as cu on cdp.user_id = cu.id where cu.is_candidate=true) as ucp group by ucp.profile_completeness");
-
                 $registered = DB::select("select count(pesan.webinar_id) as registered from " . $this->tbOrder . " as pesan left join " . $this->tbWebinar . " as web on web.id = pesan.webinar_id where pesan.status != 'order' and pesan.status != 'expire'");
-                $statusRegis = DB::table($this->tbParticipant)->where('student_id', '=', $request->student_id)->get();
+                $statusRegis = DB::table($this->tbParticipant)->where('student_id', '=', $request->student_id)->where('webinar_id', '=', $request->webinar_id)->get();
                 $webinar_id = null;
                 //     // check if the student have the percent of profile or percent of profile is under 60
                 if ($profilePercentage[0]->completeness < 60) {
