@@ -444,7 +444,7 @@ class StudentChatBoxController extends Controller
                     ->select('room.id as room_id', 'room.student_id', 'room.school_id', 'chat.room_chat_id', 'chat.id as chat_id', 'chat.sender', 'chat.chat', 'chat.image', 'chat.send_time', 'chat.is_readed', 'room.updated_at', 'room.created')
                     ->get();
                 //
-                $broadcast = DB::table($this->tbBroadcast)->where('school_id', '=', $detail[0]->school_id)->get();
+                // $broadcast = DB::table($this->tbBroadcast)->where('school_id', '=', $detail[0]->school_id)->get();
                 //
                 $channel = DB::table($this->tbRoom)
                     ->where('id', '=', $request->id)
@@ -452,10 +452,10 @@ class StudentChatBoxController extends Controller
                 $schooldata = DB::connection('pgsql2')->table($this->tbSchool)
                     ->where('id', '=', $channel[0]->school_id)
                     ->get();
-                $total = count($detail) + count($broadcast);
-                $increment = 0;
+                // $total = count($detail) + count($broadcast);
+                // $increment = 0;
 
-                if ($total > 0) {
+                if (count($detail) > 0) {
                     for ($i = 0; $i < count($detail); $i++) {
                         $schoolmodel = SchoolModel::find($detail[$i]->school_id);
                         $response_path = null;
@@ -471,7 +471,7 @@ class StudentChatBoxController extends Controller
                             "school_photo"  => $response_path,
                             "updated_at"    => $detail[0]->updated_at,
                             "created_at"    => $detail[0]->created,
-                            "total"         => $total
+                            // "total"         => $total
                         );
                         $chatmodel[$i] = ChatModel::find($detail[$i]->chat_id);
                         $response_path = null;
@@ -479,7 +479,7 @@ class StudentChatBoxController extends Controller
                             $response_path = env("WEBINAR_URL") . $chatmodel[$i]->image;
                         }
 
-                        $responseChat[$increment] = array(
+                        $responseChat[$i] = array(
                             'id'            => $detail[$i]->chat_id,
                             'channel_id'    => $detail[$i]->room_chat_id,
                             'sender'        => $detail[$i]->sender,
@@ -489,28 +489,28 @@ class StudentChatBoxController extends Controller
                             'is_readed'     => $detail[$i]->is_readed,
                             'is_broadcast'  => false
                         );
-                        $increment++;
+                        // $increment++;
                     }
-                    for ($i = 0; $i < count($broadcast); $i++) {
-                        if (count($broadcast) > 0) {
-                            $broadcastmodel[$i] = BroadcastModel::find($broadcast[$i]->id);
-                            $imagepath = null;
-                            if ($chatmodel[$i]->image != null) {
-                                $imagepath = env("WEBINAR_URL") . $broadcastmodel[$i]->image;
-                            }
-                            $responseChat[$increment] = array(
-                                'id'            => $broadcast[$i]->id,
-                                'channel_id'    => $detail[$i]->room_chat_id,
-                                'sender'        => "school",
-                                'chat'          => $broadcast[$i]->chat,
-                                'image'         => $imagepath,
-                                'send_time'     => $broadcast[$i]->send_time,
-                                'is_readed'     => $detail[$i]->is_readed,
-                                'is_broadcast'  => true
-                            );
-                        }
-                        $increment++;
-                    }
+                    // for ($i = 0; $i < count($broadcast); $i++) {
+                    //     if (count($broadcast) > 0) {
+                    //         $broadcastmodel[$i] = BroadcastModel::find($broadcast[$i]->id);
+                    //         $imagepath = null;
+                    //         if ($chatmodel[$i]->image != null) {
+                    //             $imagepath = env("WEBINAR_URL") . $broadcastmodel[$i]->image;
+                    //         }
+                    //         $responseChat[$increment] = array(
+                    //             'id'            => $broadcast[$i]->id,
+                    //             'channel_id'    => $detail[$i]->room_chat_id,
+                    //             'sender'        => "school",
+                    //             'chat'          => $broadcast[$i]->chat,
+                    //             'image'         => $imagepath,
+                    //             'send_time'     => $broadcast[$i]->send_time,
+                    //             'is_readed'     => $detail[$i]->is_readed,
+                    //             'is_broadcast'  => true
+                    //         );
+                    //     }
+                    //     $increment++;
+                    // }
                 } else {
                     $schoolmodel = SchoolModel::find($channel[0]->school_id);
                     $response_path = null;
