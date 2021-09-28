@@ -14,6 +14,7 @@ use Exception;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use App\Models\BroadcastModel;
 
 class StudentChatBoxController extends Controller
 {
@@ -23,6 +24,7 @@ class StudentChatBoxController extends Controller
     private $tbNotif;
     private $tbStudent;
     private $tbSchool;
+    private $tbBroadcast;
     //
     public function __construct()
     {
@@ -31,6 +33,7 @@ class StudentChatBoxController extends Controller
         $this->tbNotif = NotificationWebinarModel::tableName();
         $this->tbStudent = StudentModel::tableName();
         $this->tbSchool = SchoolModel::tableName();
+        $this->tbBroadcast = BroadcastModel::tableName();
     }
     public function createChatStudent(Request $request)
     {
@@ -424,7 +427,8 @@ class StudentChatBoxController extends Controller
     public function detailChannel(Request $request)
     {
         $validation = Validator::make($request->all(), [
-            'id' => 'required|numeric|exists:' . $this->tbRoom . ',id'
+            'id'            => 'required|numeric|exists:' . $this->tbRoom . ',id',
+            // 'isBroadcast'   => 'nullable'
         ]);
         if ($validation->fails()) {
             return $this->makeJSONResponse(['message' => $validation->errors()->first()], 400);
@@ -439,19 +443,24 @@ class StudentChatBoxController extends Controller
                     ->orderBy('chat.send_time', 'desc')
                     ->select('room.id as room_id', 'room.student_id', 'room.school_id', 'chat.room_chat_id', 'chat.id as chat_id', 'chat.sender', 'chat.chat', 'chat.image', 'chat.send_time', 'chat.is_readed', 'room.updated_at', 'room.created')
                     ->get();
+                //
+                $broadcast = DB::table($this->tbBroadcast)->where('school_id', '=', $detail[0]->school_id)->get();
+                //
                 $channel = DB::table($this->tbRoom)
                     ->where('id', '=', $request->id)
                     ->get();
                 $schooldata = DB::connection('pgsql2')->table($this->tbSchool)
                     ->where('id', '=', $channel[0]->school_id)
                     ->get();
+                $total = count($detail) + count($broadcast);
+                $increment = 0;
 
-                if (count($detail) > 0) {
+                if ($total > 0) {
                     for ($i = 0; $i < count($detail); $i++) {
                         $schoolmodel = SchoolModel::find($detail[$i]->school_id);
                         $response_path = null;
                         if ($schoolmodel->logo != null) {
-                            $response_path = env("PYTHON_URL") . "/media/" . $schoolmodel->logo;
+                            $response_path = env("WEBINAR_URL") . "/media/" . $schoolmodel->logo;
                         }
                         $responseChannel = array(
                             'id'            => $detail[0]->room_id,
@@ -461,22 +470,16 @@ class StudentChatBoxController extends Controller
                             "school_name"   => $schooldata[0]->name,
                             "school_photo"  => $response_path,
                             "updated_at"    => $detail[0]->updated_at,
-                            "created_at"    => $detail[0]->created
+                            "created_at"    => $detail[0]->created,
+                            "total"         => $total
                         );
                         $chatmodel[$i] = ChatModel::find($detail[$i]->chat_id);
                         $response_path = null;
                         if ($chatmodel[$i]->image != null) {
                             $response_path = env("WEBINAR_URL") . $chatmodel[$i]->image;
                         }
-                        //         "id": 10,
-                        // "channel_id": 8,
-                        // "sender": "school",
-                        // "chat": "test message 123",
-                        // "image": null,
-                        // "send_time": "2021-07-08 23:58:44",
-                        // "is_readed": false,
-                        // "is_broadcast": false
-                        $responseChat[$i] = array(
+
+                        $responseChat[$increment] = array(
                             'id'            => $detail[$i]->chat_id,
                             'channel_id'    => $detail[$i]->room_chat_id,
                             'sender'        => $detail[$i]->sender,
@@ -486,6 +489,27 @@ class StudentChatBoxController extends Controller
                             'is_readed'     => $detail[$i]->is_readed,
                             'is_broadcast'  => false
                         );
+                        $increment++;
+                    }
+                    for ($i = 0; $i < count($broadcast); $i++) {
+                        if (count($broadcast) > 0) {
+                            $broadcastmodel[$i] = BroadcastModel::find($broadcast[$i]->id);
+                            $imagepath = null;
+                            if ($chatmodel[$i]->image != null) {
+                                $imagepath = env("WEBINAR_URL") . $broadcastmodel[$i]->image;
+                            }
+                            $responseChat[$increment] = array(
+                                'id'            => $broadcast[$i]->id,
+                                'channel_id'    => $detail[$i]->room_chat_id,
+                                'sender'        => "school",
+                                'chat'          => $broadcast[$i]->chat,
+                                'image'         => $imagepath,
+                                'send_time'     => $broadcast[$i]->send_time,
+                                'is_readed'     => $detail[$i]->is_readed,
+                                'is_broadcast'  => true
+                            );
+                        }
+                        $increment++;
                     }
                 } else {
                     $schoolmodel = SchoolModel::find($channel[0]->school_id);
@@ -509,9 +533,8 @@ class StudentChatBoxController extends Controller
                     // 'count' => count($detail),
                     'channel' => $responseChannel,
                     'list_chat' => $responseChat
-                    // 'detail' => $detail
                 );
-                // $arrayResponse = array_values($response);
+
                 return  $response;
             } catch (Exception $e) {
                 echo $e;
