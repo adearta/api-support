@@ -732,7 +732,7 @@ class WebinarNormalController extends Controller
                         );
                     }
                 }
-
+                //fixing
                 // $response = array(
                 //     'data' => $data,
                 //     'pagination' => array(
