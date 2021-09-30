@@ -275,7 +275,7 @@ class SchoolParticipantAkbarController extends Controller
         );
 
         $validation = Validator::make($needValidate, [
-            'webinar_id'    => 'required|numeric|exists:' . $this->tbWebinar . ',id',
+            'webinar_id'    => 'required|numeric|exists:' . $this->tbSchoolParticipant . ',webinar_id,school_id,' . $needValidate['school_id'],
             'school_id'     => 'required|numeric|exists:pgsql2.' . $this->tbSchool . ',id',
             'years.*'       => 'required|numeric|exists:pgsql2.' . $this->tbUserEdu . ',start_year,school_id,' . $needValidate['school_id'],
         ]);
