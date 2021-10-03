@@ -119,10 +119,14 @@ class WebinarPaymentController extends Controller
                     $token = $orderWebinar[0]->token;
                 }
 
-                return $token;
+                return (object) array(
+                    'order_id'      => $request->order_id,
+                    'token'         => $token,
+                    'redirect_url'  => env('PAYMENT_URL') . $token
+                );
             });
 
-            return $status ? $this->makeJSONResponse(['token' => $status], 201) : $this->makeJSONResponse(['message' => 'failed'], 400);
+            return $status ? $this->makeJSONResponse($status, 201) : $this->makeJSONResponse(['message' => 'failed'], 400);
         }
     }
 
