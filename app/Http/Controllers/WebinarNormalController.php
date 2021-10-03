@@ -209,7 +209,7 @@ class WebinarNormalController extends Controller
                             "is_paid"           => $paid,
                             "order_id"          => $orderId,
                         );
-                        //merge
+                        
                         return $responsea;
                     } else {
                         $join = false;
