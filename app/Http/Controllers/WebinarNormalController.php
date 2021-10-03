@@ -209,12 +209,25 @@ class WebinarNormalController extends Controller
                             "is_paid"           => $paid,
                             "order_id"          => $orderId,
                         );
-
+                        //merge
                         return $responsea;
                     } else {
-                        return (object) array(
-                            'message' => 'Data not found'
+                        $join = false;
+                        $is_paid = false;
+                        $orderId = null;
+                        $responsea = array(
+                            "id"                => $webinar_id,
+                            "event_name"        => $webinar[0]->event_name,
+                            "event_picture"     => env("WEBINAR_URL") . $webinar[0]->event_picture,
+                            "event_date"        => $webinar[0]->event_date,
+                            "event_time"        => $webinar[0]->event_start,
+                            "event_price"       => $webinar[0]->price,
+                            "event_link"        => $webinar[0]->event_link,
+                            "is_joined"         => $join,
+                            "is_paid"           => $is_paid,
+                            "order_id"          => $orderId,
                         );
+                        return $responsea;
                     }
                 });
                 if ($data) {
@@ -732,7 +745,7 @@ class WebinarNormalController extends Controller
                         );
                     }
                 }
-
+                //fixing
                 // $response = array(
                 //     'data' => $data,
                 //     'pagination' => array(
