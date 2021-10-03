@@ -58,7 +58,7 @@ class WebinarPaymentController extends Controller
             return response(["message" => $validation->errors()->first()], 400);
         } else {
             $status = DB::transaction(function () use ($request) {
-                //get the detail of order & webinar by order_id
+                //get the detail of order & webinar by order id
                 $orderWebinar = DB::table($this->tbOrder, 'order')
                     ->leftJoin($this->tbWebinar . ' as webinar', 'order.webinar_id', '=', 'webinar.id')
                     ->leftJoin($this->tbParticipant . ' as participant', 'participant.id', '=', 'order.participant_id')
