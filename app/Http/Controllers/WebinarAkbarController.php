@@ -838,41 +838,44 @@ class WebinarAkbarController extends Controller
             return $this->makeJSONResponse(['message' => $validation->errors()->first()], 400);
         } else {
             $data = DB::transaction(function () use ($request) {
+                // $webinarAvailable = DB::table($this->tbSchoolParticipants)->where('school_id','=',$request->school_id)->
                 $arrWebinar = array();
                 $cekSchool = DB::table($this->tbSchoolParticipants)
                     ->where('school_id', '=', $request->school_id)
                     ->get();
                 $value = array();
                 $listweb = array();
-                if ($cekSchool) {
-                    $webinarId = DB::table($this->tbSchoolParticipants)
+
+
+                $webinarId = DB::table($this->tbSchoolParticipants)
+                    ->where('school_id', '=', $request->school_id)
+                    ->select('webinar_id')
+                    ->get();
+                for ($i = 0; $i < count($webinarId); $i++) {
+
+                    $listId = DB::table($this->tbSchoolParticipants)
                         ->where('school_id', '=', $request->school_id)
                         ->select('webinar_id')
                         ->get();
-                    for ($i = 0; $i < count($webinarId); $i++) {
 
-                        $listId = DB::table($this->tbSchoolParticipants)
-                            ->where('school_id', '=', $request->school_id)
-                            ->select('webinar_id')
+                    $listweb[$i] = $listId[0];
+                    for ($j = 0; $j < count($listweb); $j++)
+                        $web = DB::table($this->tbWebinar)
+                            ->where('id', '=', $listId[$j]->webinar_id)
+                            ->select('id', 'event_picture')
                             ->get();
 
-                        $listweb[$i] = $listId[0];
-                        for ($j = 0; $j < count($listweb); $j++)
-                            $web = DB::table($this->tbWebinar)
-                                ->where('id', '=', $listId[$j]->webinar_id)
-                                ->select('id', 'event_picture')
-                                ->get();
-
-                        $arrWebinar[$j] =  array(
-                            'id'                => $web[0]->id,
-                            'event_picture'     => env("WEBINAR_URL") . $web[0]->event_picture
-                        );
-                        $value = array_values($arrWebinar);
-                    }
-                    return $value;
-                } else {
-                    return $value;
+                    $arrWebinar[$j] =  array(
+                        'id'                => $web[0]->id,
+                        'event_picture'     => env("WEBINAR_URL") . $web[0]->event_picture
+                    );
                 }
+                if (count($cekSchool) > 0) {
+                    $value = array_values($arrWebinar);
+                } else {
+                    $value;
+                }
+                return $value;
             });
             if ($data) {
                 return  $this->makeJSONResponse($data, 200);
