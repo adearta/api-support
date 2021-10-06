@@ -70,16 +70,6 @@
         "success_code": 200
     },
     {
-        "method": "POST",
-        "uri": "/api/v1/administrator/webinar-akbar/update-status",
-        "success_code": 200
-    },
-    {
-        "method": "GET",
-        "uri": "/api/v1/administrator/webinar-akbar/webinar-by-school/{id}",
-        "success_code": 200
-    },
-    {
         "method": "GET",
         "uri": "/api/v1/administrator/webinar-internal",
         "success_code": 200

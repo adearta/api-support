@@ -183,16 +183,16 @@ class WebinarNormalController extends Controller
                         if ($webinar[0]->is_certificate) {
                             $path_zip = env("WEBINAR_URL") . $webinar[0]->certificate;
                         }
-                        $join = "";
-                        $paid = "";
+                        $join = true;
+                        $paid = true;
                         $orderId = null;
                         if ($participant[0]->status != "pending" || $participant[0]->status != "success") {
-                            $join = "you are not join this webinar";
-                            $paid = "you are not pay for this webinar yet";
+                            $join = false;
+                            $paid = false;
                             $orderId = $participant[0]->id;
                         } else {
-                            $join = "you already join this webinar";
-                            $paid = "you already paid this webinar";
+                            $join;
+                            $paid;
                             $orderId;
                         }
                         // Response body harus ada property/field id, event_name, event_picture, event_date, event_price, event_link, is_joined, is_paid & order_id
@@ -209,7 +209,7 @@ class WebinarNormalController extends Controller
                             "is_paid"           => $paid,
                             "order_id"          => $orderId,
                         );
-                        
+
                         return $responsea;
                     } else {
                         $join = false;
