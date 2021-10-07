@@ -222,6 +222,7 @@ class WebinarAkbarController extends Controller
                                 ->table($this->tbUserEdu)
                                 ->where('school_id', '=', $request->school_id)
                                 ->select('start_year')
+                                ->orderBy('start_year', 'asc')
                                 ->get();
                             $angkatan[$i] = $year[$i]->start_year;
                         }
@@ -255,7 +256,7 @@ class WebinarAkbarController extends Controller
                         foreach ($startYear as $year) {
                             $angkatan[$idTemp] = array(
                                 "year"  => $year,
-                                "total" => count(DB::connection('pgsql2')->table($this->tbUserEdu)->where('school_id', '=', $request->school_id)->where("start_year", '=', $year)->get())
+                                "total" => count(DB::connection('pgsql2')->table($this->tbUserEdu)->where('school_id', '=', $request->school_id)->where("start_year", '=', $year)->where('verified', '=', true)->get())
                             );
                             $angkatanArr[$idTemp] = $angkatan[$idTemp];
                             $idTemp++;
