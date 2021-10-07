@@ -758,7 +758,7 @@ class WebinarNormalController extends Controller
                         }
                         $unique = array_values(array_unique($listSchool, SORT_REGULAR));
                         $path_zip = null;
-
+                        // tes
                         if ($webinar[0]->is_certificate) {
                             $path_zip = env("WEBINAR_URL") . $webinar[0]->certificate;
                         }
