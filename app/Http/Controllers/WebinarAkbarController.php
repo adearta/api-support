@@ -259,14 +259,17 @@ class WebinarAkbarController extends Controller
                         foreach ($startYear as $year) {
                             $angkatan[$idTemp] = array(
                                 "year"  => $year,
-                                "total" => count(DB::connection('pgsql2')
-                                    ->table($this->tbUserEdu)
-                                    ->where('school_id', '=', $request->school_id)
-                                    ->where("start_year", '=', $year)
-                                    ->where('verified', '=', true)
-                                    ->where('start_year', '!=', null)
-                                    ->get())
+                                "total" => count(
+                                    DB::connection('pgsql2')->table($this->tbUserEdu, 'edu')
+                                        ->leftJoin($this->tbStudent . ' as student', 'edu.nim', '=', 'student.nim')
+                                        ->where('edu.school_id', '=', $request->school_id)
+                                        ->where('edu.start_year', '=', $year)
+                                        ->where('edu.verified', '=', true)
+                                        ->where('student.id', '!=', null)
+                                        ->get()
+                                )
                             );
+
                             $angkatanArr[$idTemp] = $angkatan[$idTemp];
                             $idTemp++;
                         }
