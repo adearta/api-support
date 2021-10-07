@@ -269,7 +269,7 @@ class WebinarAkbarController extends Controller
                                         ->get()
                                 )
                             );
-
+                            //cek
                             $angkatanArr[$idTemp] = $angkatan[$idTemp];
                             $idTemp++;
                         }
